@@ -1,6 +1,7 @@
 {
   "name": "@caption-aotearoa/shared",
   "version": "0.0.1",
+  "type": "module",
   "main": "./dist/types.js",
   "types": "./dist/types.d.ts",
   "scripts": {
@@ -11,15 +12,15 @@
   },
   "exports": {
     ".": {
-      "require": "./dist/types.js",
+      "import": "./dist/types.js",
       "types": "./dist/types.d.ts"
     },
     "./azureLanguages": {
-      "require": "./dist/azureLanguages.js",
+      "import": "./dist/azureLanguages.js",
       "types": "./dist/azureLanguages.d.ts"
     },
     "./nzLanguages": {
-      "require": "./dist/nzLanguages.js",
+      "import": "./dist/nzLanguages.js",
       "types": "./dist/nzLanguages.d.ts"
     }
   }
