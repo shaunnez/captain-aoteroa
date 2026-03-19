@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && pnpm --filter @caption-aotearoa/shared build && pnpm --filter web build",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
