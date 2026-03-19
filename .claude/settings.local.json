@@ -10,7 +10,8 @@
       "Bash(pnpm --filter api tsc --noEmit)",
       "Bash(pnpm --filter web tsc --noEmit)",
       "Bash(pnpm --filter api exec tsc --noEmit)",
-      "Bash(pnpm --filter web exec tsc --noEmit)"
+      "Bash(pnpm --filter web exec tsc --noEmit)",
+      "Bash(cat /Users/shaunnesbitt/Desktop/accessibility-work/node_modules/.pnpm/socket.io-client*/node_modules/socket.io-client/build/esm/index.d.ts)"
     ]
   }
 }
