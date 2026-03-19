@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "prebuild": "pnpm --filter @caption-aotearoa/shared build",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run"

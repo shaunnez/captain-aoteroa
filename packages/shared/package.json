@@ -1,11 +1,26 @@
 {
   "name": "@caption-aotearoa/shared",
   "version": "0.0.1",
-  "main": "./src/types.ts",
-  "types": "./src/types.ts",
+  "main": "./dist/types.js",
+  "types": "./dist/types.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
   "exports": {
-    ".": "./src/types.ts",
-    "./azureLanguages": "./src/azureLanguages.ts",
-    "./nzLanguages": "./src/nzLanguages.ts"
+    ".": {
+      "require": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    },
+    "./azureLanguages": {
+      "require": "./dist/azureLanguages.js",
+      "types": "./dist/azureLanguages.d.ts"
+    },
+    "./nzLanguages": {
+      "require": "./dist/nzLanguages.js",
+      "types": "./dist/nzLanguages.d.ts"
+    }
   }
 }

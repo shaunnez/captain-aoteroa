@@ -145,7 +145,11 @@ importers:
         specifier: ^1.2.2
         version: 1.6.1(@types/node@20.19.37)(jsdom@24.1.3)
 
-  packages/shared: {}
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
 
 packages:
 
