@@ -1,0 +1,11 @@
+{
+  "name": "@caption-aotearoa/shared",
+  "version": "0.0.1",
+  "main": "./src/types.ts",
+  "types": "./src/types.ts",
+  "exports": {
+    ".": "./src/types.ts",
+    "./azureLanguages": "./src/azureLanguages.ts",
+    "./nzLanguages": "./src/nzLanguages.ts"
+  }
+}

@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:wght@400;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-sand text-brand-black font-sans;
+  }
+}
+
+/* Pill button variants */
+@layer components {
+  .btn-primary {
+    @apply bg-brand-purple text-white rounded-pill px-6 py-2.5 font-medium
+           hover:bg-brand-purple-dark transition-colors focus:outline-none
+           focus:ring-2 focus:ring-brand-purple focus:ring-offset-2;
+  }
+  .btn-secondary {
+    @apply bg-brand-sand text-brand-purple border-2 border-brand-purple
+           rounded-pill px-6 py-2.5 font-medium hover:bg-brand-purple
+           hover:text-white transition-colors;
+  }
+  .input-field {
+    @apply bg-brand-sand border-2 border-brand-purple rounded-lg px-4 py-2.5
+           w-full focus:outline-none focus:ring-2 focus:ring-brand-purple
+           focus:ring-offset-1 text-brand-black;
+  }
+}

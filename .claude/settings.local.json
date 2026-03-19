@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.whaikaha.govt.nz)",
+      "Bash(pnpm install:*)",
+      "Bash(npm:*)",
+      "Bash(/Users/shaunnesbitt/Desktop/accessibility-work/pnpm-workspace.yaml:*)",
+      "Bash(/Users/shaunnesbitt/Desktop/accessibility-work/.gitignore:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm --filter api tsc --noEmit)",
+      "Bash(pnpm --filter web tsc --noEmit)",
+      "Bash(pnpm --filter api exec tsc --noEmit)",
+      "Bash(pnpm --filter web exec tsc --noEmit)"
+    ]
+  }
+}
