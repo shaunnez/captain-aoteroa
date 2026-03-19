@@ -129,7 +129,7 @@ export function setupSocketHandler(io: AppServer): void {
     socket.on('audio:chunk', (chunk) => {
       chunkCount++
       if (chunkCount <= 3 || chunkCount % 100 === 0) {
-        console.log(`[socket] audio:chunk #${chunkCount} size=${chunk.byteLength ?? (chunk as Buffer).length} rooms=${JSON.stringify([...socket.rooms])}`)
+        console.log(`[socket] audio:chunk #${chunkCount} size=${chunk.byteLength} rooms=${JSON.stringify([...socket.rooms])}`)
       }
       // Find which room this socket is in that has an active session
       let routed = false

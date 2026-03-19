@@ -64,7 +64,7 @@ class FakeTranslationRecognizer {
     this.targetLanguages = config._targetLanguages ?? []
     if (audioConfig?._stream instanceof FakePushStream) {
       this.pushStream = audioConfig._stream
-      this.pushStream._setRecognizer(this)
+      this.pushStream!._setRecognizer(this)
     }
   }
 

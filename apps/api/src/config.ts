@@ -1,6 +1,6 @@
 import 'dotenv/config'
 
-function require(name: string): string {
+function requireEnv(name: string): string {
   const val = process.env[name]
   if (!val) throw new Error(`Missing required env var: ${name}`)
   return val
@@ -8,14 +8,14 @@ function require(name: string): string {
 
 export const config = {
   port: 3002, // parseInt(process.env.PORT ?? '3002', 10),
-  clientUrl: require('CLIENT_URL'),
-  presenterSecret: require('PRESENTER_SECRET'),
-  jwtSecret: require('JWT_SECRET'),
-  supabaseUrl: require('SUPABASE_URL'),
-  supabaseServiceRoleKey: require('SUPABASE_SERVICE_ROLE_KEY'),
+  clientUrl: requireEnv('CLIENT_URL'),
+  presenterSecret: requireEnv('PRESENTER_SECRET'),
+  jwtSecret: requireEnv('JWT_SECRET'),
+  supabaseUrl: requireEnv('SUPABASE_URL'),
+  supabaseServiceRoleKey: requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
   azure: {
-    speechKey: require('AZURE_SPEECH_KEY'),
-    speechRegion: require('AZURE_SPEECH_REGION'),
+    speechKey: requireEnv('AZURE_SPEECH_KEY'),
+    speechRegion: requireEnv('AZURE_SPEECH_REGION'),
   },
   papaReo: {
     token: process.env.PAPAREO_TOKEN ?? '',

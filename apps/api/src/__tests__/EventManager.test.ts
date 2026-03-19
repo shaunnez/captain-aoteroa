@@ -9,8 +9,7 @@ vi.mock('../services/AzureSession', () => ({
   })),
 }))
 
-// Re-import after mock
-const { EventManager } = await import('../services/EventManager')
+import { EventManager } from '../services/EventManager'
 
 describe('EventManager', () => {
   beforeEach(() => EventManager.clear())

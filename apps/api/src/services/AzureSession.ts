@@ -194,7 +194,7 @@ export class AzureSession {
   }
 
   pushChunk(chunk: Buffer): void {
-    this.pushStream.write(chunk)
+    this.pushStream.write(chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer)
   }
 
   async stop(): Promise<void> {
