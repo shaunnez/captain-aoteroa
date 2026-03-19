@@ -1,5 +1,5 @@
-export { NZ_LANGUAGES } from './nzLanguages'
-export type { NzLanguage } from './nzLanguages'
+export { NZ_LANGUAGES } from './nzLanguages.js'
+export type { NzLanguage } from './nzLanguages.js'
 
 // Domain types
 export interface Event {
