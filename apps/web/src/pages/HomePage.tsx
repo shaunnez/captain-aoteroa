@@ -42,7 +42,7 @@ export function HomePage() {
       {/* Hero section */}
       <section className="pt-24 pb-16 px-8 text-center max-w-4xl mx-auto">
         <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface mb-6">
-          Live captions for{' '}
+          Real-time captions for{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
             community events
           </span>{' '}
