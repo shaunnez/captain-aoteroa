@@ -16,7 +16,7 @@ export function LoginPage() {
     setLoading(true)
     try {
       await signIn(email, password)
-      navigate('/create')
+      navigate('/dashboard')
     } catch (err: any) {
       setError(err.message ?? 'Sign in failed. Please try again.')
     } finally {
