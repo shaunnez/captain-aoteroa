@@ -29,22 +29,31 @@ export function QRDisplay({ eventCode }: Props) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed inset-0 bg-brand-sand flex flex-col items-center justify-center z-50 p-12"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-12"
             onClick={() => setFullscreen(false)}
           >
-            <button
-              className="absolute top-6 right-6 text-brand-purple hover:text-brand-purple-dark"
-              aria-label="Close QR code"
+            <div
+              className="bg-surface-container-low rounded-2xl p-8 max-w-sm w-full text-center border border-outline-variant/20 relative"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={32} />
-            </button>
-            <QRCode value={audienceUrl} size={280} fgColor="#493276" bgColor="#fdfdf0" />
-            <p className="font-mono text-5xl font-bold text-brand-purple mt-8 tracking-widest">
-              {eventCode}
-            </p>
-            <p className="text-brand-purple opacity-60 mt-4 text-lg">
-              Scan to join · Tap anywhere to close
-            </p>
+              <button
+                onClick={() => setFullscreen(false)}
+                className="absolute top-4 right-4 text-secondary hover:text-on-surface"
+                aria-label="Close QR code"
+              >
+                <X size={32} />
+              </button>
+              <QRCode value={audienceUrl} size={280} fgColor="#1f2020" bgColor="#ffffff" />
+              <p className="font-headline text-4xl font-bold text-on-surface mt-6 tracking-widest">
+                {eventCode}
+              </p>
+              <p className="text-secondary mt-2 text-sm">
+                Scan to join
+              </p>
+              <p className="text-outline text-xs mt-4">
+                Tap outside to close
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

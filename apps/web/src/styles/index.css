@@ -1,35 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-brand-sand text-brand-black font-sans;
+    @apply bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-surface;
   }
 }
 
-/* Pill button variants */
+/* Ghost-style button variants */
 @layer components {
   .btn-primary {
-    @apply bg-brand-purple text-white rounded-pill px-6 py-2.5 font-medium
-           hover:bg-brand-purple-dark transition-colors focus:outline-none
-           focus:ring-2 focus:ring-brand-purple focus:ring-offset-2;
+    @apply border border-outline-variant text-on-surface rounded-lg px-6 py-2.5 font-medium font-headline
+           hover:bg-surface-container-high hover:border-primary/50 transition-all
+           focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-surface
+           relative overflow-hidden;
   }
   .btn-secondary {
-    @apply bg-brand-sand text-brand-purple border-2 border-brand-purple
-           rounded-pill px-6 py-2.5 font-medium hover:bg-brand-purple
-           hover:text-white transition-colors;
+    @apply border border-outline-variant/50 text-secondary rounded-lg px-6 py-2.5 font-medium font-label
+           hover:text-on-surface hover:bg-surface-container-high transition-all;
+  }
+  .btn-accent {
+    @apply bg-on-surface text-surface-dim rounded-lg px-6 py-2.5 font-bold font-headline
+           hover:bg-primary transition-all active:scale-95;
   }
   .input-field {
-    @apply bg-brand-sand border-2 border-brand-purple rounded-lg px-4 py-2.5
-           w-full focus:outline-none focus:ring-2 focus:ring-brand-purple
-           focus:ring-offset-1 text-brand-black;
+    @apply bg-surface-container border border-outline-variant rounded-lg px-4 py-2.5
+           w-full text-on-surface placeholder:text-outline
+           focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+           transition-colors;
   }
 }
 
-/* Tohu decorative pattern utilities */
+/* Design system utility classes */
 @layer utilities {
+  /* Kowhaiwhai SVG texture pattern (very low opacity) */
+  .kowhaiwhai-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c16.568 0 30 13.432 30 30S46.568 60 30 60 0 46.568 0 30 13.432 0 30 0zm0 10C18.954 10 10 18.954 10 30s8.954 20 20 20 20-8.954 20-20S41.046 10 30 10zm0 10c5.523 0 10 4.477 10 10s-4.477 10-10 10-10-4.477-10-10 4.477-10 10-10z' fill='%23252626' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  /* Rainbow gradient glow (blurred behind inputs) */
+  .rainbow-glow {
+    background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+    background-size: 200% auto;
+    filter: blur(12px);
+    opacity: 0.5;
+  }
+
+  /* Solid rainbow gradient bar */
+  .rainbow-indicator {
+    background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+  }
+
+  /* Glass-morphism dark overlay */
+  .glass-obsidian {
+    background-color: rgba(43, 44, 44, 0.7);
+    backdrop-filter: blur(20px);
+  }
+
+  /* Tohu decorative pattern utilities */
   .tohu-border-top {
     background-image: url('/tohu/koru-border.svg');
     background-repeat: repeat-x;

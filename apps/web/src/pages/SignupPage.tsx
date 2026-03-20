@@ -26,15 +26,15 @@ export function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
+      <div className="min-h-screen flex items-center justify-center p-8 kowhaiwhai-pattern">
         <div className="w-full max-w-sm text-center">
-          <h1 className="font-serif text-4xl font-semibold text-brand-purple-dark mb-4">
+          <h1 className="font-headline text-4xl font-bold text-on-surface mb-4">
             Check your email
           </h1>
-          <p className="text-brand-black opacity-80 mb-6">
+          <p className="text-secondary mb-6">
             We've sent you a confirmation link. Click it to activate your account.
           </p>
-          <Link to="/login" className="text-brand-purple underline underline-offset-4">
+          <Link to="/login" className="text-primary underline underline-offset-4">
             Back to login
           </Link>
         </div>
@@ -43,14 +43,14 @@ export function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
+    <div className="min-h-screen flex items-center justify-center p-8 kowhaiwhai-pattern">
       <div className="w-full max-w-sm">
-        <h1 className="font-serif text-4xl font-semibold text-brand-purple-dark mb-8">
+        <h1 className="font-headline text-4xl font-bold text-on-surface mb-8">
           Create Account
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-on-surface-variant mb-1">
               Email
             </label>
             <input
@@ -64,7 +64,7 @@ export function SignupPage() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-on-surface-variant mb-1">
               Password
             </label>
             <input
@@ -77,16 +77,16 @@ export function SignupPage() {
               minLength={8}
               autoComplete="new-password"
             />
-            <p className="text-xs opacity-60 mt-1">Minimum 8 characters</p>
+            <p className="text-xs text-secondary mt-1">Minimum 8 characters</p>
           </div>
-          {error && <p className="text-brand-error text-sm">{error}</p>}
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          {error && <p className="text-error text-sm">{error}</p>}
+          <button type="submit" disabled={loading} className="btn-accent w-full">
             {loading ? 'Creating account…' : 'Sign up'}
           </button>
         </form>
-        <p className="text-sm text-center mt-6">
+        <p className="text-sm text-center mt-6 text-secondary">
           Already have an account?{' '}
-          <Link to="/login" className="text-brand-purple underline underline-offset-4 hover:text-brand-purple-dark">
+          <Link to="/login" className="text-primary underline underline-offset-4 hover:text-on-surface">
             Sign in
           </Link>
         </p>

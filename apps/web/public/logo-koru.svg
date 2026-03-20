@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0000"/>
+      <stop offset="16%" stop-color="#ff7f00"/>
+      <stop offset="33%" stop-color="#ffff00"/>
+      <stop offset="50%" stop-color="#00ff00"/>
+      <stop offset="66%" stop-color="#0000ff"/>
+      <stop offset="83%" stop-color="#4b0082"/>
+      <stop offset="100%" stop-color="#8b00ff"/>
+    </linearGradient>
+  </defs>
+  <!-- Koru spiral -->
+  <path d="M32 8 C16 8, 8 20, 8 32 C8 44, 16 56, 32 56 C44 56, 52 48, 52 36 C52 28, 46 22, 38 22 C32 22, 28 26, 28 32 C28 36, 30 38, 34 38 C36 38, 38 36, 38 34" fill="none" stroke="url(#aurora)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Inner koru tip -->
+  <circle cx="38" cy="34" r="2" fill="url(#aurora)"/>
+</svg>

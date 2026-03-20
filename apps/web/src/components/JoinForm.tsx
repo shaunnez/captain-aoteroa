@@ -24,27 +24,27 @@ export function JoinForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
-      <div>
-        <label htmlFor="code" className="block font-medium mb-1">
-          Event code
-        </label>
-        <input
-          id="code"
-          className="input-field text-2xl font-mono uppercase tracking-widest text-center"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
-          placeholder="KAI492"
-          maxLength={6}
-          required
-          autoComplete="off"
-          autoCapitalize="characters"
-        />
+    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-2 w-full max-w-md">
+      <div className="relative w-full max-w-md group">
+        <div className="absolute -inset-1 rainbow-glow rounded-xl group-focus-within:opacity-100 opacity-0 transition duration-500"></div>
+        <div className="relative flex bg-surface-container-high rounded-xl p-1.5 border border-outline-variant/30">
+          <input
+            id="code"
+            className="flex-1 bg-transparent border-none focus:ring-0 text-on-surface px-4 font-headline tracking-widest uppercase placeholder:text-outline placeholder:normal-case placeholder:tracking-normal"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
+            placeholder="Enter event code"
+            maxLength={6}
+            required
+            autoComplete="off"
+            autoCapitalize="characters"
+          />
+          <button type="submit" disabled={loading || code.length !== 6} className="btn-accent px-6 py-3 rounded-lg">
+            {loading ? 'Finding…' : 'Join Event'}
+          </button>
+        </div>
       </div>
-      {error && <p className="text-brand-error text-sm">{error}</p>}
-      <button type="submit" disabled={loading || code.length !== 6} className="btn-primary">
-        {loading ? 'Finding event…' : 'Join event'}
-      </button>
+      {error && <p className="text-error text-sm mt-2 text-center">{error}</p>}
     </form>
   )
 }

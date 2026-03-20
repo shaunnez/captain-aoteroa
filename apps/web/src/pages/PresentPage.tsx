@@ -67,19 +67,19 @@ export function PresentPage() {
   if (isLoading || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-brand-purple">Loading…</p>
+        <p className="text-secondary">Loading…</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
-        <h1 className="font-serif text-xl font-semibold">{event.title}</h1>
+    <div className="min-h-screen flex flex-col kowhaiwhai-pattern">
+      <header className="bg-surface-container-lowest/95 backdrop-blur-sm text-on-surface px-6 py-4 flex items-center justify-between border-b border-outline-variant/20">
+        <h1 className="font-headline text-xl font-semibold">{event.title}</h1>
         <div className="flex items-center gap-4">
           {viewerCount > 0 && (
-            <span className="flex items-center gap-1.5 text-sm opacity-80">
-              <Users size={16} />
+            <span className="flex items-center gap-1.5 text-sm text-secondary">
+              <Users size={16} className="text-secondary" />
               {viewerCount} viewing
             </span>
           )}
@@ -97,7 +97,7 @@ export function PresentPage() {
 
         {Object.keys(PRESENTER_LOCALES).some((c) => event.languages.includes(c)) && (
           <div className="flex flex-col items-center gap-2 w-full max-w-2xl">
-            <p className="text-sm font-medium text-brand-purple uppercase tracking-wide">
+            <p className="text-sm font-medium text-secondary uppercase tracking-wide">
               I am speaking in
             </p>
             <div className="flex gap-2 flex-wrap justify-center max-h-40 overflow-y-auto py-1">
@@ -107,10 +107,10 @@ export function PresentPage() {
                 <button
                   key={azureCode}
                   onClick={() => handleLanguageChange(azureCode)}
-                  className={`rounded-pill px-4 py-1.5 text-sm font-medium border-2 transition-colors ${
+                  className={`rounded-lg px-4 py-1.5 text-sm font-medium border-2 transition-colors ${
                     !isDualMode && (speakerLocale === bcp47 || (speakerLocale === undefined && i === 0))
-                      ? 'bg-brand-purple text-white border-brand-purple'
-                      : 'bg-brand-sand text-brand-purple border-brand-purple'
+                      ? 'bg-surface-container-high text-on-surface border-primary'
+                      : 'bg-surface-container text-secondary border-outline-variant'
                   }`}
                 >
                   {NZ_LANGUAGES.find((l) => l.code === azureCode)?.label ?? azureCode}
@@ -122,10 +122,10 @@ export function PresentPage() {
             {hasBilingual && (
               <button
                 onClick={handleToggleDual}
-                className={`rounded-pill px-4 py-1.5 text-sm font-medium border-2 transition-colors mt-2 ${
+                className={`rounded-lg px-4 py-1.5 text-sm font-medium border-2 transition-colors mt-2 ${
                   isDualMode
-                    ? 'bg-brand-purple text-white border-brand-purple'
-                    : 'bg-brand-sand text-brand-purple border-brand-purple'
+                    ? 'bg-surface-container-high text-on-surface border-primary'
+                    : 'bg-surface-container text-secondary border-outline-variant'
                 }`}
               >
                 English + Te Reo (bilingual)
@@ -135,20 +135,20 @@ export function PresentPage() {
         )}
 
         <div className="w-full max-w-2xl">
-          <p className="text-sm font-medium text-brand-purple mb-2 uppercase tracking-wide">
+          <p className="text-sm font-medium text-secondary mb-2 uppercase tracking-wide">
             Live preview
           </p>
           <CaptionDisplay
             segments={segments}
-            className="h-64 bg-white border-2 border-brand-purple border-opacity-20"
+            className="h-64 bg-surface-container-low border border-outline-variant/20 rounded-xl"
           />
         </div>
 
         <div className="text-center">
-          <p className="text-sm text-brand-purple opacity-60">
+          <p className="text-sm text-secondary">
             Audience join URL:{' '}
             <a href={`${window.location.origin}/event/${event.code}`} target="_blank">
-              <span className="font-mono font-semibold">
+              <span className="font-mono font-semibold text-primary">
                 {window.location.origin}/event/{event.code}
               </span>
             </a>

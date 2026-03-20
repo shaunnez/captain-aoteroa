@@ -23,29 +23,29 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <button
       onClick={() => navigate(`/event/${event.code}`)}
-      className="w-full text-left bg-white rounded-xl p-5 border-2 border-brand-purple border-opacity-10 hover:border-opacity-30 transition-all hover:shadow-md"
+      className="w-full text-left bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-6 hover:border-primary/50 transition-all duration-300 group"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="font-serif text-lg font-semibold text-brand-purple-dark truncate">
+          <h3 className="font-headline text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate">
             {event.title}
           </h3>
           {formattedDate && (
-            <p className="text-sm text-brand-black opacity-60 mt-1">{formattedDate}</p>
+            <p className="text-sm text-on-surface-variant mt-1">{formattedDate}</p>
           )}
           {event.description && (
-            <p className="text-sm text-brand-black opacity-70 mt-2 line-clamp-2">
+            <p className="text-sm text-secondary mt-2 line-clamp-2">
               {event.description}
             </p>
           )}
         </div>
         <StatusBadge status={event.status} />
       </div>
-      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-brand-purple border-opacity-10">
-        <span className="text-xs font-mono text-brand-purple opacity-60 tracking-wider">
+      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-outline-variant/20">
+        <span className="text-xs font-mono text-secondary tracking-wider">
           {event.code}
         </span>
-        <span className="text-xs text-brand-black opacity-50">
+        <span className="text-xs text-outline">
           {event.languages.length} languages
         </span>
       </div>

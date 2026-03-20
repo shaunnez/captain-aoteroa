@@ -3,9 +3,9 @@ interface StatusBadgeProps {
 }
 
 const styles = {
-  upcoming: 'bg-brand-purple text-white',
-  live: 'bg-green-500 text-white animate-pulse',
-  ended: 'bg-gray-400 text-white',
+  upcoming: 'bg-surface-container-high text-secondary border border-outline-variant/30',
+  live: 'bg-error/20 text-error animate-pulse',
+  ended: 'bg-surface-container-high text-outline border border-outline-variant/30',
 } as const
 
 export function StatusBadge({ status }: StatusBadgeProps) {

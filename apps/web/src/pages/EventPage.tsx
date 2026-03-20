@@ -64,16 +64,16 @@ export function EventPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-brand-purple text-lg">Loading event…</p>
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <p className="text-secondary text-lg">Loading event…</p>
       </div>
     )
   }
 
   if (error || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
-        <p className="text-brand-error text-lg">Event not found. Check your code and try again.</p>
+      <div className="min-h-screen flex items-center justify-center bg-surface p-8">
+        <p className="text-error text-lg">Event not found. Check your code and try again.</p>
       </div>
     )
   }
@@ -83,22 +83,22 @@ export function EventPage() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${highContrast ? 'bg-[#1e1c20] text-white' : ''}`}>
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-surface-container-lowest/95 backdrop-blur-sm text-on-surface px-6 py-4 flex items-center justify-between border-b border-outline-variant/20">
         <div>
-          <h1 className="font-serif text-xl font-semibold">{event.title}</h1>
+          <h1 className="font-headline text-xl font-semibold">{event.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <span
               className={`inline-block w-2 h-2 rounded-full ${
-                isConnected ? 'bg-green-400' : 'bg-yellow-400'
+                isConnected ? 'bg-error animate-pulse' : 'bg-tertiary-container'
               }`}
             />
-            <span className="text-sm opacity-80">
+            <span className="text-sm text-secondary">
               {isConnected ? (event.status === 'live' ? 'Live' : 'Connected') : 'Connecting…'}
             </span>
             {viewerCount > 0 && (
-              <span className="flex items-center gap-1 text-sm opacity-70">
+              <span className="flex items-center gap-1 text-sm text-secondary">
                 <Users size={14} />
                 {viewerCount}
               </span>
@@ -113,7 +113,7 @@ export function EventPage() {
           />
           <button
             onClick={() => setShowSettings((s) => !s)}
-            className="text-white opacity-80 hover:opacity-100 transition-opacity"
+            className="text-secondary hover:text-on-surface transition-colors"
             aria-label="Accessibility settings"
             title="Accessibility settings"
           >
@@ -124,10 +124,10 @@ export function EventPage() {
 
       {/* Accessibility settings panel */}
       {showSettings && (
-        <div className={`px-6 py-4 border-b ${highContrast ? 'bg-[#2a282c] border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+        <div className="px-6 py-4 border-b border-outline-variant/20 bg-surface-container-low">
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-3">
-              <label htmlFor="font-size" className="text-sm font-medium whitespace-nowrap">
+              <label htmlFor="font-size" className="text-sm font-medium text-on-surface-variant whitespace-nowrap">
                 Text size
               </label>
               <input
@@ -140,7 +140,7 @@ export function EventPage() {
                 onChange={(e) => setFontSize(parseFloat(e.target.value))}
                 className="w-32"
               />
-              <span className="text-sm opacity-70 w-16">{fontSize}rem</span>
+              <span className="text-sm text-on-surface-variant w-16">{fontSize}rem</span>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -149,7 +149,7 @@ export function EventPage() {
                 onChange={toggleHighContrast}
                 className="w-4 h-4"
               />
-              <span className="text-sm font-medium">High contrast</span>
+              <span className="text-sm font-medium text-on-surface-variant">High contrast</span>
             </label>
           </div>
         </div>
@@ -157,20 +157,20 @@ export function EventPage() {
 
       {/* Caption area */}
       {captionError && (
-        <div className="bg-brand-error text-white px-6 py-3 text-sm">
+        <div className="bg-error-container text-error px-6 py-3 text-sm">
           {captionError}
         </div>
       )}
-      <main className="flex-1 overflow-hidden p-6">
+      <main className="flex-1 overflow-hidden p-6 kowhaiwhai-pattern">
         {segments.length === 0 && event.status !== 'live' && (
-          <p className={`${highContrast ? 'text-white' : 'text-brand-purple'} opacity-60 text-lg text-center mt-16`}>
+          <p className="text-secondary text-lg text-center mt-16">
             Waiting for captions to begin…
           </p>
         )}
         <CaptionDisplay
           segments={segments}
           highContrast={highContrast}
-          className={`h-full border-2 ${highContrast ? 'bg-[#1e1c20] border-gray-600' : 'bg-white border-brand-purple border-opacity-20'}`}
+          className="h-full"
           style={{ fontSize: `${fontSize}rem` }}
         />
       </main>

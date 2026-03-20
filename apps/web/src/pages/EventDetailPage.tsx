@@ -32,43 +32,43 @@ export function EventDetailPage() {
   if (!event) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-brand-purple opacity-60">Loading event…</p>
+        <p className="text-secondary">Loading event…</p>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen">
-      <header className="bg-brand-navy text-white px-6 py-4 flex items-center gap-4">
-        <button onClick={() => navigate('/dashboard')} className="text-white opacity-70 hover:opacity-100">
+      <header className="bg-surface-container-lowest text-on-surface px-6 py-4 flex items-center gap-4 border-b border-outline-variant/20">
+        <button onClick={() => navigate('/dashboard')} className="text-secondary hover:text-on-surface">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-serif text-xl font-semibold truncate">{event.title}</h1>
-          <span className="text-sm opacity-60 font-mono">{event.code}</span>
+          <h1 className="font-headline text-xl font-semibold text-on-surface truncate">{event.title}</h1>
+          <span className="text-sm text-secondary font-mono">{event.code}</span>
         </div>
         <StatusBadge status={event.status} />
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
         {/* Event info */}
-        <section className="bg-white rounded-xl p-6 border-2 border-brand-purple border-opacity-10">
-          <h2 className="font-serif text-lg font-semibold text-brand-purple-dark mb-4">Event Details</h2>
-          {event.description && <p className="text-brand-black opacity-80 mb-3">{event.description}</p>}
+        <section className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+          <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Event Details</h2>
+          {event.description && <p className="text-on-surface-variant mb-3">{event.description}</p>}
           {event.event_date && (
-            <p className="text-sm text-brand-black opacity-60">
+            <p className="text-sm text-secondary">
               {new Date(event.event_date).toLocaleDateString('en-NZ', {
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
                 hour: 'numeric', minute: '2-digit',
               })}
             </p>
           )}
-          <p className="text-sm text-brand-black opacity-50 mt-2">{event.languages.length} languages configured</p>
+          <p className="text-sm text-secondary mt-2">{event.languages.length} languages configured</p>
         </section>
 
         {/* Controls */}
-        <section className="bg-white rounded-xl p-6 border-2 border-brand-purple border-opacity-10">
-          <h2 className="font-serif text-lg font-semibold text-brand-purple-dark mb-4">Controls</h2>
+        <section className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+          <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Controls</h2>
           <div className="flex flex-wrap gap-3">
             {event.status === 'upcoming' && (
               <button
@@ -92,7 +92,7 @@ export function EventDetailPage() {
                 <button
                   onClick={() => statusMutation.mutate('ended')}
                   disabled={statusMutation.isPending}
-                  className="btn-secondary flex items-center gap-2 text-brand-error border-brand-error hover:bg-brand-error hover:text-white"
+                  className="btn-primary flex items-center gap-2 text-error border-error/40 hover:bg-error-container/20"
                 >
                   <Square size={16} />
                   End Event
@@ -103,7 +103,7 @@ export function EventDetailPage() {
               <button
                 onClick={() => retryTranscript.mutate()}
                 disabled={retryTranscript.isPending}
-                className="btn-secondary flex items-center gap-2"
+                className="btn-primary flex items-center gap-2"
               >
                 <RotateCcw size={16} />
                 {retryTranscript.isPending ? 'Retrying…' : 'Retry Transcript'}
@@ -115,8 +115,8 @@ export function EventDetailPage() {
 
         {/* Transcript */}
         {event.status === 'ended' && (
-          <section className="bg-white rounded-xl p-6 border-2 border-brand-purple border-opacity-10">
-            <h2 className="font-serif text-lg font-semibold text-brand-purple-dark mb-4">Transcript</h2>
+          <section className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+            <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Transcript</h2>
             <TranscriptDownload
               eventCode={event.code}
               eventTitle={event.title}
