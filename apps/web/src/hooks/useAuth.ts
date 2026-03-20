@@ -1,29 +1,50 @@
-const TOKEN_KEY = 'caption_organiser_token'
+import { useState, useEffect } from 'react'
+import type { User, Session } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 
 export function useAuth() {
-  function getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY)
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  async function signIn(email: string, password: string) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
   }
 
-  function setToken(token: string): void {
-    localStorage.setItem(TOKEN_KEY, token)
+  async function signUp(email: string, password: string) {
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) throw error
   }
 
-  function clearToken(): void {
-    localStorage.removeItem(TOKEN_KEY)
+  async function signOut() {
+    await supabase.auth.signOut()
   }
 
   function isAuthenticated(): boolean {
-    const token = getToken()
-    if (!token) return false
-    try {
-      // Decode JWT payload without verifying signature (client-side check only)
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      return payload.exp > Date.now() / 1000
-    } catch {
-      return false
-    }
+    return !!session
   }
 
-  return { getToken, setToken, clearToken, isAuthenticated }
+  function getToken(): string | null {
+    return session?.access_token ?? null
+  }
+
+  return { user, session, loading, signIn, signUp, signOut, isAuthenticated, getToken }
 }

@@ -1,34 +1,26 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import request from 'supertest'
 import { app } from '../index'
 
-// Override config for tests
-process.env.PRESENTER_SECRET = 'test-secret'
-process.env.JWT_SECRET = 'test-jwt-secret'
-process.env.CLIENT_URL = 'http://localhost:5173'
-
-describe('POST /api/auth/login', () => {
-  it('returns 200 + JWT token with correct password', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ password: 'test-secret' })
-    expect(res.status).toBe(200)
-    expect(res.body.token).toBeTruthy()
-    expect(typeof res.body.token).toBe('string')
-  })
-
-  it('returns 401 with wrong password', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ password: 'wrong' })
+describe('GET /api/auth/me', () => {
+  it('returns 401 without authorization header', async () => {
+    const res = await request(app).get('/api/auth/me')
     expect(res.status).toBe(401)
-    expect(res.body.token).toBeUndefined()
+    expect(res.body.error).toBe('Not authenticated')
   })
 
-  it('returns 400 with missing password', async () => {
+  it('returns authenticated true with a bearer token', async () => {
     const res = await request(app)
-      .post('/api/auth/login')
-      .send({})
-    expect(res.status).toBe(400)
+      .get('/api/auth/me')
+      .set('Authorization', 'Bearer some-token')
+    expect(res.status).toBe(200)
+    expect(res.body.authenticated).toBe(true)
+  })
+
+  it('returns 401 without Bearer prefix', async () => {
+    const res = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', 'some-token')
+    expect(res.status).toBe(401)
   })
 })

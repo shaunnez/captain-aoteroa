@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { DisplaySegment } from '../hooks/useCaptions'
 
 interface Props {
   segments: DisplaySegment[]
   className?: string
+  style?: React.CSSProperties
 }
 
-export function CaptionDisplay({ segments, className = '' }: Props) {
+export function CaptionDisplay({ segments, className = '', style }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const prefersReduced = useReducedMotion()
 
   // Auto-scroll to latest caption
   useEffect(() => {
@@ -20,11 +23,15 @@ export function CaptionDisplay({ segments, className = '' }: Props) {
       role="log"
       aria-live="polite"
       aria-label="Live captions"
+      style={style}
     >
       {segments.map((seg) => (
-        <p
+        <motion.p
           key={`${seg.sequence}-${seg.isFinal}`}
-          className={`text-2xl leading-relaxed transition-colors duration-200 flex items-center gap-2 ${
+          initial={prefersReduced ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`leading-relaxed transition-colors duration-200 flex items-center gap-2 ${
             seg.isFinal
               ? 'text-brand-black'
               : 'text-brand-purple opacity-70 italic'
@@ -37,7 +44,7 @@ export function CaptionDisplay({ segments, className = '' }: Props) {
               aria-label="Translating"
             />
           )}
-        </p>
+        </motion.p>
       ))}
       <div ref={bottomRef} />
     </div>

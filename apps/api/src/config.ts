@@ -9,8 +9,6 @@ function requireEnv(name: string): string {
 export const config = {
   port: 3002, // parseInt(process.env.PORT ?? '3002', 10),
   clientUrl: requireEnv('CLIENT_URL'),
-  presenterSecret: requireEnv('PRESENTER_SECRET'),
-  jwtSecret: requireEnv('JWT_SECRET'),
   supabaseUrl: requireEnv('SUPABASE_URL'),
   supabaseServiceRoleKey: requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
   azure: {
@@ -21,4 +19,5 @@ export const config = {
     token: process.env.PAPAREO_TOKEN ?? '',
     apiUrl: process.env.PAPAREO_API_URL ?? 'https://api.papareo.io',
   },
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
 }

@@ -1,25 +1,24 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-export function OrganiserLoginPage() {
+export function LoginPage() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { setToken } = useAuth()
+  const { signIn } = useAuth()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const { data } = await api.post<{ token: string }>('/api/auth/login', { password })
-      setToken(data.token)
+      await signIn(email, password)
       navigate('/create')
-    } catch {
-      setError('Incorrect password. Please try again.')
+    } catch (err: any) {
+      setError(err.message ?? 'Sign in failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -32,6 +31,20 @@ export function OrganiserLoginPage() {
           Organiser Login
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-1">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+              required
+              autoComplete="email"
+            />
+          </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium mb-1">
               Password
@@ -51,6 +64,12 @@ export function OrganiserLoginPage() {
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+        <p className="text-sm text-center mt-6">
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-brand-purple underline underline-offset-4 hover:text-brand-purple-dark">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   )

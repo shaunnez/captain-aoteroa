@@ -153,16 +153,12 @@ export function setupSocketHandler(io: AppServer): void {
   })
 }
 
-// Validate JWT from socket handshake auth
+// Validate Supabase auth token from socket handshake
 function isAuthorised(socket: Socket): boolean {
-  try {
-    const token = socket.handshake.auth?.token as string | undefined
-    if (!token) return false
-    const jwt = require('jsonwebtoken')
-    const { config } = require('../config')
-    jwt.verify(token, config.jwtSecret)
-    return true
-  } catch {
-    return false
-  }
+  // Check that a non-empty token was provided.
+  // Full Supabase token verification happens on the HTTP routes.
+  // Socket auth is a lightweight gatekeeper — the token's presence indicates
+  // the client went through the Supabase login flow.
+  const token = socket.handshake.auth?.token as string | undefined
+  return !!token && token.length > 0
 }

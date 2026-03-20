@@ -7,6 +7,7 @@ import { config } from './config'
 import { authRouter } from './routes/auth'
 import { eventsRouter } from './routes/events'
 import { translateRouter } from './routes/translate'
+import { transcriptsRouter } from './routes/transcripts'
 import { setupSocketHandler } from './services/SocketHandler'
 
 const app = express()
@@ -22,6 +23,7 @@ app.use(express.json())
 app.use('/api/auth', authRouter)
 app.use('/api/events', eventsRouter)
 app.use('/api/translate', translateRouter)
+app.use('/api/events', transcriptsRouter)
 
 setupSocketHandler(io)
 

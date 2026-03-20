@@ -3,6 +3,7 @@ import { verifyJWT } from '../middleware/auth'
 import { supabase } from '../services/supabase'
 import { EventManager } from '../services/EventManager'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared'
+import { TranscriptProcessor } from '../services/TranscriptProcessor'
 
 export const eventsRouter = Router()
 
@@ -30,6 +31,20 @@ eventsRouter.post('/', verifyJWT, async (req, res) => {
     return
   }
   res.status(201).json(data)
+})
+
+// GET /api/events — list all events (public)
+eventsRouter.get('/', async (_req, res) => {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .order('event_date', { ascending: true, nullsFirst: false })
+
+  if (error) {
+    res.status(500).json({ error: error.message })
+    return
+  }
+  res.json(data ?? [])
 })
 
 // GET /api/events/:code — fetch event by 6-char code (public)
@@ -70,7 +85,31 @@ eventsRouter.patch('/:code/status', verifyJWT, async (req, res) => {
   // If ending the event, close any active Azure session
   if (status === 'ended') {
     EventManager.end(req.params.code.toUpperCase())
+    // Trigger transcript processing in the background
+    TranscriptProcessor.process(data.id).catch((err) => {
+      console.error(`[events] Transcript processing failed for ${data.id}:`, err)
+    })
   }
 
   res.json(data)
+})
+
+// POST /api/events/:code/transcript/retry — retry transcript processing (JWT protected)
+eventsRouter.post('/:code/transcript/retry', verifyJWT, async (req, res) => {
+  const { data: event, error } = await supabase
+    .from('events')
+    .select('id')
+    .eq('code', req.params.code.toUpperCase())
+    .single()
+
+  if (error || !event) {
+    res.status(404).json({ error: 'Event not found' })
+    return
+  }
+
+  TranscriptProcessor.retry(event.id).catch((err) => {
+    console.error(`[events] Transcript retry failed for ${event.id}:`, err)
+  })
+
+  res.json({ status: 'processing' })
 })

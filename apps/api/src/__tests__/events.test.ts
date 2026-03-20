@@ -10,6 +10,11 @@ vi.mock('../services/supabase', () => ({
   },
 }))
 
+// Mock the auth middleware to always pass in tests
+vi.mock('../middleware/auth', () => ({
+  verifyJWT: vi.fn((_req: any, _res: any, next: any) => next()),
+}))
+
 const mockEvent = {
   id: 'uuid-1',
   code: 'KAI492',
@@ -27,32 +32,30 @@ function mockChain(returnData: unknown, error: unknown = null) {
     single: vi.fn().mockResolvedValue({ data: returnData, error }),
     eq: vi.fn().mockReturnThis(),
     update: vi.fn().mockReturnThis(),
+    order: vi.fn().mockResolvedValue({ data: returnData ? [returnData] : [], error }),
   }
   vi.mocked(supabaseModule.supabase.from).mockReturnValue(chain as any)
   return chain
 }
 
-// Get a valid JWT for protected routes
-async function getToken(): Promise<string> {
-  const res = await request(app).post('/api/auth/login').send({ password: 'test-secret' })
-  return res.body.token
-}
-
 describe('POST /api/events', () => {
   it('creates an event and returns it with a code', async () => {
     mockChain(mockEvent)
-    const token = await getToken()
     const res = await request(app)
       .post('/api/events')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', 'Bearer test-token')
       .send({ title: 'Test Event' })
     expect(res.status).toBe(201)
     expect(res.body.code).toMatch(/^[A-Z0-9]{6}$/)
   })
 
-  it('returns 401 without token', async () => {
-    const res = await request(app).post('/api/events').send({ title: 'Test' })
-    expect(res.status).toBe(401)
+  it('returns 400 without title', async () => {
+    mockChain(mockEvent)
+    const res = await request(app)
+      .post('/api/events')
+      .set('Authorization', 'Bearer test-token')
+      .send({})
+    expect(res.status).toBe(400)
   })
 })
 
