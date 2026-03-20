@@ -24,6 +24,11 @@
       "import": "./dist/esm/nzLanguages.js",
       "require": "./dist/cjs/nzLanguages.js",
       "types": "./dist/cjs/nzLanguages.d.ts"
+    },
+    "./recognitionLocales": {
+      "import": "./dist/esm/recognitionLocales.js",
+      "require": "./dist/cjs/recognitionLocales.js",
+      "types": "./dist/cjs/recognitionLocales.d.ts"
     }
   }
 }

@@ -10,12 +10,10 @@ import { MicControl } from '../components/MicControl'
 import { QRDisplay } from '../components/QRDisplay'
 import type { Event } from '@caption-aotearoa/shared'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
+import { RECOGNITION_LOCALES } from '@caption-aotearoa/shared/recognitionLocales'
 
-/** Maps Azure Translator codes to BCP-47 speech recognition locales. */
-const RECOGNITION_LOCALES: Record<string, string> = {
-  'en': 'en-NZ',
-  'mi': 'mi-NZ',
-}
+/** Māori uses Papa Reo on the backend — add it separately to the UI map. */
+const PRESENTER_LOCALES: Record<string, string> = { ...RECOGNITION_LOCALES, 'mi': 'mi-NZ' }
 
 export function PresentPage() {
   const { code } = useParams<{ code: string }>()
@@ -50,7 +48,7 @@ export function PresentPage() {
       setIsDualMode(false)
       if (code) socket.emit('session:set-mode', { code, mode: 'single' })
     }
-    const bcp47 = RECOGNITION_LOCALES[azureCode] ?? azureCode
+    const bcp47 = PRESENTER_LOCALES[azureCode] ?? azureCode
     setSpeakerLocale(bcp47)
     if (code) socket.emit('session:set-language', { code, locale: bcp47 })
   }
@@ -86,14 +84,14 @@ export function PresentPage() {
           error={audioError}
         />
 
-        {Object.keys(RECOGNITION_LOCALES).some((c) => event.languages.includes(c)) && (
-          <div className="flex flex-col items-center gap-2">
+        {Object.keys(PRESENTER_LOCALES).some((c) => event.languages.includes(c)) && (
+          <div className="flex flex-col items-center gap-2 w-full max-w-2xl">
             <p className="text-sm font-medium text-brand-purple uppercase tracking-wide">
               I am speaking in
             </p>
-            <div className="flex gap-2 flex-wrap justify-center">
-              {event.languages.filter((l) => l in RECOGNITION_LOCALES).map((azureCode, i) => {
-                const bcp47 = RECOGNITION_LOCALES[azureCode]
+            <div className="flex gap-2 flex-wrap justify-center max-h-40 overflow-y-auto py-1">
+              {event.languages.filter((l) => l in PRESENTER_LOCALES).map((azureCode, i) => {
+                const bcp47 = PRESENTER_LOCALES[azureCode]
                 return (
                 <button
                   key={azureCode}
