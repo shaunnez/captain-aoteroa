@@ -6,9 +6,10 @@ interface Props {
   segments: DisplaySegment[]
   className?: string
   style?: React.CSSProperties
+  highContrast?: boolean
 }
 
-export function CaptionDisplay({ segments, className = '', style }: Props) {
+export function CaptionDisplay({ segments, className = '', style, highContrast = false }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const prefersReduced = useReducedMotion()
 
@@ -33,14 +34,14 @@ export function CaptionDisplay({ segments, className = '', style }: Props) {
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className={`leading-relaxed transition-colors duration-200 flex items-center gap-2 ${
             seg.isFinal
-              ? 'text-brand-black'
-              : 'text-brand-purple opacity-70 italic'
+              ? highContrast ? 'text-white' : 'text-brand-black'
+              : highContrast ? 'text-white opacity-70 italic' : 'text-brand-purple opacity-70 italic'
           }`}
         >
           <span>{seg.text}</span>
           {seg.isTranslating && (
             <span
-              className="inline-block w-4 h-4 border-2 border-brand-purple border-t-transparent rounded-full animate-spin flex-shrink-0"
+              className={`inline-block w-4 h-4 border-2 ${highContrast ? 'border-white' : 'border-brand-purple'} border-t-transparent rounded-full animate-spin flex-shrink-0`}
               aria-label="Translating"
             />
           )}
