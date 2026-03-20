@@ -7,7 +7,7 @@ function requireEnv(name: string): string {
 }
 
 export const config = {
-  port: 3002, // parseInt(process.env.PORT ?? '3002', 10),
+  port: parseInt(process.env.PORT ?? '3002', 10),
   clientUrl: requireEnv('CLIENT_URL'),
   supabaseUrl: requireEnv('SUPABASE_URL'),
   supabaseServiceRoleKey: requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
