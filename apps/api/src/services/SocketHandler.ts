@@ -36,7 +36,7 @@ export function setupSocketHandler(io: AppServer): void {
         .select('*')
         .eq('event_id', eventRow.id)
         .eq('is_final', true)
-        .order('sequence', { ascending: true })
+        .order('sequence', { ascending: false })
         .limit(HISTORY_SIZE)
 
       if (data && data.length > 0) {
@@ -48,7 +48,10 @@ export function setupSocketHandler(io: AppServer): void {
           }
           grouped.get(row.sequence)!.segments[row.language] = row.text
         }
-        const segments = Array.from(grouped.values()).map((s) => ({ ...s, isFinal: true }))
+        // Re-sort ascending so history arrives in chronological order
+        const segments = Array.from(grouped.values())
+          .sort((a, b) => a.sequence - b.sequence)
+          .map((s) => ({ ...s, isFinal: true }))
         socket.emit('caption:history', { segments })
       }
     })
