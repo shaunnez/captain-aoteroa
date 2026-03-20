@@ -9,9 +9,26 @@ type AppServer = Server<ClientToServerEvents, ServerToClientEvents>
 
 const HISTORY_SIZE = 20
 
+async function broadcastViewerCount(io: AppServer, code: string): Promise<void> {
+  const sockets = await io.in(code).fetchSockets()
+  io.to(code).emit('viewer:count', { count: sockets.length })
+}
+
 export function setupSocketHandler(io: AppServer): void {
   io.on('connection', (socket) => {
     console.log(`[socket] connected: ${socket.id}`)
+
+    // Track rooms for viewer count on disconnect
+    socket.on('disconnecting', async () => {
+      for (const room of socket.rooms) {
+        if (room !== socket.id) {
+          // Subtract 1 because this socket is still in the room during 'disconnecting'
+          const sockets = await io.in(room).fetchSockets()
+          io.to(room).emit('viewer:count', { count: Math.max(0, sockets.length - 1) })
+        }
+      }
+    })
+
     socket.on('disconnect', (reason) => {
       console.log(`[socket] disconnected: ${socket.id} reason=${reason}`)
     })
@@ -20,6 +37,7 @@ export function setupSocketHandler(io: AppServer): void {
     socket.on('event:join', async (code) => {
       console.log(`[socket] event:join code=${code} socketId=${socket.id}`)
       socket.join(code)
+      await broadcastViewerCount(io, code)
 
       // Send caption history so reconnects/late joiners see recent captions
       // Two-step: resolve event UUID first, then fetch segments
@@ -60,8 +78,9 @@ export function setupSocketHandler(io: AppServer): void {
       }
     })
 
-    socket.on('event:leave', (code) => {
+    socket.on('event:leave', async (code) => {
       socket.leave(code)
+      await broadcastViewerCount(io, code)
     })
 
     // Organiser starts a captioning session

@@ -45,6 +45,7 @@ export interface ServerToClientEvents {
   'caption:segment': (payload: CaptionSegmentPayload) => void
   'caption:history': (payload: CaptionHistoryPayload) => void
   'caption:error': (payload: CaptionErrorPayload) => void
+  'viewer:count': (payload: { count: number }) => void
 }
 
 export interface ClientToServerEvents {

@@ -49,12 +49,15 @@ function createMockSocket() {
 
 function createMockIO() {
   let connectionHandler: Function
+  const mockEmit = vi.fn()
   return {
     on: vi.fn((event: string, handler: Function) => {
       if (event === 'connection') connectionHandler = handler
     }),
-    to: vi.fn(() => ({ emit: vi.fn() })),
+    to: vi.fn(() => ({ emit: mockEmit })),
+    in: vi.fn(() => ({ fetchSockets: vi.fn().mockResolvedValue([]) })),
     _connect: (socket: any) => connectionHandler(socket),
+    _emit: mockEmit,
   }
 }
 
@@ -88,9 +91,9 @@ describe('SocketHandler', () => {
     expect(mockSocket.join).toHaveBeenCalledWith('ABC123')
   })
 
-  it('leaves room on event:leave', () => {
+  it('leaves room on event:leave', async () => {
     mockIO._connect(mockSocket)
-    mockSocket._handlers['event:leave']('ABC123')
+    await mockSocket._handlers['event:leave']('ABC123')
     expect(mockSocket.leave).toHaveBeenCalledWith('ABC123')
   })
 

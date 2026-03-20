@@ -8,6 +8,8 @@ import { useCaptions } from '../hooks/useCaptions'
 import { CaptionDisplay } from '../components/CaptionDisplay'
 import { MicControl } from '../components/MicControl'
 import { QRDisplay } from '../components/QRDisplay'
+import { useViewerCount } from '../hooks/useViewerCount'
+import { Users } from 'lucide-react'
 import type { Event } from '@caption-aotearoa/shared'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 
@@ -30,6 +32,7 @@ export function PresentPage() {
   const [isDualMode, setIsDualMode] = useState(false)
 
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
+  const viewerCount = useViewerCount(code ?? '')
   const { segments } = useCaptions(code ?? '', speakerLocale ?? 'en-NZ')
 
   const hasBilingual =
@@ -75,7 +78,15 @@ export function PresentPage() {
     <div className="min-h-screen flex flex-col">
       <header className="bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
         <h1 className="font-serif text-xl font-semibold">{event.title}</h1>
-        <QRDisplay eventCode={event.code} />
+        <div className="flex items-center gap-4">
+          {viewerCount > 0 && (
+            <span className="flex items-center gap-1.5 text-sm opacity-80">
+              <Users size={16} />
+              {viewerCount} viewing
+            </span>
+          )}
+          <QRDisplay eventCode={event.code} />
+        </div>
       </header>
 
       <main className="flex-1 flex flex-col items-center gap-8 p-8">
