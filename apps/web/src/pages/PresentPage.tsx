@@ -39,6 +39,10 @@ export function PresentPage() {
   async function handleStart() {
     await api.patch(`/api/events/${code}/status`, { status: 'live' })
     await start()
+    // If a language was pre-selected before the session existed, apply it now
+    if (speakerLocale && code) {
+      socket.emit('session:set-language', { code, locale: speakerLocale })
+    }
   }
 
   async function handleStop() {

@@ -133,7 +133,13 @@ export class AzureSession {
 
   private buildSegments(result: sdk.TranslationRecognitionResult): Record<string, string> {
     const sourceLocale = this.options.speakerLocale ?? this.options.languages[0]
+    const sourceCode = bcp47ToTranslationCode(sourceLocale)
     const segments: Record<string, string> = { [sourceLocale]: result.text }
+    // Also index under the short translator code (e.g. 'fr') so audience pickers
+    // that use NZ_LANGUAGES codes can find the source text directly.
+    if (sourceCode !== sourceLocale) {
+      segments[sourceCode] = result.text
+    }
 
     // Add translations from the TranslationRecognizer result
     const translations = result.translations
