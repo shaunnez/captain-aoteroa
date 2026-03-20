@@ -82,7 +82,7 @@ export function EventPage() {
   return (
     <div className={`min-h-screen flex flex-col ${highContrast ? 'bg-[#1e1c20] text-white' : ''}`}>
       {/* Header */}
-      <header className="bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="font-serif text-xl font-semibold">{event.title}</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -154,12 +154,13 @@ export function EventPage() {
       )}
       <main className="flex-1 overflow-hidden p-6">
         {segments.length === 0 && event.status !== 'live' && (
-          <p className="text-brand-purple opacity-60 text-lg text-center mt-16">
+          <p className={`${highContrast ? 'text-white' : 'text-brand-purple'} opacity-60 text-lg text-center mt-16`}>
             Waiting for captions to begin…
           </p>
         )}
         <CaptionDisplay
           segments={segments}
+          highContrast={highContrast}
           className={`h-full border-2 ${highContrast ? 'bg-[#1e1c20] border-gray-600' : 'bg-white border-brand-purple border-opacity-20'}`}
           style={{ fontSize: `${fontSize}rem` }}
         />
