@@ -1,6 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
+// Mock supabase to avoid missing env vars at module init
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+    },
+  },
+}))
+
+// Mock api to avoid importing supabase
+vi.mock('../lib/api', () => ({
+  api: {
+    post: vi.fn().mockResolvedValue({ data: { segments: [] } }),
+  },
+}))
+
 // Mock socket
 const mockOn = vi.fn()
 const mockOff = vi.fn()
@@ -10,7 +26,7 @@ const mockDisconnect = vi.fn()
 
 vi.mock('../lib/socket', () => ({
   socket: {
-    connected: true,
+    connected: false,
     on: (...args: any[]) => mockOn(...args),
     off: (...args: any[]) => mockOff(...args),
     emit: (...args: any[]) => mockEmit(...args),

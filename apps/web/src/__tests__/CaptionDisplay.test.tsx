@@ -1,7 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { CaptionDisplay } from '../components/CaptionDisplay'
 import type { DisplaySegment } from '../hooks/useCaptions'
+
+// jsdom doesn't implement scrollIntoView
+beforeAll(() => {
+  window.HTMLElement.prototype.scrollIntoView = () => {}
+})
 
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', () => ({
