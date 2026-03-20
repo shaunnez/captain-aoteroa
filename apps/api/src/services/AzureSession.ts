@@ -4,6 +4,7 @@ import { config } from '../config'
 import { supabase } from './supabase'
 import { bcp47ToTranslationCode, translationCodeToBcp47 } from './languageMap'
 import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
+import { RECOGNITION_LOCALES } from '@caption-aotearoa/shared/recognitionLocales'
 
 const useMock = process.env.AZURE_MOCK === 'true'
 
@@ -178,8 +179,8 @@ export class AzureSession {
     }
   }
 
-  /** Locales Azure supports for speech recognition in our context. */
-  static readonly SUPPORTED_LOCALES = ['en-NZ', 'en-AU', 'en-US', 'en-GB']
+  /** BCP-47 locales Azure supports for speech recognition (derived from shared RECOGNITION_LOCALES). */
+  static readonly SUPPORTED_LOCALES = Object.values(RECOGNITION_LOCALES)
 
   async setLanguage(locale: string | null): Promise<void> {
     if (locale && !AzureSession.SUPPORTED_LOCALES.includes(locale)) {
