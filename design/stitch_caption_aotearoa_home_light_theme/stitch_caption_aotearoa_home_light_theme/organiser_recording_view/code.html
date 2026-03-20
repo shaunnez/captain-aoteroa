@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#0e0e0e",
+              "outline-variant": "#484848",
+              "on-tertiary-fixed": "#453900",
+              "on-secondary-fixed": "#3e4040",
+              "inverse-on-surface": "#565555",
+              "error-dim": "#bb5551",
+              "secondary": "#9d9e9e",
+              "inverse-primary": "#5e5f60",
+              "tertiary-dim": "#efc900",
+              "error-container": "#7f2927",
+              "outline": "#767575",
+              "secondary-fixed": "#e2e2e2",
+              "tertiary": "#ffe792",
+              "secondary-fixed-dim": "#d4d4d4",
+              "on-primary": "#3f4041",
+              "on-primary-fixed": "#3e4040",
+              "surface-container-high": "#1f2020",
+              "background": "#0e0e0e",
+              "on-secondary-fixed-variant": "#5a5c5c",
+              "surface-dim": "#0e0e0e",
+              "on-secondary-container": "#bfbfbf",
+              "surface-variant": "#252626",
+              "on-primary-container": "#d0d0d0",
+              "on-tertiary-container": "#5b4b00",
+              "secondary-dim": "#9d9e9e",
+              "on-surface": "#e7e5e5",
+              "on-surface-variant": "#acabaa",
+              "on-secondary": "#1f2021",
+              "tertiary-fixed-dim": "#efc900",
+              "surface-tint": "#c6c6c7",
+              "primary-fixed": "#e2e2e2",
+              "surface-container-low": "#131313",
+              "surface-container-highest": "#252626",
+              "tertiary-container": "#ffd709",
+              "on-primary-fixed-variant": "#5a5c5c",
+              "on-background": "#e7e5e5",
+              "primary-container": "#454747",
+              "surface-container": "#191a1a",
+              "tertiary-fixed": "#ffd709",
+              "error": "#ee7d77",
+              "on-tertiary-fixed-variant": "#665500",
+              "on-tertiary": "#655400",
+              "on-error-container": "#ff9993",
+              "secondary-container": "#3a3c3c",
+              "surface-container-lowest": "#000000",
+              "primary-fixed-dim": "#d4d4d4",
+              "on-error": "#490106",
+              "primary": "#c6c6c7",
+              "inverse-surface": "#fcf9f8",
+              "surface-bright": "#2b2c2c",
+              "primary-dim": "#b8b9b9"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .kowhaiwhai-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-5 0-9 4-9 9 0 3 1.5 5.5 4 7.5L30 30l5-8.5c2.5-2 4-4.5 4-7.5 0-5-4-9-9-9z' fill='%23acabaa' fill-opacity='0.04'/%3E%3C/svg%3E");
+        }
+        .rainbow-indicator {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col fixed left-0 top-0 h-full z-40 bg-[#0e0e0e] dark:bg-[#0e0e0e] w-64 border-r border-[#131313]">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div>
+<h1 class="font-headline text-xl font-black text-[#e7e5e5] tracking-tighter">Caption Aotearoa</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-secondary font-medium">The Digital Weaver</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-8 space-y-2">
+<!-- Active Tab: Live Session -->
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7e5e5] bg-[#131313] border-l-4 border-l-[#c6c6c7] font-['Manrope'] text-sm font-medium transition-all Active: translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+                Live Session
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#9d9e9e] font-['Manrope'] text-sm font-medium hover:text-[#e7e5e5] hover:bg-[#1f2020] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                Transcripts
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#9d9e9e] font-['Manrope'] text-sm font-medium hover:text-[#e7e5e5] hover:bg-[#1f2020] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+                Language Hub
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#9d9e9e] font-['Manrope'] text-sm font-medium hover:text-[#e7e5e5] hover:bg-[#1f2020] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+                Analytics
+            </a>
+</nav>
+<div class="px-4 py-4 space-y-2 border-t border-[#131313]">
+<a class="flex items-center gap-4 px-4 py-3 text-[#9d9e9e] font-['Manrope'] text-sm font-medium hover:text-[#e7e5e5] hover:bg-[#1f2020] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="archive">archive</span>
+                Archive
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#9d9e9e] font-['Manrope'] text-sm font-medium hover:text-[#e7e5e5] hover:bg-[#1f2020] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Top Navigation Bar (Mobile & Supplemental) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0e0e0e] dark:bg-[#000000] border-b border-[#1f2020] md:pl-72">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="font-headline font-bold tracking-tight text-sm text-[#e7e5e5]">Recording Session: #204</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#9d9e9e] hover:bg-[#131313] p-2 rounded transition-colors" data-icon="settings">settings</button>
+<button class="material-symbols-outlined text-[#9d9e9e] hover:bg-[#131313] p-2 rounded transition-colors" data-icon="help">help</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="Portrait of the session organiser" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALRjE0AkK7Iqic4A9Y8gokb3v0eUwwbaQnPFekhtudgmsA7-ShA_CEvPc0B0tyN9n_XIXV7-37KvrbPNuljWulb463YAgw3ZsQhG8tvi7x9Dg8R7owiGJ6bYLn-EVZYETBShmIulDPNsyQ9J-le4agkeKpZlLmujI4_-8OiP1YGqJnE0v8iik5UJq34BO4bE220P56Jhy2fwt2ZAGIC3Q2tAB5YkQYka-lBA5GiaZKgl5ndO6VMrW-XVRSofMCqTTDXPNeG6dWzec"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-16 min-h-screen kowhaiwhai-pattern flex flex-col lg:flex-row gap-0">
+<!-- Live Caption Feed (Central Focus) -->
+<section class="flex-1 p-8 lg:p-16 overflow-y-auto max-h-[calc(100vh-4rem)]">
+<div class="max-w-3xl mx-auto space-y-16">
+<!-- Previous Sentence Block -->
+<div class="space-y-6">
+<p class="font-headline text-3xl text-on-surface-variant font-light leading-relaxed">
+                        Tēnā koutou katoa. Welcome to the digital transformation workshop. Today we are looking at how to weave traditional narratives into our modern infrastructure.
+                    </p>
+<p class="font-headline text-3xl text-on-surface-variant font-light leading-relaxed">
+                        The "threads" of conversation we are generating now are being captured in real-time, translated, and archived for the future.
+                    </p>
+</div>
+<!-- Active Sentence Block -->
+<div class="relative pt-8">
+<div class="absolute -left-12 top-10 w-8 h-[2px] rainbow-indicator"></div>
+<p class="font-headline text-5xl text-on-surface font-bold leading-tight tracking-tight">
+                        We must ensure that every voice is heard and every word is preserved with the dignity it deserves.
+                        <span class="inline-block w-1 h-12 bg-primary ml-2 animate-pulse align-middle"></span>
+</p>
+</div>
+<!-- Metadata/Spacer -->
+<div class="h-64"></div>
+</div>
+</section>
+<!-- Right Sidebar (Controls & Status) -->
+<section class="w-full lg:w-[400px] bg-surface-container-low/80 backdrop-blur-xl border-l border-outline-variant/10 p-8 flex flex-col gap-10">
+<!-- Recording Status Card -->
+<div class="bg-surface-container-highest p-8 rounded-xl border border-outline-variant/20 relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-[3px] rainbow-indicator"></div>
+<div class="flex flex-col items-center text-center gap-6">
+<div class="relative">
+<div class="w-24 h-24 rounded-full border-2 border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-primary" data-icon="mic" data-weight="fill" style="font-variation-settings: 'FILL' 1;">mic</span>
+</div>
+<div class="absolute -bottom-2 right-0 bg-error text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest text-on-error">Live</div>
+</div>
+<div class="space-y-1">
+<h3 class="font-headline text-2xl font-bold text-on-surface">Live Transcription</h3>
+<p class="text-secondary font-body text-sm">Session Duration: 00:14:52</p>
+</div>
+</div>
+</div>
+<!-- Configuration & Actions -->
+<div class="space-y-8">
+<!-- Language Selector -->
+<div class="space-y-4">
+<label class="text-[10px] uppercase tracking-[0.2em] text-secondary font-bold">Input Source</label>
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-lg border-b border-outline-variant hover:bg-surface-bright transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="language">language</span>
+<div>
+<p class="text-sm font-bold text-on-surface">English (NZ)</p>
+<p class="text-[10px] text-secondary">New Zealand English Dialect</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Controls -->
+<div class="grid grid-cols-1 gap-4">
+<button class="group relative flex items-center justify-center gap-3 h-16 border border-outline px-6 rounded transition-all hover:border-primary">
+<span class="material-symbols-outlined text-on-surface" data-icon="translate">translate</span>
+<span class="font-label font-bold text-on-surface">Change Language</span>
+<div class="absolute bottom-0 left-0 w-full h-0.5 opacity-0 group-hover:opacity-100 transition-opacity rainbow-indicator"></div>
+</button>
+<button class="group relative flex items-center justify-center gap-3 h-16 border border-error/40 px-6 rounded transition-all hover:bg-error-container/20">
+<span class="material-symbols-outlined text-error" data-icon="stop_circle">stop_circle</span>
+<span class="font-label font-bold text-error">Stop Recording</span>
+</button>
+</div>
+</div>
+<!-- Real-time Stats -->
+<div class="mt-auto space-y-6 pt-8 border-t border-outline-variant/10">
+<div class="flex justify-between items-center">
+<span class="text-xs text-secondary font-medium">Confidence Score</span>
+<span class="text-xs font-bold text-on-surface">98.4%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[98%]"></div>
+</div>
+<div class="flex justify-between items-center text-[10px] text-secondary uppercase tracking-widest">
+<span>Peak Level</span>
+<span>-3.2 dB</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Mobile Bottom NavBar (Visible only on small screens) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-[#0e0e0e] flex justify-around items-center h-20 px-4 border-t border-[#1f2020]">
+<button class="flex flex-col items-center gap-1 text-[#e7e5e5]">
+<span class="material-symbols-outlined" data-icon="mic" data-weight="fill" style="font-variation-settings: 'FILL' 1;">mic</span>
+<span class="text-[10px] font-medium">Live</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#9d9e9e]">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px] font-medium">Recents</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#9d9e9e]">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+<span class="text-[10px] font-medium">Hub</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#9d9e9e]">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</nav>
+</body></html>
