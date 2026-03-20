@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/shaunnesbitt/Desktop/accessibility-work/**)",
+      "Bash(pnpm --filter api build)"
+    ]
+  }
+}

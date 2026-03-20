@@ -1,5 +1,6 @@
 export { NZ_LANGUAGES } from './nzLanguages.js'
 export type { NzLanguage } from './nzLanguages.js'
+export { RECOGNITION_LOCALES } from './recognitionLocales.js'
 
 // Domain types
 export interface Event {

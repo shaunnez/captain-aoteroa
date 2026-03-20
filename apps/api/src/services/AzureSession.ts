@@ -3,8 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { config } from '../config'
 import { supabase } from './supabase'
 import { bcp47ToTranslationCode, translationCodeToBcp47 } from './languageMap'
-import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
-import { RECOGNITION_LOCALES } from '@caption-aotearoa/shared/recognitionLocales'
+import { RECOGNITION_LOCALES, type CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 const useMock = process.env.AZURE_MOCK === 'true'
 
