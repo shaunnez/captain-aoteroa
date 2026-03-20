@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 60" fill="none">
+  <path d="M0 30 Q20 10 40 30 Q60 50 80 30 Q100 10 120 30 Q140 50 160 30 Q180 10 200 30 Q220 50 240 30 Q260 10 280 30 Q300 50 320 30 Q340 10 360 30 Q380 50 400 30" stroke="#6B2D8B" stroke-width="3" fill="none" opacity="0.3"/>
+  <path d="M0 30 Q10 20 20 30 T40 30 T60 30 T80 30 T100 30 T120 30 T140 30 T160 30 T180 30 T200 30 T220 30 T240 30 T260 30 T280 30 T300 30 T320 30 T340 30 T360 30 T380 30 T400 30" stroke="#6B2D8B" stroke-width="1.5" fill="none" opacity="0.15"/>
+  <!-- Koru spirals at intervals -->
+  <circle cx="40" cy="25" r="6" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <path d="M40 25 Q40 19 46 19" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <circle cx="120" cy="35" r="6" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <path d="M120 35 Q120 29 126 29" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <circle cx="200" cy="25" r="6" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <path d="M200 25 Q200 19 206 19" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <circle cx="280" cy="35" r="6" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <path d="M280 35 Q280 29 286 29" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <circle cx="360" cy="25" r="6" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+  <path d="M360 25 Q360 19 366 19" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.25"/>
+</svg>

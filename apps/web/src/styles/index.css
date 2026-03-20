@@ -27,3 +27,28 @@
            focus:ring-offset-1 text-brand-black;
   }
 }
+
+/* Tohu decorative pattern utilities */
+@layer utilities {
+  .tohu-border-top {
+    background-image: url('/tohu/koru-border.svg');
+    background-repeat: repeat-x;
+    background-position: top center;
+    background-size: auto 30px;
+    padding-top: 2.5rem;
+  }
+  .tohu-border-bottom {
+    background-image: url('/tohu/koru-border.svg');
+    background-repeat: repeat-x;
+    background-position: bottom center;
+    background-size: auto 30px;
+    padding-bottom: 2.5rem;
+  }
+  .tohu-divider {
+    background-image: url('/tohu/wave-divider.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    height: 2rem;
+  }
+}

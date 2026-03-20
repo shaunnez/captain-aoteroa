@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Interlocking diamond pattern -->
+  <path d="M10 60 L60 10 L110 60 L60 110 Z" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.15"/>
+  <path d="M30 60 L60 30 L90 60 L60 90 Z" stroke="#6B2D8B" stroke-width="2" fill="none" opacity="0.2"/>
+  <path d="M45 60 L60 45 L75 60 L60 75 Z" stroke="#6B2D8B" stroke-width="2.5" fill="#6B2D8B" opacity="0.1"/>
+  <!-- Small koru in center -->
+  <circle cx="60" cy="57" r="4" stroke="#6B2D8B" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <path d="M60 57 Q60 53 64 53" stroke="#6B2D8B" stroke-width="1.5" fill="none" opacity="0.3"/>
+</svg>

@@ -1,19 +1,16 @@
 import { Router } from 'express'
-import jwt from 'jsonwebtoken'
-import { config } from '../config'
 
 export const authRouter = Router()
 
-authRouter.post('/login', (req, res) => {
-  const { password } = req.body
-  if (!password) {
-    res.status(400).json({ error: 'Password required' })
+// Auth is handled directly by Supabase on the client.
+// This route is kept for potential future server-side auth needs.
+authRouter.get('/me', async (req, res) => {
+  const header = req.headers.authorization
+  if (!header?.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Not authenticated' })
     return
   }
-  if (password !== config.presenterSecret) {
-    res.status(401).json({ error: 'Invalid password' })
-    return
-  }
-  const token = jwt.sign({ role: 'organiser' }, config.jwtSecret, { expiresIn: '24h' })
-  res.json({ token })
+  // The verifyJWT middleware handles actual verification;
+  // this endpoint just confirms the token is present.
+  res.json({ authenticated: true })
 })

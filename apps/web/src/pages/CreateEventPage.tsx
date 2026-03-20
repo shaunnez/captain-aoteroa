@@ -8,6 +8,7 @@ export function CreateEventPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [eventDate, setEventDate] = useState('')
+  const [phraseList, setPhraseList] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -20,6 +21,7 @@ export function CreateEventPage() {
         title,
         description: description || null,
         event_date: eventDate ? new Date(eventDate).toISOString() : null,
+        phrase_list: phraseList.split(',').map((s) => s.trim()).filter(Boolean),
       })
       navigate(`/present/${data.code}`)
     } catch {
@@ -42,6 +44,22 @@ export function CreateEventPage() {
         <div>
           <label className="block font-medium mb-1">Description</label>
           <textarea className="input-field h-24 resize-none" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <div>
+          <label htmlFor="phraseList" className="block text-sm font-medium mb-1">
+            Custom phrases <span className="opacity-50">(optional)</span>
+          </label>
+          <textarea
+            id="phraseList"
+            value={phraseList}
+            onChange={(e) => setPhraseList(e.target.value)}
+            className="input-field"
+            rows={2}
+            placeholder="karakia, whakatau, kaiārahi — comma separated"
+          />
+          <p className="text-xs opacity-50 mt-1">
+            Helps speech recognition with te reo Māori words, names, and event-specific terms.
+          </p>
         </div>
         <div>
           <label className="block font-medium mb-1">Event date</label>

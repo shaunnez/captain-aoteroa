@@ -6,12 +6,15 @@ import { useCaptions } from '../hooks/useCaptions'
 import { CaptionDisplay } from '../components/CaptionDisplay'
 import { EventLobby } from '../components/EventLobby'
 import { LanguagePicker } from '../components/LanguagePicker'
+import { useAccessibility } from '../hooks/useAccessibility'
 import type { Event } from '@caption-aotearoa/shared'
 
 export function EventPage() {
   const { code } = useParams<{ code: string }>()
   const [selectedLocale, setSelectedLocale] = useState('en')
   const [lobbyDismissed, setLobbyDismissed] = useState(false)
+  const { fontSize, highContrast, setFontSize, toggleHighContrast } = useAccessibility()
+  const [showSettings, setShowSettings] = useState(false)
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', code],
@@ -77,7 +80,7 @@ export function EventPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${highContrast ? 'bg-[#1e1c20] text-white' : ''}`}>
       {/* Header */}
       <header className="bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
         <div>
@@ -93,12 +96,55 @@ export function EventPage() {
             </span>
           </div>
         </div>
-        {/* Language picker */}
-        <LanguagePicker
-          selectedLocale={selectedLocale}
-          onSelect={setSelectedLocale}
-        />
+        <div className="flex items-center gap-3">
+          {/* Language picker */}
+          <LanguagePicker
+            selectedLocale={selectedLocale}
+            onSelect={setSelectedLocale}
+          />
+          <button
+            onClick={() => setShowSettings((s) => !s)}
+            className="text-white opacity-80 hover:opacity-100 transition-opacity"
+            aria-label="Accessibility settings"
+            title="Accessibility settings"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
       </header>
+
+      {/* Accessibility settings panel */}
+      {showSettings && (
+        <div className={`px-6 py-4 border-b ${highContrast ? 'bg-[#2a282c] border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-3">
+              <label htmlFor="font-size" className="text-sm font-medium whitespace-nowrap">
+                Text size
+              </label>
+              <input
+                id="font-size"
+                type="range"
+                min="1.25"
+                max="3"
+                step="0.25"
+                value={fontSize}
+                onChange={(e) => setFontSize(parseFloat(e.target.value))}
+                className="w-32"
+              />
+              <span className="text-sm opacity-70 w-16">{fontSize}rem</span>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={highContrast}
+                onChange={toggleHighContrast}
+                className="w-4 h-4"
+              />
+              <span className="text-sm font-medium">High contrast</span>
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* Caption area */}
       {captionError && (
@@ -114,7 +160,8 @@ export function EventPage() {
         )}
         <CaptionDisplay
           segments={segments}
-          className="h-full bg-white border-2 border-brand-purple border-opacity-20"
+          className={`h-full border-2 ${highContrast ? 'bg-[#1e1c20] border-gray-600' : 'bg-white border-brand-purple border-opacity-20'}`}
+          style={{ fontSize: `${fontSize}rem` }}
         />
       </main>
     </div>

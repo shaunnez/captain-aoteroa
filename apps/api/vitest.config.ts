@@ -3,8 +3,6 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     env: {
-      PRESENTER_SECRET: 'test-secret',
-      JWT_SECRET: 'test-jwt-secret',
       CLIENT_URL: 'http://localhost:5173',
       SUPABASE_URL: 'http://localhost:54321',
       SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
