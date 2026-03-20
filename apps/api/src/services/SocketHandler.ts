@@ -31,24 +31,28 @@ export function setupSocketHandler(io: AppServer): void {
 
       if (!eventRow) return
 
+      // Each sequence has one row per language, so over-fetch rows and collect
+      // the most recent HISTORY_SIZE distinct sequences in JS before grouping.
       const { data } = await supabase
         .from('caption_segments')
         .select('*')
         .eq('event_id', eventRow.id)
         .eq('is_final', true)
         .order('sequence', { ascending: false })
-        .limit(HISTORY_SIZE)
+        .limit(HISTORY_SIZE * 100)
 
       if (data && data.length > 0) {
-        // Group rows by sequence into CaptionSegmentPayload format
+        // Collect the most recent HISTORY_SIZE sequences, then group their rows.
+        // Rows arrive descending by sequence so same-sequence rows are adjacent.
         const grouped = new Map<number, { id: string; segments: Record<string, string>; sequence: number }>()
         for (const row of data) {
           if (!grouped.has(row.sequence)) {
+            if (grouped.size >= HISTORY_SIZE) break
             grouped.set(row.sequence, { id: row.id, segments: {}, sequence: row.sequence })
           }
           grouped.get(row.sequence)!.segments[row.language] = row.text
         }
-        // Re-sort ascending so history arrives in chronological order
+        // Emit in chronological order
         const segments = Array.from(grouped.values())
           .sort((a, b) => a.sequence - b.sequence)
           .map((s) => ({ ...s, isFinal: true }))
