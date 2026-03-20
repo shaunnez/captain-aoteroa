@@ -7,6 +7,8 @@ import { CaptionDisplay } from '../components/CaptionDisplay'
 import { EventLobby } from '../components/EventLobby'
 import { LanguagePicker } from '../components/LanguagePicker'
 import { useAccessibility } from '../hooks/useAccessibility'
+import { useViewerCount } from '../hooks/useViewerCount'
+import { Users } from 'lucide-react'
 import type { Event } from '@caption-aotearoa/shared'
 
 export function EventPage() {
@@ -15,6 +17,7 @@ export function EventPage() {
   const [lobbyDismissed, setLobbyDismissed] = useState(false)
   const { fontSize, highContrast, setFontSize, toggleHighContrast } = useAccessibility()
   const [showSettings, setShowSettings] = useState(false)
+  const viewerCount = useViewerCount(code ?? '')
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', code],
@@ -94,6 +97,12 @@ export function EventPage() {
             <span className="text-sm opacity-80">
               {isConnected ? (event.status === 'live' ? 'Live' : 'Connected') : 'Connecting…'}
             </span>
+            {viewerCount > 0 && (
+              <span className="flex items-center gap-1 text-sm opacity-70">
+                <Users size={14} />
+                {viewerCount}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-3">
