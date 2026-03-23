@@ -72,6 +72,7 @@ describe('LanguagePickerModal', () => {
     // Must NOT show the default section labels
     expect(screen.queryByText('Instant Languages')).toBeNull()
     expect(screen.queryByText('Translated')).toBeNull()
+    expect(screen.getByText('Languages')).toBeDefined()
   })
 
   it('filters provided languages by search query', () => {
