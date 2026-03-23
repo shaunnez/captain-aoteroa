@@ -39,7 +39,7 @@
   }
 
   .dark {
-    --color-primary:                  #c7bfff;
+    --color-primary:                  #f4f1e6;
     --color-primary-container:        #311b92;
     --color-primary-fixed:            #1d1460;
     --color-primary-fixed-dim:        #150e4a;
@@ -116,6 +116,23 @@
   }
 }
 
+/* ── Dark mode component overrides ─────────────────────────── */
+.dark .btn-primary {
+  background-color: #311b92;
+  color: #ffffff;
+}
+.dark .btn-primary:hover {
+  background-color: #3d23b8;
+}
+.dark .btn-secondary {
+  color: #f4f1e6;
+  border-color: #f4f1e6;
+}
+.dark .btn-secondary:hover {
+  background-color: #311b92;
+  color: #ffffff;
+}
+
 /* ── Kowhaiwhai pattern ─────────────────────────────────── */
 @layer utilities {
   .tohu-border-top {
@@ -141,13 +158,13 @@
   }
   .caption-area {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-primary) transparent;
+    scrollbar-color: #311b92 transparent;
   }
   .caption-area::-webkit-scrollbar {
     width: 6px;
   }
   .caption-area::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary);
+    background-color: #311b92;
     border-radius: 10px;
   }
 }
