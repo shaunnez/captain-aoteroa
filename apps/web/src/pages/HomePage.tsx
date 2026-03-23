@@ -29,7 +29,7 @@ const heroVariants = {
 
 const heroChildVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
 }
 
 export function HomePage() {
@@ -132,7 +132,7 @@ export function HomePage() {
                   key={event.id}
                   initial={prefersReduced ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.05 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' as const, delay: index * 0.05 }}
                 >
                   <EventCard event={event} />
                 </motion.div>
