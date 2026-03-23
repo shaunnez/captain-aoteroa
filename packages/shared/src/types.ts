@@ -53,7 +53,7 @@ export interface ClientToServerEvents {
   'audio:chunk': (chunk: ArrayBuffer) => void
   'event:join': (code: string) => void
   'event:leave': (code: string) => void
-  'session:start': (code: string) => void
+  'session:start': (payload: { code: string; locale?: string }) => void
   'session:end': (code: string) => void
   'session:set-language': (payload: { code: string; locale: string }) => void
   'session:set-mode': (payload: { code: string; mode: 'single' | 'dual' }) => void

@@ -3,7 +3,7 @@ import { socket } from '../lib/socket'
 
 interface UseAudioCaptureReturn {
   isCapturing: boolean
-  start: () => Promise<void>
+  start: (locale?: string) => Promise<void>
   stop: () => void
   error: string | null
 }
@@ -15,7 +15,7 @@ export function useAudioCapture(eventCode: string): UseAudioCaptureReturn {
   const workletRef = useRef<AudioWorkletNode | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (locale?: string) => {
     setError(null)
     try {
       // AudioContext must be created at 16kHz to match Azure's expected format
@@ -49,8 +49,8 @@ export function useAudioCapture(eventCode: string): UseAudioCaptureReturn {
       worklet.connect(ctx.destination)
 
       if (!socket.connected) socket.connect()
-      console.log(`[audio] emitting session:start for ${eventCode}`)
-      socket.emit('session:start', eventCode)
+      console.log(`[audio] emitting session:start for ${eventCode} locale=${locale ?? 'default'}`)
+      socket.emit('session:start', { code: eventCode, locale })
       setIsCapturing(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Microphone access failed')

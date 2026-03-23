@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft, Pencil, Check, X, Square } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { socket } from '../lib/socket'
 import { useAudioCapture } from '../hooks/useAudioCapture'
@@ -23,6 +23,7 @@ const PRESENTER_LOCALES: Record<string, string> = { ...RECOGNITION_LOCALES, mi: 
 
 export function PresentPage() {
   const { code } = useParams<{ code: string }>()
+  const queryClient = useQueryClient()
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', code],
     queryFn: () => api.get<Event>(`/api/events/${code}`).then((r) => r.data),
@@ -34,21 +35,41 @@ export function PresentPage() {
   const [isDualMode, setIsDualMode] = useState(false)
   const [langPickerOpen, setLangPickerOpen] = useState(false)
 
+  // Inline editing state
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editingDesc, setEditingDesc] = useState(false)
+  const [editDesc, setEditDesc] = useState('')
+  const [editingDate, setEditingDate] = useState(false)
+  const [editDate, setEditDate] = useState('')
+
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
   const viewerCount = useViewerCount(code ?? '')
   const { segments } = useCaptions(code ?? '', speakerLocale ?? 'en-NZ')
+
+  const updateEvent = useMutation({
+    mutationFn: (patch: Partial<Pick<Event, 'title' | 'description' | 'event_date'>>) =>
+      api.patch(`/api/events/${code}`, patch).then((r) => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['event', code] }),
+  })
 
   const hasBilingual =
     event?.languages.includes('en') && event?.languages.includes('mi')
 
   async function handleStart() {
     await api.patch(`/api/events/${code}/status`, { status: 'live' })
-    await start()
+    await start(speakerLocale)
   }
 
-  async function handleStop() {
+  function handleStop() {
+    // Just stop the audio capture — does NOT end the event
+    stop()
+  }
+
+  async function handleEndSession() {
     stop()
     await api.patch(`/api/events/${code}/status`, { status: 'ended' })
+    navigate('/dashboard')
   }
 
   function handleLanguageChange(azureCode: string) {
@@ -70,10 +91,8 @@ export function PresentPage() {
   function handleSpeakerSelect(langCode: string) {
     setLangPickerOpen(false)
     if (langCode === 'dual') {
-      // Only toggle on if not already in dual mode — selecting it again is a no-op
       if (!isDualMode) handleToggleDual()
     } else {
-      // handleLanguageChange already exits dual mode internally if needed
       handleLanguageChange(langCode)
     }
   }
@@ -88,7 +107,6 @@ export function PresentPage() {
 
   const speakerLanguages = event.languages.filter((l) => l in PRESENTER_LOCALES)
 
-  // Build the language list for the modal: event speaker languages + bilingual option
   const speakerLangList: NzLanguage[] = [
     ...speakerLanguages.map((code) => ({
       code,
@@ -100,7 +118,6 @@ export function PresentPage() {
       : []),
   ]
 
-  // The currently active code shown on the trigger pill
   const activeSpeakerCode: string = isDualMode
     ? 'dual'
     : (Object.keys(PRESENTER_LOCALES).find(
@@ -108,6 +125,18 @@ export function PresentPage() {
       ) ?? speakerLanguages[0] ?? 'en')
 
   const activeLang = speakerLangList.find((l) => l.code === activeSpeakerCode)
+
+  const formattedDate = event.event_date
+    ? new Date(event.event_date).toLocaleDateString('en-NZ', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      })
+    : null
+
+  // ISO-local string for datetime-local input (strip seconds/ms)
+  const dateForInput = event.event_date
+    ? new Date(event.event_date).toISOString().slice(0, 16)
+    : ''
 
   return (
     <DashboardShell
@@ -123,12 +152,139 @@ export function PresentPage() {
       }
       left={
         <div className="flex flex-col gap-5 h-full">
-          {/* Event info */}
+          {/* Editable event title */}
           <div>
-            <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] leading-snug">
-              {event.title}
-            </h2>
-            <div className="flex items-center gap-2 mt-2">
+            {editingTitle ? (
+              <div className="flex items-start gap-1">
+                <input
+                  autoFocus
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="flex-1 font-serif text-lg font-semibold bg-transparent border-b border-[var(--color-primary)]
+                             text-[var(--color-on-surface)] outline-none leading-snug"
+                />
+                <button
+                  onClick={() => {
+                    updateEvent.mutate({ title: editTitle })
+                    setEditingTitle(false)
+                  }}
+                  className="p-1 text-[var(--color-primary)] hover:opacity-80"
+                  aria-label="Save title"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  onClick={() => setEditingTitle(false)}
+                  className="p-1 text-[var(--color-on-surface-variant)] hover:opacity-80"
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-start gap-1">
+                <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] leading-snug flex-1">
+                  {event.title}
+                </h2>
+                <button
+                  onClick={() => { setEditTitle(event.title); setEditingTitle(true) }}
+                  className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
+                  aria-label="Edit title"
+                >
+                  <Pencil size={13} />
+                </button>
+              </div>
+            )}
+
+            {/* Editable description */}
+            {editingDesc ? (
+              <div className="flex items-start gap-1 mt-2">
+                <textarea
+                  autoFocus
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  rows={2}
+                  className="flex-1 text-sm bg-transparent border-b border-[var(--color-primary)]
+                             text-[var(--color-on-surface-variant)] outline-none resize-none"
+                />
+                <button
+                  onClick={() => {
+                    updateEvent.mutate({ description: editDesc })
+                    setEditingDesc(false)
+                  }}
+                  className="p-1 text-[var(--color-primary)] hover:opacity-80"
+                  aria-label="Save description"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  onClick={() => setEditingDesc(false)}
+                  className="p-1 text-[var(--color-on-surface-variant)] hover:opacity-80"
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-start gap-1 mt-1">
+                <p className="text-sm text-[var(--color-on-surface-variant)] flex-1">
+                  {event.description || <span className="opacity-40 italic">No description</span>}
+                </p>
+                <button
+                  onClick={() => { setEditDesc(event.description ?? ''); setEditingDesc(true) }}
+                  className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
+                  aria-label="Edit description"
+                >
+                  <Pencil size={13} />
+                </button>
+              </div>
+            )}
+
+            {/* Editable date */}
+            {editingDate ? (
+              <div className="flex items-center gap-1 mt-2">
+                <input
+                  autoFocus
+                  type="datetime-local"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  className="flex-1 text-xs bg-transparent border-b border-[var(--color-primary)]
+                             text-[var(--color-on-surface-variant)] outline-none"
+                />
+                <button
+                  onClick={() => {
+                    updateEvent.mutate({ event_date: editDate ? new Date(editDate).toISOString() : undefined })
+                    setEditingDate(false)
+                  }}
+                  className="p-1 text-[var(--color-primary)] hover:opacity-80"
+                  aria-label="Save date"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  onClick={() => setEditingDate(false)}
+                  className="p-1 text-[var(--color-on-surface-variant)] hover:opacity-80"
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-center gap-1 mt-2">
+                <p className="text-xs text-[var(--color-on-surface-variant)] flex-1">
+                  {formattedDate ?? <span className="opacity-40 italic">No date set</span>}
+                </p>
+                <button
+                  onClick={() => { setEditDate(dateForInput); setEditingDate(true) }}
+                  className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
+                  aria-label="Edit date"
+                >
+                  <Pencil size={13} />
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 mt-3">
               <span className={`w-2 h-2 rounded-full shrink-0 ${
                 isCapturing ? 'bg-red-500 animate-pulse' : 'bg-[var(--color-outline)]'
               }`} />
@@ -184,15 +340,26 @@ export function PresentPage() {
       }
       main={
         <div className="flex flex-col gap-8">
-          <MicControl
-            isCapturing={isCapturing}
-            onStart={handleStart}
-            onStop={handleStop}
-            error={audioError}
-          />
+          <div className="flex flex-col items-center gap-6">
+            <MicControl
+              isCapturing={isCapturing}
+              onStart={handleStart}
+              onStop={handleStop}
+              error={audioError}
+            />
+            <button
+              onClick={handleEndSession}
+              className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium
+                         border border-[var(--color-error)] text-[var(--color-error)]
+                         hover:bg-[var(--color-error)] hover:text-white transition-colors"
+            >
+              <Square size={14} />
+              End Session
+            </button>
+          </div>
           <div>
             <p className="text-xs font-medium text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-2">
-              Live preview
+              Live transcript
             </p>
             <CaptionDisplay
               segments={segments}

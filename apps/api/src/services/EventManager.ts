@@ -5,6 +5,7 @@ import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 interface SessionOptions {
   languages: string[]
+  speakerLocale?: string
 }
 
 type OnSegment = (payload: CaptionSegmentPayload) => void
@@ -29,27 +30,43 @@ class EventManagerClass {
   ): Promise<void> {
     if (this.sessions.has(code)) await this.end(code)
 
-    const session = new AzureSession({
-      eventCode: code,
-      languages: options.languages,
-      speakerLocale: 'en-NZ',
-      onSegment,
-      onError: async (message, fatal) => {
-        onError(message, fatal)
-        if (!fatal) {
-          try {
-            await session.restart()
-          } catch (e) {
-            onError(`Restart failed: ${e}`, true)
+    let session: AzureSession | PapaReoSession
+
+    if (options.speakerLocale === 'mi-NZ') {
+      const papaReoSession = new PapaReoSession({
+        eventCode: code,
+        onSegment,
+        onError: (message, fatal) => {
+          onError(message, fatal)
+          if (fatal) this.sessions.delete(code)
+        },
+      })
+      await papaReoSession.start()
+      session = papaReoSession
+    } else {
+      const azureSession = new AzureSession({
+        eventCode: code,
+        languages: options.languages,
+        speakerLocale: options.speakerLocale ?? 'en-NZ',
+        onSegment,
+        onError: async (message, fatal) => {
+          onError(message, fatal)
+          if (!fatal) {
+            try {
+              await azureSession.restart()
+            } catch (e) {
+              onError(`Restart failed: ${e}`, true)
+              this.sessions.delete(code)
+            }
+          } else {
             this.sessions.delete(code)
           }
-        } else {
-          this.sessions.delete(code)
-        }
-      },
-    })
+        },
+      })
+      await azureSession.start()
+      session = azureSession
+    }
 
-    await session.start()
     this.sessions.set(code, { session, options, eventCode: code, onSegment, onError })
   }
 

@@ -84,8 +84,10 @@ export function setupSocketHandler(io: AppServer): void {
     })
 
     // Organiser starts a captioning session
-    socket.on('session:start', async (code) => {
-      console.log(`[socket] session:start code=${code} socketId=${socket.id}`)
+    socket.on('session:start', async (payload) => {
+      const code = typeof payload === 'string' ? payload : payload.code
+      const locale = typeof payload === 'string' ? undefined : payload.locale
+      console.log(`[socket] session:start code=${code} locale=${locale ?? 'default'} socketId=${socket.id}`)
       const authorised = isAuthorised(socket)
       console.log(`[socket] session:start auth=${authorised}`)
       if (!authorised) {
@@ -113,7 +115,7 @@ export function setupSocketHandler(io: AppServer): void {
       try {
         await EventManager.start(
           code,
-          { languages },
+          { languages, speakerLocale: locale ?? undefined },
           (payload) => {
             console.log(`[socket] emitting caption:segment seq=${payload.sequence} final=${payload.isFinal}`)
             io.to(code).emit('caption:segment', payload)
