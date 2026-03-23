@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Pencil, Check, X, Square, ExternalLink, CheckCircle, Sparkles, Loader2 } from 'lucide-react'
+import { ArrowLeft, Pencil, Check, X, Square, ExternalLink, CheckCircle, Sparkles, Loader2, MessageSquare } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { DarkModeToggle } from '../components/DarkModeToggle'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
@@ -12,9 +13,11 @@ import { MicControl } from '../components/MicControl'
 import { QRDisplay } from '../components/QRDisplay'
 import { TranscriptDownload } from '../components/TranscriptDownload'
 import { DashboardShell } from '../components/DashboardShell'
+import { QAPanel } from '../components/QAPanel'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { LanguagePickerModal } from '../components/LanguagePickerModal'
 import { useViewerCount } from '../hooks/useViewerCount'
+import { useQA } from '../hooks/useQA'
 import type { Event } from '@caption-aotearoa/shared'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 import type { NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
@@ -47,6 +50,11 @@ export function PresentPage() {
 
   const [sessionEnded, setSessionEnded] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [qaSheetOpen, setQaSheetOpen] = useState(false)
+  const [hasNewQuestion, setHasNewQuestion] = useState(false)
+  const { pendingQuestions } = useQA(code ?? '')
+  const pendingCount = pendingQuestions.length
+  const prevPendingRef = useRef(0)
 
   const { data: transcriptData, refetch: refetchTranscript } = useQuery({
     queryKey: ['transcript', code],
@@ -65,6 +73,13 @@ export function PresentPage() {
   useEffect(() => {
     if (event?.status === 'ended') setSessionEnded(true)
   }, [event?.status])
+
+  useEffect(() => {
+    if (pendingCount > prevPendingRef.current && !qaSheetOpen) {
+      setHasNewQuestion(true)
+    }
+    prevPendingRef.current = pendingCount
+  }, [pendingCount, qaSheetOpen])
 
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
   const viewerCount = useViewerCount(code ?? '')
@@ -579,6 +594,67 @@ export function PresentPage() {
         </div>
       }
     />
+
+      {/* Mobile: floating QA button — hidden on xl+ where right sidebar shows */}
+      <div className="xl:hidden fixed bottom-6 right-4 z-50">
+        <button
+          onClick={() => { setQaSheetOpen(true); setHasNewQuestion(false) }}
+          aria-label="View audience questions"
+          className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-xl
+                      bg-[var(--color-primary)] text-[var(--color-on-primary)]
+                      transition-transform active:scale-95
+                      ${hasNewQuestion ? 'animate-pulse' : ''}`}
+        >
+          <MessageSquare size={22} />
+          {pendingCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1
+                             flex items-center justify-center rounded-full
+                             text-[11px] font-bold leading-none
+                             bg-[var(--color-error)] text-white">
+              {pendingCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile: QA bottom sheet */}
+      <AnimatePresence>
+        {qaSheetOpen && (
+          <>
+            <motion.div
+              className="xl:hidden fixed inset-0 z-40 bg-black/40"
+              onClick={() => setQaSheetOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.div
+              className="xl:hidden fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto
+                         bg-[var(--color-surface-container)] rounded-t-2xl p-4 shadow-2xl"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-[var(--color-on-surface)]">
+                  Audience Questions
+                </h2>
+                <button
+                  onClick={() => setQaSheetOpen(false)}
+                  aria-label="Close"
+                  className="p-1 rounded-lg text-[var(--color-on-surface-variant)]
+                             hover:bg-[var(--color-surface-container-high)] transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <QAPanel code={code ?? ''} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }

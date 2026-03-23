@@ -10,6 +10,7 @@ interface AskQuestionDrawerProps {
 }
 
 const MAX_LENGTH = 280
+const QUICK_EMOJIS = ['👍', '❤️', '😮', '😂', '🎉', '👏']
 
 export function AskQuestionDrawer({ isOpen, onClose, onSubmit, language }: AskQuestionDrawerProps) {
   const [body, setBody] = useState('')
@@ -54,7 +55,7 @@ export function AskQuestionDrawer({ isOpen, onClose, onSubmit, language }: AskQu
             role="dialog"
             aria-modal="true"
             aria-label="Ask a question"
-            className="fixed bottom-0 left-0 right-0 z-50
+            className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto
                        bg-[var(--color-surface-container)] rounded-t-2xl p-6
                        shadow-2xl"
             initial={{ y: '100%' }}
@@ -82,6 +83,22 @@ export function AskQuestionDrawer({ isOpen, onClose, onSubmit, language }: AskQu
               </button>
             </div>
 
+            {/* Quick emoji reactions */}
+            <div className="flex gap-2 mb-3">
+              {QUICK_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setBody((prev) => prev + emoji)}
+                  className="text-xl leading-none p-1.5 rounded-lg
+                             hover:bg-[var(--color-surface-container-high)] transition-colors"
+                  aria-label={`Add ${emoji}`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
             {/* Textarea */}
             <textarea
               value={body}
@@ -89,7 +106,7 @@ export function AskQuestionDrawer({ isOpen, onClose, onSubmit, language }: AskQu
               onKeyDown={handleKeyDown}
               placeholder="Type your question…"
               rows={4}
-              className="w-full resize-none rounded-xl border px-4 py-3 text-sm
+              className="w-full resize-none rounded-xl border px-4 py-3 text-base
                          bg-[var(--color-surface-container-low)]
                          border-[var(--color-outline-variant)]
                          text-[var(--color-on-surface)]
