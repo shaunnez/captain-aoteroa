@@ -67,14 +67,14 @@ export function PresentPage() {
     if (code) socket.emit('session:set-mode', { code, mode: newMode ? 'dual' : 'single' })
   }
 
-  function handleSpeakerSelect(code: string) {
+  function handleSpeakerSelect(langCode: string) {
     setLangPickerOpen(false)
-    if (code === 'dual') {
+    if (langCode === 'dual') {
       // Only toggle on if not already in dual mode — selecting it again is a no-op
       if (!isDualMode) handleToggleDual()
     } else {
       // handleLanguageChange already exits dual mode internally if needed
-      handleLanguageChange(code)
+      handleLanguageChange(langCode)
     }
   }
 
