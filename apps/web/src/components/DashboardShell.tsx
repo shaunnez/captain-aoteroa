@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 interface DashboardShellProps {
   left: React.ReactNode
@@ -12,6 +13,9 @@ interface DashboardShellProps {
 export function DashboardShell({ left, main, right, headerActions, fillMain }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const closeSidebar = useCallback(() => setSidebarOpen(false), [])
+  const prefersReduced = useReducedMotion()
+
+  const reducedDuration = { duration: 0 }
 
   return (
     <div className={`${fillMain ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col bg-[var(--color-background)]`}>
@@ -44,20 +48,43 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar backdrop (mobile) */}
-        {sidebarOpen && (
-          <div
-            className="lg:hidden fixed inset-0 z-30 bg-black/40"
-            onClick={closeSidebar}
-          />
-        )}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div
+              className="lg:hidden fixed inset-0 z-30 bg-black/40"
+              onClick={closeSidebar}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={prefersReduced ? reducedDuration : { duration: 0.2 }}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Left sidebar — slide-over on mobile, static on lg+ */}
-        <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-72 shrink-0 flex flex-col gap-6
+        <AnimatePresence>
+          {sidebarOpen ? (
+            <motion.aside
+              key="mobile-sidebar"
+              className="fixed lg:hidden inset-y-0 left-0 z-40 w-72 shrink-0 flex flex-col gap-6
+                        bg-[var(--color-surface-container-low)]
+                        border-r border-[var(--color-outline-variant)]
+                        p-5 overflow-y-auto"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={prefersReduced ? reducedDuration : { type: 'spring', damping: 25, stiffness: 300 }}
+            >
+              {left}
+            </motion.aside>
+          ) : null}
+        </AnimatePresence>
+
+        {/* Left sidebar — static on lg+ (always visible) */}
+        <aside className="hidden lg:flex static inset-y-0 left-0 z-40 w-72 shrink-0 flex-col gap-6
                           bg-[var(--color-surface-container-low)]
                           border-r border-[var(--color-outline-variant)]
-                          p-5 overflow-y-auto
-                          transition-transform duration-200 ease-in-out
-                          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+                          p-5 overflow-y-auto">
           {left}
         </aside>
 
