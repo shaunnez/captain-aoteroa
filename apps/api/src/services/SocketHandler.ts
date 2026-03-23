@@ -64,6 +64,16 @@ export function setupSocketHandler(io: AppServer): void {
 
       if (!eventRow) return
 
+      // Emit Q&A history for reconnects/late joiners
+      const { data: qaQuestions } = await supabase
+        .from('qa_questions')
+        .select('*')
+        .eq('event_id', eventRow.id)
+        .neq('status', 'dismissed')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      socket.emit('qa:history', { questions: qaQuestions || [] })
+
       // Each sequence has one row per language, so over-fetch rows and collect
       // the most recent HISTORY_SIZE distinct sequences in JS before grouping.
       const { data } = await supabase
@@ -182,6 +192,69 @@ export function setupSocketHandler(io: AppServer): void {
       console.log(`[socket] session:set-mode code=${code} mode=${mode}`)
       if (!isAuthorised(socket)) return
       await EventManager.setMode(code, mode)
+    })
+
+    // Audience submits a question
+    socket.on('qa:submit', async ({ code, body, language }) => {
+      if (!body?.trim() || body.length > 280) return
+
+      const { data: event } = await supabase.from('events').select('id, languages').eq('code', code).single()
+      if (!event) return
+
+      // Insert question
+      const { data: question, error } = await supabase
+        .from('qa_questions')
+        .insert({ event_id: event.id, body: body.trim(), language })
+        .select()
+        .single()
+      if (error || !question) return
+
+      // Translate to event languages (async, don't block)
+      try {
+        const targetLangs = (event.languages || []).filter((l: string) => l !== language).map((l: string) => l.split('-')[0])
+        if (targetLangs.length > 0 && config.azure?.speechKey) {
+          const res = await fetch(
+            `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${language.split('-')[0]}&to=${targetLangs.join('&to=')}`,
+            {
+              method: 'POST',
+              headers: {
+                'Ocp-Apim-Subscription-Key': config.azure.speechKey,
+                'Ocp-Apim-Subscription-Region': config.azure.speechRegion,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify([{ Text: body.trim() }]),
+            }
+          )
+          if (res.ok) {
+            const translations: Record<string, string> = {}
+            const data = await res.json()
+            for (const t of data[0]?.translations || []) {
+              translations[t.to] = t.text
+            }
+            await supabase.from('qa_questions').update({ translations }).eq('id', question.id)
+            question.translations = translations
+          }
+        }
+      } catch (e) {
+        console.error('Q&A translation failed:', e)
+      }
+
+      io.to(code).emit('qa:new', { question })
+    })
+
+    // Organiser moderates a question (pin or dismiss)
+    socket.on('qa:moderate', async ({ code, questionId, status }) => {
+      if (!isAuthorised(socket)) return
+
+      const { data: question, error } = await supabase
+        .from('qa_questions')
+        .update({ status })
+        .eq('id', questionId)
+        .select()
+        .single()
+      if (error || !question) return
+
+      io.to(code).emit('qa:update', { question })
     })
 
     // Incoming PCM audio chunk from organiser

@@ -42,6 +42,16 @@ export interface CaptionErrorPayload {
   fatal?: boolean
 }
 
+export interface QaQuestion {
+  id: string
+  event_id: string
+  body: string
+  language: string
+  translations: Record<string, string>
+  status: 'pending' | 'pinned' | 'dismissed'
+  created_at: string
+}
+
 // Socket.io event map (used for typing socket.on/emit)
 export interface ServerToClientEvents {
   'caption:segment': (payload: CaptionSegmentPayload) => void
@@ -49,6 +59,9 @@ export interface ServerToClientEvents {
   'caption:error': (payload: CaptionErrorPayload) => void
   'viewer:count': (payload: { count: number }) => void
   'audio:tts': (payload: { language: string; sequence: number; data: ArrayBuffer }) => void
+  'qa:new': (payload: { question: QaQuestion }) => void
+  'qa:update': (payload: { question: QaQuestion }) => void
+  'qa:history': (payload: { questions: QaQuestion[] }) => void
 }
 
 export interface ClientToServerEvents {
@@ -61,4 +74,6 @@ export interface ClientToServerEvents {
   'session:set-mode': (payload: { code: string; mode: 'single' | 'dual' }) => void
   'audio:subscribe': (payload: { code: string; language: string }) => void
   'audio:unsubscribe': (payload: { code: string; language: string }) => void
+  'qa:submit': (payload: { code: string; body: string; language: string }) => void
+  'qa:moderate': (payload: { code: string; questionId: string; status: 'pinned' | 'dismissed' }) => void
 }
