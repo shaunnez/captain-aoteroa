@@ -128,7 +128,7 @@ export function TranscriptDownload({ eventCode, eventTitle, eventDate }: Transcr
           <p className="text-[var(--color-primary)] text-xs mt-1">Processing — check back shortly.</p>
         )}
         {transcript.status === 'failed' && (
-          <p className="text-brand-error text-xs mt-1">Processing failed. An organiser can retry from the dashboard.</p>
+          <p className="text-[var(--color-error)] text-xs mt-1">Processing failed. An organiser can retry from the dashboard.</p>
         )}
       </div>
     )
