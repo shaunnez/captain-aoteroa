@@ -104,7 +104,7 @@ export function EventPage() {
             </span>
           </button>
           <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
-            Caption Aotearoa
+            HearMe NZ
           </span>
           <div className="hidden md:block w-px h-5 bg-[var(--color-outline-variant)]" />
           {event.status === 'ended' ? (

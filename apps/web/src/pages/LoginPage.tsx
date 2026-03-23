@@ -72,7 +72,7 @@ export function LoginPage() {
           {/* Brand */}
           <div className="text-center mb-8">
             <span className="font-serif text-2xl font-bold text-[var(--color-primary)]">
-              Caption Aotearoa
+              HearMe NZ
             </span>
             <p className="mt-1 text-sm text-[var(--color-on-surface-variant)]">
               Organiser login

@@ -31,7 +31,7 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
             </span>
           </button>
           <span className="font-serif text-lg font-bold text-[var(--color-on-surface)]">
-            Caption Aotearoa
+            HearMe NZ
           </span>
         </div>
         {headerActions && (
