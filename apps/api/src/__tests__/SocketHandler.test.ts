@@ -1,6 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock dependencies
+vi.mock('../config', () => ({
+  config: { azure: { speechKey: 'test-key', speechRegion: 'test-region' } },
+}))
+
+let mockAudioSubsInstance: {
+  subscribe: ReturnType<typeof vi.fn>
+  unsubscribe: ReturnType<typeof vi.fn>
+  disconnectAll: ReturnType<typeof vi.fn>
+  getSubscribers: ReturnType<typeof vi.fn>
+}
+vi.mock('../services/AudioSubscriptionManager', () => ({
+  AudioSubscriptionManager: vi.fn(() => {
+    mockAudioSubsInstance = {
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+      disconnectAll: vi.fn(),
+      getSubscribers: vi.fn().mockReturnValue(new Map()),
+    }
+    return mockAudioSubsInstance
+  }),
+}))
+
+vi.mock('../services/TtsService', () => ({
+  TtsService: vi.fn(() => ({ synthesize: vi.fn().mockResolvedValue(Buffer.from('audio')) })),
+}))
+
 vi.mock('../services/supabase', () => ({
   supabase: {
     from: vi.fn(() => ({
@@ -101,5 +127,29 @@ describe('SocketHandler', () => {
     mockIO._connect(mockSocket)
     await mockSocket._handlers['session:start']('ABC123')
     expect(mockSocket.emit).toHaveBeenCalledWith('caption:error', expect.objectContaining({ fatal: true }))
+  })
+
+  it('registers audio:subscribe and audio:unsubscribe handlers on connection', () => {
+    mockIO._connect(mockSocket)
+    expect(mockSocket.on).toHaveBeenCalledWith('audio:subscribe', expect.any(Function))
+    expect(mockSocket.on).toHaveBeenCalledWith('audio:unsubscribe', expect.any(Function))
+  })
+
+  it('calls audioSubs.subscribe with eventCode, language, and socketId', () => {
+    mockIO._connect(mockSocket)
+    mockSocket._handlers['audio:subscribe']({ code: 'EVT1', language: 'mi' })
+    expect(mockAudioSubsInstance.subscribe).toHaveBeenCalledWith('EVT1', 'mi', 'test-socket-id')
+  })
+
+  it('calls audioSubs.unsubscribe with eventCode, language, and socketId', () => {
+    mockIO._connect(mockSocket)
+    mockSocket._handlers['audio:unsubscribe']({ code: 'EVT1', language: 'mi' })
+    expect(mockAudioSubsInstance.unsubscribe).toHaveBeenCalledWith('EVT1', 'mi', 'test-socket-id')
+  })
+
+  it('calls audioSubs.disconnectAll with socketId on disconnecting', async () => {
+    mockIO._connect(mockSocket)
+    await mockSocket._handlers['disconnecting']()
+    expect(mockAudioSubsInstance.disconnectAll).toHaveBeenCalledWith('test-socket-id')
   })
 })
