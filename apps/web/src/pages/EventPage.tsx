@@ -5,7 +5,8 @@ import { api } from '../lib/api'
 import { useCaptions } from '../hooks/useCaptions'
 import { CaptionDisplay } from '../components/CaptionDisplay'
 import { EventLobby } from '../components/EventLobby'
-import { LanguagePicker } from '../components/LanguagePicker'
+import { LanguagePickerModal } from '../components/LanguagePickerModal'
+import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { TranscriptDownload } from '../components/TranscriptDownload'
 import { useAccessibility } from '../hooks/useAccessibility'
@@ -18,6 +19,7 @@ export function EventPage() {
   const navigate = useNavigate()
   const [selectedLocale, setSelectedLocale] = useState('en')
   const [lobbyDismissed, setLobbyDismissed] = useState(false)
+  const [langPickerOpen, setLangPickerOpen] = useState(false)
   const { fontSize, setFontSize } = useAccessibility()
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
@@ -182,16 +184,39 @@ export function EventPage() {
 
           {/* Language & session */}
           <div className="mt-auto pt-6 border-t border-[var(--color-outline-variant)]">
-            <div className="bg-[var(--color-primary)]/5 border border-[var(--color-outline-variant)]
+            <div className="bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)]
                             rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-sm text-[var(--color-primary)]">translate</span>
-                <LanguagePicker selectedLocale={selectedLocale} onSelect={setSelectedLocale} />
-              </div>
+              <button
+                onClick={() => setLangPickerOpen(true)}
+                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                           bg-[var(--color-surface-container-high)]
+                           text-[var(--color-on-surface)]
+                           border border-[var(--color-outline-variant)]
+                           hover:bg-[var(--color-surface-container-highest)] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px] text-[var(--color-on-surface-variant)]">translate</span>
+                <span className="flex-1 text-left truncate">
+                  {(() => {
+                    const lang = NZ_LANGUAGES.find((l) => l.code === selectedLocale)
+                    return lang ? `${lang.flag ?? ''} ${lang.label}`.trim() : selectedLocale
+                  })()}
+                </span>
+                <svg className="w-3 h-3 opacity-60 shrink-0" viewBox="0 0 12 12" fill="none">
+                  <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
               <p className="font-mono text-xs text-[var(--color-on-surface-variant)]">#{event.code}</p>
             </div>
           </div>
         </aside>
+
+        {/* Language picker modal — rendered outside the sidebar so it covers full screen */}
+        <LanguagePickerModal
+          isOpen={langPickerOpen}
+          onClose={() => setLangPickerOpen(false)}
+          selectedLocale={selectedLocale}
+          onSelect={setSelectedLocale}
+        />
 
         {/* Caption canvas */}
         <section className="flex-1 min-w-0 relative flex flex-col p-8 md:p-12 overflow-hidden">
