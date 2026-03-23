@@ -1,34 +1,122 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ──────────────────────────────────────── */
 @layer base {
+  :root {
+    /* Primary */
+    --color-primary:                  #1c0070;
+    --color-primary-container:        #311b92;
+    --color-primary-fixed:            #e5deff;
+    --color-primary-fixed-dim:        #c7bfff;
+    --color-inverse-primary:          #c7bfff;
+    /* Secondary */
+    --color-secondary:                #14696d;
+    --color-secondary-container:      #a3ecf0;
+    /* Tertiary */
+    --color-tertiary:                 #00241d;
+    --color-tertiary-container:       #003c31;
+    /* Surfaces */
+    --color-background:               #fdf9ee;
+    --color-surface:                  #fdf9ee;
+    --color-surface-dim:              #dddacf;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low:    #f7f3e8;
+    --color-surface-container:        #f1eee3;
+    --color-surface-container-high:   #ece8dd;
+    --color-surface-container-highest:#e6e2d8;
+    /* Text */
+    --color-on-surface:               #1c1c15;
+    --color-on-surface-variant:       #4a4459;
+    /* Borders */
+    --color-outline:                  #787584;
+    --color-outline-variant:          #c9c4d5;
+    /* Error */
+    --color-error:                    #ba1a1a;
+  }
+
+  .dark {
+    --color-primary:                  #c7bfff;
+    --color-primary-container:        #311b92;
+    --color-primary-fixed:            #1d1460;
+    --color-primary-fixed-dim:        #150e4a;
+    --color-inverse-primary:          #1c0070;
+    --color-secondary:                #8ad3d7;
+    --color-secondary-container:      #00474b;
+    --color-tertiary:                 #94d3c1;
+    --color-tertiary-container:       #003c31;
+    --color-background:               #0a0a0c;
+    --color-surface:                  #0a0a0c;
+    --color-surface-dim:              #0a0a0c;
+    --color-surface-container-lowest: #000000;
+    --color-surface-container-low:    #0f0f12;
+    --color-surface-container:        #141417;
+    --color-surface-container-high:   #1c1c21;
+    --color-surface-container-highest:#1c1c21;
+    --color-on-surface:               #f4f1e6;
+    --color-on-surface-variant:       #a19fb1;
+    --color-outline:                  #787584;
+    --color-outline-variant:          #474553;
+    --color-error:                    #ffb4ab;
+  }
+
   body {
-    @apply bg-brand-sand text-brand-black font-sans;
+    @apply bg-[var(--color-background)] text-[var(--color-on-surface)] font-sans;
+  }
+
+  /* Material Symbols helper */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }
 
-/* Pill button variants */
+/* ── Shared component classes ───────────────────────────── */
 @layer components {
   .btn-primary {
-    @apply bg-brand-purple text-white rounded-pill px-6 py-2.5 font-medium
-           hover:bg-brand-purple-dark transition-colors focus:outline-none
-           focus:ring-2 focus:ring-brand-purple focus:ring-offset-2;
+    @apply bg-[var(--color-primary)] text-white rounded-pill px-6 py-2.5 font-medium
+           hover:opacity-90 transition-opacity focus:outline-none
+           focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2;
   }
+
   .btn-secondary {
-    @apply bg-brand-sand text-brand-purple border-2 border-brand-purple
-           rounded-pill px-6 py-2.5 font-medium hover:bg-brand-purple
+    @apply bg-transparent text-[var(--color-primary)] border-2 border-[var(--color-primary)]
+           rounded-pill px-6 py-2.5 font-medium hover:bg-[var(--color-primary)]
            hover:text-white transition-colors;
   }
+
   .input-field {
-    @apply bg-brand-sand border-2 border-brand-purple rounded-lg px-4 py-2.5
-           w-full focus:outline-none focus:ring-2 focus:ring-brand-purple
-           focus:ring-offset-1 text-brand-black;
+    @apply bg-[var(--color-surface-container-low)] border border-[var(--color-outline-variant)]
+           rounded-lg px-4 py-2.5 w-full text-[var(--color-on-surface)]
+           placeholder:text-[var(--color-on-surface-variant)]
+           focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]
+           focus:border-[var(--color-primary)];
+  }
+
+  /* Glass nav */
+  .nav-glass {
+    @apply backdrop-blur-nav border-b border-[var(--color-outline-variant)];
+    background: rgba(253, 249, 238, 0.75);
+  }
+  .dark .nav-glass {
+    background: rgba(10, 10, 12, 0.8);
   }
 }
 
-/* Tohu decorative pattern utilities */
+/* ── Kowhaiwhai pattern ─────────────────────────────────── */
 @layer utilities {
   .tohu-border-top {
     background-image: url('/tohu/koru-border.svg');
@@ -50,5 +138,16 @@
     background-position: center;
     background-size: 100% 100%;
     height: 2rem;
+  }
+  .caption-area {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) transparent;
+  }
+  .caption-area::-webkit-scrollbar {
+    width: 6px;
+  }
+  .caption-area::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary);
+    border-radius: 10px;
   }
 }
