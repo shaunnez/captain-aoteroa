@@ -43,7 +43,7 @@ export function HomePage() {
       <header className="sticky top-0 z-50 nav-glass">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
           <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
-            Caption Aotearoa
+            HearMe NZ
           </span>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[var(--color-on-surface-variant)]">
             <a href="#events" className="hover:text-[var(--color-primary)] transition-colors">Events</a>
@@ -141,7 +141,7 @@ export function HomePage() {
       {/* ── Footer ── */}
       <footer id="contact" className="py-10 px-6 border-t border-[var(--color-outline-variant)]">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[var(--color-on-surface-variant)]">
-          <span className="font-serif font-semibold text-[var(--color-primary)]">Caption Aotearoa</span>
+          <span className="font-serif font-semibold text-[var(--color-primary)]">HearMe NZ</span>
           <div className="flex gap-6">
             <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Privacy</a>
             <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Accessibility</a>
