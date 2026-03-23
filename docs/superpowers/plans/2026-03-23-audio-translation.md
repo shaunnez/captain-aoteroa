@@ -414,42 +414,67 @@ The `TtsService` and `AudioSubscriptionManager` are instantiated once at the top
 cat apps/api/src/__tests__/SocketHandler.test.ts
 ```
 
-- [ ] **Step 2: Add the new socket events to the existing SocketHandler test file**
+- [ ] **Step 2: Add mocks and new test cases to `apps/api/src/__tests__/SocketHandler.test.ts`**
 
-Open `apps/api/src/__tests__/SocketHandler.test.ts`. At the bottom of the describe block, add these tests. You'll need to check the existing mock structure first (Step 1) and extend it if `TtsService` and `AudioSubscriptionManager` are not yet mocked.
+The existing test pattern uses `mockSocket._handlers['event:name'](payload)` to invoke handlers and `mockIO._connect(mockSocket)` to trigger the connection callback. Match that exactly.
 
-Add mocks for the two new services at the top of the file:
+Add these three mocks **at the top of the file**, alongside the existing `vi.mock` calls. The `config` mock prevents `requireEnv` from throwing when SocketHandler.ts is imported.
+
 ```ts
+vi.mock('../config', () => ({
+  config: { azure: { speechKey: 'test-key', speechRegion: 'test-region' } },
+}))
+
+let mockAudioSubsInstance: {
+  subscribe: ReturnType<typeof vi.fn>
+  unsubscribe: ReturnType<typeof vi.fn>
+  disconnectAll: ReturnType<typeof vi.fn>
+  getSubscribers: ReturnType<typeof vi.fn>
+}
+vi.mock('../services/AudioSubscriptionManager', () => ({
+  AudioSubscriptionManager: vi.fn(() => {
+    mockAudioSubsInstance = {
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+      disconnectAll: vi.fn(),
+      getSubscribers: vi.fn().mockReturnValue(new Map()),
+    }
+    return mockAudioSubsInstance
+  }),
+}))
+
 vi.mock('../services/TtsService', () => ({
   TtsService: vi.fn(() => ({ synthesize: vi.fn().mockResolvedValue(Buffer.from('audio')) })),
 }))
-vi.mock('../services/AudioSubscriptionManager', () => ({
-  AudioSubscriptionManager: vi.fn(() => ({
-    subscribe: vi.fn(),
-    unsubscribe: vi.fn(),
-    disconnectAll: vi.fn(),
-    getSubscribers: vi.fn().mockReturnValue(new Map()),
-  })),
-}))
 ```
 
-Add test cases:
+Add these test cases at the bottom of the `describe('SocketHandler', ...)` block:
+
 ```ts
-it('handles audio:subscribe by calling manager.subscribe', () => {
-  // Simulate: client emits audio:subscribe
-  const handler = getSocketEventHandler('audio:subscribe') // use whatever pattern the file uses
-  handler({ code: 'EVT1', language: 'mi' })
-  // assert AudioSubscriptionManager.subscribe was called with (eventCode, language, socketId)
+it('registers audio:subscribe and audio:unsubscribe handlers on connection', () => {
+  mockIO._connect(mockSocket)
+  expect(mockSocket.on).toHaveBeenCalledWith('audio:subscribe', expect.any(Function))
+  expect(mockSocket.on).toHaveBeenCalledWith('audio:unsubscribe', expect.any(Function))
 })
 
-it('handles audio:unsubscribe by calling manager.unsubscribe', () => {
-  const handler = getSocketEventHandler('audio:unsubscribe')
-  handler({ code: 'EVT1', language: 'mi' })
-  // assert AudioSubscriptionManager.unsubscribe was called
+it('calls audioSubs.subscribe with eventCode, language, and socketId', () => {
+  mockIO._connect(mockSocket)
+  mockSocket._handlers['audio:subscribe']({ code: 'EVT1', language: 'mi' })
+  expect(mockAudioSubsInstance.subscribe).toHaveBeenCalledWith('EVT1', 'mi', 'test-socket-id')
+})
+
+it('calls audioSubs.unsubscribe with eventCode, language, and socketId', () => {
+  mockIO._connect(mockSocket)
+  mockSocket._handlers['audio:unsubscribe']({ code: 'EVT1', language: 'mi' })
+  expect(mockAudioSubsInstance.unsubscribe).toHaveBeenCalledWith('EVT1', 'mi', 'test-socket-id')
+})
+
+it('calls audioSubs.disconnectAll with socketId on disconnecting', async () => {
+  mockIO._connect(mockSocket)
+  await mockSocket._handlers['disconnecting']()
+  expect(mockAudioSubsInstance.disconnectAll).toHaveBeenCalledWith('test-socket-id')
 })
 ```
-
-> Note: Look at the existing test helpers in the file — match the pattern already used for registering and invoking socket event handlers. Do not introduce a new testing pattern.
 
 - [ ] **Step 3: Run the new tests to confirm they fail**
 
@@ -612,10 +637,11 @@ describe('useAudioPlayer', () => {
     expect(result.current.isEnabled).toBe(true)
   })
 
-  it('emits audio:unsubscribe when disabled', () => {
+  it('emits audio:unsubscribe when disabled (via effect cleanup)', () => {
     const { result } = renderHook(() => useAudioPlayer('EVT1', 'mi'))
     act(() => result.current.enable())
     act(() => result.current.disable())
+    // audio:unsubscribe is emitted by the isEnabled effect cleanup, not disable() directly
     expect(mockEmit).toHaveBeenCalledWith('audio:unsubscribe', { code: 'EVT1', language: 'mi' })
     expect(result.current.isEnabled).toBe(false)
   })
@@ -673,9 +699,9 @@ export function useAudioPlayer(eventCode: string, language: string) {
   // Queue of decoded AudioBuffers waiting to play
   const queueRef = useRef<AudioBuffer[]>([])
   const isPlayingRef = useRef(false)
+  const languageRef = useRef(language)
 
   // When language changes while enabled, re-subscribe to the new language
-  const languageRef = useRef(language)
   useEffect(() => {
     if (!isEnabled) {
       languageRef.current = language
@@ -686,16 +712,19 @@ export function useAudioPlayer(eventCode: string, language: string) {
       socket.emit('audio:unsubscribe', { code: eventCode, language: prev })
       socket.emit('audio:subscribe', { code: eventCode, language })
       languageRef.current = language
-      // Clear any queued audio for the old language
       queueRef.current = []
     }
   }, [language, isEnabled, eventCode])
 
+  // Main audio effect: set up AudioContext + socket listener while enabled.
+  // Cleanup emits audio:unsubscribe — this is the single place unsubscription happens
+  // (covers both disable() and unmount-while-enabled).
   useEffect(() => {
     if (!isEnabled) return
 
-    audioCtxRef.current = new AudioContext()
-    const audioCtx = audioCtxRef.current
+    languageRef.current = language
+    const audioCtx = new AudioContext()
+    audioCtxRef.current = audioCtx
 
     function playNext() {
       if (queueRef.current.length === 0) {
@@ -724,13 +753,14 @@ export function useAudioPlayer(eventCode: string, language: string) {
     socket.on('audio:tts', handleAudioTts)
 
     return () => {
+      socket.emit('audio:unsubscribe', { code: eventCode, language: languageRef.current })
       socket.off('audio:tts', handleAudioTts)
       audioCtx.close()
       audioCtxRef.current = null
       queueRef.current = []
       isPlayingRef.current = false
     }
-  }, [isEnabled])
+  }, [isEnabled, eventCode])
 
   const enable = () => {
     languageRef.current = language
@@ -738,19 +768,10 @@ export function useAudioPlayer(eventCode: string, language: string) {
     setIsEnabled(true)
   }
 
+  // disable() only sets state — the effect cleanup above handles audio:unsubscribe
   const disable = () => {
-    socket.emit('audio:unsubscribe', { code: eventCode, language: languageRef.current })
     setIsEnabled(false)
   }
-
-  // Unsubscribe on unmount if still enabled
-  useEffect(() => {
-    return () => {
-      if (isEnabled) {
-        socket.emit('audio:unsubscribe', { code: eventCode, language: languageRef.current })
-      }
-    }
-  }, [isEnabled, eventCode])
 
   return { isEnabled, enable, disable }
 }
