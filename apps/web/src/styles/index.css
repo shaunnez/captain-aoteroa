@@ -9,6 +9,7 @@
   :root {
     /* Primary */
     --color-primary:                  #1c0070;
+    --color-on-primary:               #ffffff;
     --color-primary-container:        #311b92;
     --color-primary-fixed:            #e5deff;
     --color-primary-fixed-dim:        #c7bfff;
@@ -40,6 +41,7 @@
 
   .dark {
     --color-primary:                  #f4f1e6;
+    --color-on-primary:               #1c0070;
     --color-primary-container:        #311b92;
     --color-primary-fixed:            #1d1460;
     --color-primary-fixed-dim:        #150e4a;
