@@ -176,7 +176,7 @@ export function EventDetailPage() {
               </span>
             </p>
           </div>
-          {event.status === 'live' && <QAPanel code={event.code} />}
+          {event.status !== 'ended' && <QAPanel code={event.code} />}
         </div>
       }
     />
