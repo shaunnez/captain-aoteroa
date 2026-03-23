@@ -178,7 +178,7 @@ export function CreateEventPage() {
               </label>
               <input
                 type="datetime-local"
-                className={inputClass}
+                className={`${inputClass} max-w-full`}
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
               />

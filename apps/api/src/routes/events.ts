@@ -42,12 +42,21 @@ eventsRouter.post('/', verifyJWT, async (req, res) => {
   res.status(201).json(data)
 })
 
-// GET /api/events — list all events (public)
-eventsRouter.get('/', async (_req, res) => {
-  const { data, error } = await supabase
+// GET /api/events — list all events (public), optional ?search= query param
+eventsRouter.get('/', async (req, res) => {
+  const search = typeof req.query.search === 'string' ? req.query.search.trim() : ''
+
+  let query = supabase
     .from('events')
     .select('*')
+    .limit(9)
     .order('event_date', { ascending: true, nullsFirst: false })
+
+  if (search) {
+    query = query.ilike('title', `%${search}%`)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     res.status(500).json({ error: error.message })

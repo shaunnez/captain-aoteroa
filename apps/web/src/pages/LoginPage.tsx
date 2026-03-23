@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { DarkModeToggle } from '../components/DarkModeToggle'
+import { Home } from 'lucide-react'
 
 export function LoginPage() {
   const [email, setEmail]       = useState('')
@@ -37,20 +39,31 @@ export function LoginPage() {
         viewBox="0 0 1440 900"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <path
+        <motion.path
           d="M0,300 C360,200 720,400 1080,300 C1260,250 1380,320 1440,300 L1440,900 L0,900 Z"
           fill="#311b92"
           opacity="0.18"
+          animate={{ y: [0, -10, -6, -20, 0] }}
+          transition={{ repeat: Infinity, duration: 6.5, ease: 'easeInOut' }}
         />
-        <path
+        <motion.path
           d="M0,480 C400,380 800,560 1200,460 C1320,420 1400,480 1440,460 L1440,900 L0,900 Z"
           fill="#1c0070"
           opacity="0.10"
+          animate={{ y: [0, -8, -18, -4, 0] }}
+          transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut', delay: 0.8 }}
         />
       </svg>
 
-      {/* Dark mode toggle top-right */}
-      <div className="absolute top-6 right-6">
+      {/* Top bar */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
+        <Link
+          to="/"
+          className="flex items-center gap-1.5 text-md text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
+        >
+          <Home size={30} />
+          Home
+        </Link>
         <DarkModeToggle />
       </div>
 
@@ -62,7 +75,7 @@ export function LoginPage() {
           {/* Brand */}
           <div className="text-center mb-8">
             <span className="font-serif text-2xl font-bold text-[var(--color-primary)]">
-              Caption Aotearoa
+              HearMe NZ
             </span>
             <p className="mt-1 text-sm text-[var(--color-on-surface-variant)]">
               Organiser login

@@ -30,7 +30,7 @@ export function EventPage() {
   const { fontSize, setFontSize, highContrast, toggleHighContrast, dyslexiaFont, toggleDyslexiaFont, lineSpacing, setLineSpacing } = useAccessibility()
   const [askDrawerOpen, setAskDrawerOpen] = useState(false)
   const { submitQuestion } = useQA(code ?? '')
-  const { sendReaction } = useReactions(code ?? '')
+  const { reactions, sendReaction } = useReactions(code ?? '')
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -112,7 +112,7 @@ export function EventPage() {
             </span>
           </button>
           <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
-            Caption Aotearoa
+            HearMe NZ
           </span>
           <div className="hidden md:block w-px h-5 bg-[var(--color-outline-variant)]" />
           {event.status === 'ended' ? (
@@ -163,7 +163,7 @@ export function EventPage() {
         <aside className={`fixed md:static inset-y-0 left-0 z-40 w-72 shrink-0
                           bg-[var(--color-surface-container-low)]
                           border-r border-[var(--color-outline-variant)]
-                          p-6 flex flex-col gap-8 overflow-y-auto
+                          p-6 flex flex-col gap-5 overflow-y-auto
                           transition-transform duration-200 ease-in-out
                           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
 
@@ -178,58 +178,86 @@ export function EventPage() {
           </section>
 
           {/* Text Size */}
-          <section className="space-y-3">
+          <section className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
               Text Size
             </h3>
-            <div className="bg-[var(--color-surface-container-lowest)] p-4 rounded-xl
-                            border border-[var(--color-outline-variant)] shadow-sm space-y-3">
-              <div className="flex justify-between items-center px-1">
+            <div className="bg-[var(--color-surface-container-lowest)] px-3 py-2.5 rounded-xl
+                            border border-[var(--color-outline-variant)] shadow-sm space-y-2">
+              <div className="flex justify-between items-center px-0.5">
                 <span className="material-symbols-outlined text-[var(--color-primary)]"
-                      style={{ fontSize: '16px' }}>text_fields</span>
+                      style={{ fontSize: '14px' }}>text_fields</span>
                 <span className="material-symbols-outlined text-[var(--color-primary)]"
-                      style={{ fontSize: '24px' }}>text_fields</span>
+                      style={{ fontSize: '22px' }}>text_fields</span>
               </div>
               <input
                 type="range"
                 min="1.25" max="3" step="0.25"
                 value={fontSize}
                 onChange={(e) => setFontSize(parseFloat(e.target.value))}
-                className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
                 style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
                 aria-label="Text size"
               />
             </div>
           </section>
 
+          {/* Line Spacing */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              Line Spacing
+            </h3>
+            <div className="bg-[var(--color-surface-container-lowest)] px-3 py-2.5 rounded-xl
+                            border border-[var(--color-outline-variant)] shadow-sm space-y-2">
+              <div className="flex justify-between items-center px-0.5">
+                <span className="material-symbols-outlined text-[var(--color-primary)]"
+                      style={{ fontSize: '14px' }}>density_small</span>
+                <span className="material-symbols-outlined text-[var(--color-primary)]"
+                      style={{ fontSize: '14px' }}>density_large</span>
+              </div>
+              <input
+                type="range"
+                min="1" max="3" step="1"
+                value={lineSpacing === 'compact' ? 1 : lineSpacing === 'normal' ? 2 : 3}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value)
+                  setLineSpacing(v === 1 ? 'compact' : v === 3 ? 'relaxed' : 'normal')
+                }}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
+                style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
+                aria-label="Line spacing"
+              />
+            </div>
+          </section>
+
           {/* Display mode */}
-          <section className="space-y-3">
+          <section className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
               Display
             </h3>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => { if (isDark) toggle() }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                   !isDark
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
                     : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
                 }`}
                 aria-pressed={!isDark}
               >
-                <div className="w-8 h-8 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]" />
+                <div className="w-6 h-6 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]" />
                 <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Light</span>
               </button>
               <button
                 onClick={() => { if (!isDark) toggle() }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                   isDark
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
                     : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
                 }`}
                 aria-pressed={isDark}
               >
-                <div className="w-8 h-8 rounded-full bg-[#0a0a0c]" />
+                <div className="w-6 h-6 rounded-full bg-[#0a0a0c]" />
                 <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Dark</span>
               </button>
             </div>
@@ -301,6 +329,17 @@ export function EventPage() {
         {/* Caption canvas */}
         <section className="flex-1 min-w-0 relative flex flex-col p-4 md:p-8 lg:p-12 overflow-hidden">
           <KowhaiwhaPattern opacity={0.03} />
+
+          {/* Floating emoji reactions */}
+          {reactions.map((r) => (
+            <span
+              key={r.id}
+              className="pointer-events-none absolute bottom-24 text-3xl animate-float-up"
+              style={{ left: `${r.x}%` }}
+            >
+              {r.emoji}
+            </span>
+          ))}
 
           {captionError && (
             <div className="absolute top-0 inset-x-0 z-20 bg-[var(--color-error)] text-white px-6 py-3 text-sm">

@@ -113,7 +113,7 @@ export function QAPanel({ code }: QAPanelProps) {
       </div>
 
       {/* Scrollable list */}
-      <div className="max-h-[400px] overflow-y-auto space-y-2 pr-0.5">
+      <div className="space-y-2 pr-0.5">
         <AnimatePresence initial={false}>
           {pinnedQuestions.length === 0 && pendingQuestions.length === 0 && (
             <motion.p

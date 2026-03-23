@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -35,18 +35,25 @@ const heroChildVariants = {
 export function HomePage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const prefersReduced = useReducedMotion()
 
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(t)
+  }, [search])
+
   const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => api.get<Event[]>('/api/events').then((r) => r.data),
+    queryKey: ['events', debouncedSearch],
+    queryFn: () =>
+      api
+        .get<Event[]>('/api/events', { params: debouncedSearch ? { search: debouncedSearch } : undefined })
+        .then((r) => r.data),
     refetchInterval: 30_000,
   })
 
   const statusOrder = { live: 0, upcoming: 1, ended: 2 }
-  const filtered = events
-    .filter((e) => e.title.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => statusOrder[a.status] - statusOrder[b.status])
+  const filtered = [...events].sort((a, b) => statusOrder[a.status] - statusOrder[b.status])
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
@@ -54,9 +61,9 @@ export function HomePage() {
       <header className="sticky top-0 z-50 nav-glass">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
           <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
-            Caption Aotearoa
+            HearMe NZ
           </span>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[var(--color-on-surface-variant)]">
+          <nav className="hidden md:flex items-center gap-6 text-md font-bold text-[var(--color-on-surface-variant)]">
             <a href="#events" className="hover:text-[var(--color-primary)] transition-colors">Events</a>
             <a href="#features" className="hover:text-[var(--color-primary)] transition-colors">About</a>
             <a href="#contact" className="hover:text-[var(--color-primary)] transition-colors">Contact</a>
@@ -130,6 +137,7 @@ export function HomePage() {
               {filtered.map((event, index) => (
                 <motion.div
                   key={event.id}
+                  className="h-full"
                   initial={prefersReduced ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' as const, delay: index * 0.05 }}
@@ -204,7 +212,7 @@ export function HomePage() {
       {/* ── Footer ── */}
       <footer id="contact" className="py-10 px-6 border-t border-[var(--color-outline-variant)]">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[var(--color-on-surface-variant)]">
-          <span className="font-serif font-semibold text-[var(--color-primary)]">Caption Aotearoa</span>
+          <span className="font-serif font-semibold text-[var(--color-primary)]">HearMe NZ</span>
           <div className="flex gap-6">
             <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Privacy</a>
             <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Accessibility</a>

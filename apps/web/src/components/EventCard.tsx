@@ -20,13 +20,14 @@ export function EventCard({ event, to }: EventCardProps) {
   return (
     <button
       onClick={() => navigate(to ?? `/event/${event.code}`)}
-      className="w-full text-left rounded-xl p-5
+      className="w-full h-full text-left rounded-xl p-5
+                 flex flex-col
                  bg-[var(--color-surface-container)]
                  border border-[var(--color-outline-variant)]
                  hover:border-[var(--color-primary)] hover:shadow-lg
                  transition-all duration-200 group"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 flex-1">
         <div className="min-w-0 flex-1">
           <h3 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] truncate
                          group-hover:text-[var(--color-primary)] transition-colors">

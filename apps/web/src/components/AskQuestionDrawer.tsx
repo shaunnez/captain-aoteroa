@@ -89,7 +89,7 @@ export function AskQuestionDrawer({ isOpen, onClose, onSubmit, language }: AskQu
               onKeyDown={handleKeyDown}
               placeholder="Type your question…"
               rows={4}
-              className="w-full resize-none rounded-xl border px-4 py-3 text-sm
+              className="w-full resize-none rounded-xl border px-4 py-3 text-lg
                          bg-[var(--color-surface-container-low)]
                          border-[var(--color-outline-variant)]
                          text-[var(--color-on-surface)]

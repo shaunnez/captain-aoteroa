@@ -14,7 +14,11 @@
       "Bash(cat /Users/shaunnesbitt/Desktop/accessibility-work/node_modules/.pnpm/socket.io-client*/node_modules/socket.io-client/build/esm/index.d.ts)",
       "Bash(pnpm --filter web add html2canvas)",
       "Bash(pnpm --filter web remove jspdf)",
-      "Bash(pnpm --filter web test --run TranscriptDownload)"
+      "Bash(pnpm --filter web test --run TranscriptDownload)",
+      "Bash(sed -i '' 's/animate: { y: \\\\[0, -12, 0\\\\] as number\\\\[\\\\] }/animate: { y: [0, -22, -6, -20, 0] as number[] }/' /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/src/pages/SignupPage.tsx)",
+      "Bash(sed -i '' \"s/transition: { repeat: Infinity, duration: 6, ease: ''easeInOut'' as const }/transition: { repeat: Infinity, duration: 4.5, ease: ''easeInOut'' as const }/\" /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/src/pages/SignupPage.tsx)",
+      "Bash(sed -i '' 's/animate: { y: \\\\[0, -10, 0\\\\] as number\\\\[\\\\] }/animate: { y: [0, -8, -18, -4, 0] as number[] }/' /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/src/pages/SignupPage.tsx)",
+      "Bash(sed -i '' \"s/transition: { repeat: Infinity, duration: 8, ease: ''easeInOut'' as const, delay: 1.5 }/transition: { repeat: Infinity, duration: 6, ease: ''easeInOut'' as const, delay: 0.8 }/\" /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/src/pages/SignupPage.tsx)"
     ]
   }
 }
