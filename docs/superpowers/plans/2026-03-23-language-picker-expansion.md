@@ -142,6 +142,8 @@ git commit -m "feat: add optional languages prop to LanguagePickerModal for cust
 **Files:**
 - Modify: `apps/web/src/pages/PresentPage.tsx`
 
+**Note on testing:** PresentPage has no test file — it requires mocking useQuery, useParams, useAudioCapture, useCaptions, and useViewerCount simultaneously, which is disproportionate to these changes. Build success + LanguagePickerModal's existing tests (which cover the modal's behaviour) are the verification here.
+
 **Background:** The presenter currently sees inline pill buttons for "I am speaking in". We replace these with a pill trigger → LanguagePickerModal showing only the event's speaker languages. The bilingual "English + Te Reo" option is injected as a synthetic `{ code: 'dual' }` tile — the `onSelect` handler routes it to the existing `handleToggleDual()`. A back button is added to the DashboardShell header.
 
 - [ ] **Step 1: Read `apps/web/src/pages/PresentPage.tsx`**
@@ -442,14 +444,6 @@ In the "Transcript not ready" return block, fix:
 /* TO */
 {error && <p className="text-[var(--color-error)] text-sm mt-2">{error}</p>}
 ```
-
-- [ ] **Step 6: Verify build and tests**
-
-```bash
-pnpm --filter web build 2>&1 | head -20
-pnpm --filter web test 2>&1 | tail -10
-```
-Expected: build exits 0, all 9 tests pass.
 
 - [ ] **Step 8: Run the TranscriptDownload tests**
 
