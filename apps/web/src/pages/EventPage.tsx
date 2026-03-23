@@ -13,6 +13,8 @@ import { useAccessibility } from '../hooks/useAccessibility'
 import { useViewerCount } from '../hooks/useViewerCount'
 import { useDarkModeContext } from '../contexts/DarkModeContext'
 import type { Event } from '@caption-aotearoa/shared'
+import { useAudioPlayer } from '../hooks/useAudioPlayer'
+import { TTS_SUPPORTED_LANGUAGES } from '@caption-aotearoa/shared'
 
 export function EventPage() {
   const { code } = useParams<{ code: string }>()
@@ -23,6 +25,11 @@ export function EventPage() {
   const { fontSize, setFontSize } = useAccessibility()
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
+
+  const { isEnabled: audioEnabled, enable: enableAudio, disable: disableAudio } =
+    useAudioPlayer(code ?? '', selectedLocale)
+
+  const audioSupported = TTS_SUPPORTED_LANGUAGES.has(selectedLocale)
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', code],
@@ -220,6 +227,24 @@ export function EventPage() {
                   <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
+              {audioSupported && (
+                <button
+                  onClick={audioEnabled ? disableAudio : enableAudio}
+                  className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                             border transition-colors ${
+                    audioEnabled
+                      ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)]'
+                      : 'bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] border-[var(--color-outline-variant)] hover:bg-[var(--color-surface-container-highest)]'
+                  }`}
+                  aria-pressed={audioEnabled}
+                  aria-label={audioEnabled ? 'Disable audio translation' : 'Enable audio translation'}
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {audioEnabled ? 'volume_up' : 'volume_off'}
+                  </span>
+                  <span>{audioEnabled ? 'Audio on' : 'Play audio'}</span>
+                </button>
+              )}
             </div>
           </div>
         </aside>

@@ -4,6 +4,9 @@ import { NZ_LANGUAGES } from '@caption-aotearoa/shared'
 import { EventManager } from './EventManager'
 import { supabase } from './supabase'
 import { verifyJWT as verifyToken } from '../middleware/auth'
+import { TtsService } from './TtsService'
+import { AudioSubscriptionManager } from './AudioSubscriptionManager'
+import { config } from '../config'
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents>
 
@@ -15,11 +18,23 @@ async function broadcastViewerCount(io: AppServer, code: string): Promise<void> 
 }
 
 export function setupSocketHandler(io: AppServer): void {
+  const tts = new TtsService({ speechKey: config.azure.speechKey, speechRegion: config.azure.speechRegion })
+  const audioSubs = new AudioSubscriptionManager()
+
   io.on('connection', (socket) => {
     console.log(`[socket] connected: ${socket.id}`)
 
     // Track rooms for viewer count on disconnect
+    socket.on('audio:subscribe', ({ code, language }) => {
+      audioSubs.subscribe(code, language, socket.id)
+    })
+
+    socket.on('audio:unsubscribe', ({ code, language }) => {
+      audioSubs.unsubscribe(code, language, socket.id)
+    })
+
     socket.on('disconnecting', async () => {
+      audioSubs.disconnectAll(socket.id)
       for (const room of socket.rooms) {
         if (room !== socket.id) {
           // Subtract 1 because this socket is still in the room during 'disconnecting'
@@ -119,6 +134,23 @@ export function setupSocketHandler(io: AppServer): void {
           (payload) => {
             console.log(`[socket] emitting caption:segment seq=${payload.sequence} final=${payload.isFinal}`)
             io.to(code).emit('caption:segment', payload)
+            if (!payload.isFinal) return
+            const subscribers = audioSubs.getSubscribers(code)
+            for (const [lang, sockets] of subscribers) {
+              if (sockets.size === 0) continue
+              const text = payload.segments[lang]
+              if (!text) continue
+              tts.synthesize(text, lang).then((audio) => {
+                if (!audio) return
+                io.to([...sockets]).emit('audio:tts', {
+                  language: lang,
+                  sequence: payload.sequence,
+                  data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+                })
+              }).catch((err) => {
+                console.error('[SocketHandler] TTS synthesis failed:', err)
+              })
+            }
           },
           (message, fatal) => {
             console.log(`[socket] caption:error message="${message}" fatal=${fatal}`)
