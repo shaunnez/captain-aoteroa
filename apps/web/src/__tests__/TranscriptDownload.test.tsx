@@ -37,8 +37,8 @@ describe('TranscriptDownload', () => {
     await waitFor(() => {
       // Should show a button trigger (not a select)
       expect(screen.queryByRole('combobox')).toBeNull()
-      // Should show a Download PDF button
-      expect(screen.getByText('Download PDF')).toBeDefined()
+      // Should show a Download Image button
+      expect(screen.getByText('Download Image')).toBeDefined()
     })
   })
 })

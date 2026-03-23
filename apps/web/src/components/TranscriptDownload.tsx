@@ -45,59 +45,57 @@ export function TranscriptDownload({ eventCode, eventTitle, eventDate }: Transcr
     }
   }
 
-  async function downloadPDF() {
+  async function downloadImage() {
     if (!transcript) return
 
     const langData = transcript.languages.find((l) => l.language === selectedLang)
     if (!langData) return
 
-    // Dynamic import to avoid bundling jsPDF on every page
-    const { jsPDF } = await import('jspdf')
-    const doc = new jsPDF()
+    const formattedDate = eventDate
+      ? new Date(eventDate).toLocaleDateString('en-NZ', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : null
 
-    const margin = 20
-    const pageWidth = doc.internal.pageSize.getWidth() - margin * 2
-    let y = margin
+    // Build an offscreen element to capture
+    const el = document.createElement('div')
+    el.style.cssText = [
+      'position:fixed',
+      'left:-9999px',
+      'top:0',
+      'width:800px',
+      'padding:48px',
+      'background:#ffffff',
+      'font-family:system-ui,sans-serif',
+      'color:#111827',
+      'line-height:1.6',
+      'box-sizing:border-box',
+    ].join(';')
 
-    // Title
-    doc.setFontSize(18)
-    doc.text(eventTitle, margin, y)
-    y += 10
+    el.innerHTML = `
+      <h1 style="font-size:24px;font-weight:700;margin:0 0 8px">${eventTitle}</h1>
+      ${formattedDate ? `<p style="font-size:13px;color:#6b7280;margin:0 0 4px">${formattedDate}</p>` : ''}
+      <p style="font-size:13px;color:#6b7280;margin:0 0 24px">Language: ${selectedLang}</p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px" />
+      <p style="font-size:15px;white-space:pre-wrap;margin:0">${langData.content}</p>
+    `
 
-    // Date
-    if (eventDate) {
-      doc.setFontSize(10)
-      doc.setTextColor(128)
-      doc.text(new Date(eventDate).toLocaleDateString('en-NZ', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }), margin, y)
-      y += 8
+    document.body.appendChild(el)
+
+    try {
+      const { default: html2canvas } = await import('html2canvas')
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true })
+      const url = canvas.toDataURL('image/png')
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${eventTitle.replace(/[^a-zA-Z0-9]/g, '-')}-transcript-${selectedLang}.png`
+      a.click()
+    } finally {
+      document.body.removeChild(el)
     }
-
-    // Language label
-    doc.setFontSize(10)
-    doc.setTextColor(128)
-    doc.text(`Language: ${selectedLang}`, margin, y)
-    y += 12
-
-    // Content
-    doc.setFontSize(11)
-    doc.setTextColor(0)
-    const lines = doc.splitTextToSize(langData.content, pageWidth)
-
-    for (const line of lines) {
-      if (y > doc.internal.pageSize.getHeight() - margin) {
-        doc.addPage()
-        y = margin
-      }
-      doc.text(line, margin, y)
-      y += 6
-    }
-
-    doc.save(`${eventTitle.replace(/[^a-zA-Z0-9]/g, '-')}-transcript-${selectedLang}.pdf`)
   }
 
   // Initial state — show fetch button
@@ -161,11 +159,11 @@ export function TranscriptDownload({ eventCode, eventTitle, eventDate }: Transcr
         </svg>
       </button>
       <button
-        onClick={downloadPDF}
+        onClick={downloadImage}
         className="btn-primary flex items-center gap-2 text-sm py-1.5"
       >
         <Download className="w-4 h-4" />
-        Download PDF
+        Download Image
       </button>
       <LanguagePickerModal
         isOpen={langPickerOpen}
