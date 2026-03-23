@@ -88,7 +88,7 @@ export function EventPage() {
     )
   }
 
-  if (showLobby) return <EventLobby event={event} />
+  if (showLobby) return <EventLobby event={event} selectedLocale={selectedLocale} onSelectLocale={setSelectedLocale} />
 
   return (
     <div className={`flex flex-col h-screen overflow-hidden bg-[var(--color-background)]${highContrast ? ' high-contrast' : ''}${dyslexiaFont ? ' font-dyslexia' : ''}`}>

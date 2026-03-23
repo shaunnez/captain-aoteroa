@@ -9,7 +9,14 @@
     "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@caption-aotearoa/shared": ["../../packages/shared/src/types.ts"],
+      "@caption-aotearoa/shared/nzLanguages": ["../../packages/shared/src/nzLanguages.ts"],
+      "@caption-aotearoa/shared/azureLanguages": ["../../packages/shared/src/azureLanguages.ts"],
+      "@caption-aotearoa/shared/recognitionLocales": ["../../packages/shared/src/recognitionLocales.ts"]
+    }
   },
   "include": ["src"],
   "exclude": ["src/__tests__"]
