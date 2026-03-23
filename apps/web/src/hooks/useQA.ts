@@ -33,7 +33,7 @@ export function useQA(code: string) {
     socket.emit('qa:submit', { code, body, language })
   }, [code])
 
-  const moderateQuestion = useCallback((questionId: string, status: 'pinned' | 'dismissed') => {
+  const moderateQuestion = useCallback((questionId: string, status: 'pending' | 'pinned' | 'dismissed') => {
     socket.emit('qa:moderate', { code, questionId, status })
   }, [code])
 

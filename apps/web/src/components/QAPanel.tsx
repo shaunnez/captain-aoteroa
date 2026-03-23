@@ -54,23 +54,23 @@ function QuestionCard({ question, onPin, onDismiss, isPinned }: QuestionCardProp
             onClick={onPin}
             aria-label={isPinned ? 'Unpin question' : 'Pin question'}
             title={isPinned ? 'Unpin' : 'Pin'}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-2 rounded-lg transition-colors ${
               isPinned
                 ? 'text-[var(--color-primary)] hover:bg-[var(--color-primary-container)]'
                 : 'text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-high)]'
             }`}
           >
-            <Pin size={14} />
+            <Pin size={18} />
           </button>
           <button
             onClick={onDismiss}
             aria-label="Dismiss question"
             title="Dismiss"
-            className="p-1.5 rounded-lg transition-colors
+            className="p-2 rounded-lg transition-colors
                        text-[var(--color-on-surface-variant)]
                        hover:bg-[var(--color-surface-container-high)]"
           >
-            <X size={14} />
+            <X size={18} />
           </button>
         </div>
       </div>
@@ -137,7 +137,7 @@ export function QAPanel({ code }: QAPanelProps) {
               <QuestionCard
                 question={q}
                 isPinned
-                onPin={() => moderateQuestion(q.id, 'pinned')}
+                onPin={() => moderateQuestion(q.id, 'pending')}
                 onDismiss={() => moderateQuestion(q.id, 'dismissed')}
               />
             </motion.div>

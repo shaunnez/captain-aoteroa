@@ -80,6 +80,6 @@ export interface ClientToServerEvents {
   'audio:subscribe': (payload: { code: string; language: string }) => void
   'audio:unsubscribe': (payload: { code: string; language: string }) => void
   'qa:submit': (payload: { code: string; body: string; language: string }) => void
-  'qa:moderate': (payload: { code: string; questionId: string; status: 'pinned' | 'dismissed' }) => void
+  'qa:moderate': (payload: { code: string; questionId: string; status: 'pending' | 'pinned' | 'dismissed' }) => void
   'reaction:send': (payload: { code: string; emoji: string }) => void
 }

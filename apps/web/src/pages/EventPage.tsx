@@ -167,6 +167,26 @@ export function EventPage() {
                           transition-transform duration-200 ease-in-out
                           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
 
+          {/* Event details */}
+          <section className="space-y-1 pb-4 border-b border-[var(--color-outline-variant)]">
+            <h2
+              className="font-serif text-base font-bold leading-snug text-[var(--color-on-surface)]"
+              style={{ color: event.theme_color || undefined }}
+            >
+              {event.title}
+            </h2>
+            {event.organiser_name && (
+              <p className="text-xs text-[var(--color-on-surface-variant)]">
+                {event.organiser_name}
+              </p>
+            )}
+            {event.description && (
+              <p className="text-sm text-[var(--color-on-surface-variant)] leading-snug pt-0.5">
+                {event.description}
+              </p>
+            )}
+          </section>
+
           {/* Event code */}
           <section className="space-y-1">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">

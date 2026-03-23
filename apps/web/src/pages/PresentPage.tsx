@@ -47,6 +47,8 @@ export function PresentPage() {
   const [editDesc, setEditDesc] = useState('')
   const [editingDate, setEditingDate] = useState(false)
   const [editDate, setEditDate] = useState('')
+  const [editingOrganiser, setEditingOrganiser] = useState(false)
+  const [editOrganiser, setEditOrganiser] = useState('')
 
   const [sessionEnded, setSessionEnded] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -88,7 +90,7 @@ export function PresentPage() {
   const { segments } = useCaptions(code ?? '', speakerLocale ?? 'en-NZ')
 
   const updateEvent = useMutation({
-    mutationFn: (patch: Partial<Pick<Event, 'title' | 'description' | 'event_date'>>) =>
+    mutationFn: (patch: Partial<Pick<Event, 'title' | 'description' | 'event_date' | 'organiser_name'>>) =>
       api.patch(`/api/events/${code}`, patch).then((r) => r.data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['event', code] }),
   })
@@ -302,6 +304,52 @@ export function PresentPage() {
                   onClick={() => { setEditDesc(event.description ?? ''); setEditingDesc(true) }}
                   className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
                   aria-label="Edit description"
+                >
+                  <Pencil size={13} />
+                </button>
+              </div>
+            )}
+
+            {/* Editable organiser name */}
+            {editingOrganiser ? (
+              <div className="flex items-start gap-1 mt-2">
+                <input
+                  autoFocus
+                  value={editOrganiser}
+                  onChange={(e) => setEditOrganiser(e.target.value)}
+                  placeholder="Speaker / organiser name"
+                  className="flex-1 text-sm bg-transparent border-b border-[var(--color-primary)]
+                             text-[var(--color-on-surface-variant)] outline-none"
+                />
+                <button
+                  onClick={() => {
+                    updateEvent.mutate({ organiser_name: editOrganiser })
+                    setEditingOrganiser(false)
+                  }}
+                  className="p-1 text-[var(--color-primary)] hover:opacity-80"
+                  aria-label="Save organiser name"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  onClick={() => setEditingOrganiser(false)}
+                  className="p-1 text-[var(--color-on-surface-variant)] hover:opacity-80"
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-start gap-1 mt-1">
+                <p className="text-xs text-[var(--color-on-surface-variant)] flex-1">
+                  {event.organiser_name
+                    ? <span className="font-medium">{event.organiser_name}</span>
+                    : <span className="opacity-40 italic">No speaker name</span>}
+                </p>
+                <button
+                  onClick={() => { setEditOrganiser(event.organiser_name ?? ''); setEditingOrganiser(true) }}
+                  className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
+                  aria-label="Edit organiser name"
                 >
                   <Pencil size={13} />
                 </button>
