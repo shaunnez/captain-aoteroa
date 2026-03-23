@@ -136,7 +136,7 @@ export function EventDetailPage() {
                   className="btn-secondary flex items-center gap-2 disabled:opacity-50"
                 >
                   <RotateCcw size={16} />
-                  {retryTranscript.isPending ? 'Retrying…' : 'Retry Transcript'}
+                  {retryTranscript.isPending ? 'Processing…' : 'Use AI to improve transcript'}
                 </button>
               )}
             </div>

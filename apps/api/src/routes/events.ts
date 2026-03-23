@@ -62,6 +62,33 @@ eventsRouter.get('/:code', async (req, res) => {
   res.json(data)
 })
 
+// PATCH /api/events/:code — update event details (JWT protected)
+eventsRouter.patch('/:code', verifyJWT, async (req, res) => {
+  const { title, description, event_date } = req.body
+  const patch: Record<string, unknown> = {}
+  if (title !== undefined) patch.title = title
+  if (description !== undefined) patch.description = description
+  if (event_date !== undefined) patch.event_date = event_date
+
+  if (Object.keys(patch).length === 0) {
+    res.status(400).json({ error: 'No fields to update' })
+    return
+  }
+
+  const { data, error } = await supabase
+    .from('events')
+    .update(patch)
+    .eq('code', req.params.code.toUpperCase())
+    .select()
+    .single()
+
+  if (error || !data) {
+    res.status(404).json({ error: 'Event not found' })
+    return
+  }
+  res.json(data)
+})
+
 // PATCH /api/events/:code/status — update status (JWT protected)
 eventsRouter.patch('/:code/status', verifyJWT, async (req, res) => {
   const { status } = req.body

@@ -26,7 +26,7 @@ export function JoinForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
       <div>
-        <label htmlFor="code" className="block font-medium mb-1">
+        <label htmlFor="code" className="block text-sm font-medium text-[var(--color-on-surface)] mb-1.5">
           Event code
         </label>
         <input
@@ -41,8 +41,14 @@ export function JoinForm() {
           autoCapitalize="characters"
         />
       </div>
-      {error && <p className="text-brand-error text-sm">{error}</p>}
-      <button type="submit" disabled={loading || code.length !== 6} className="btn-primary">
+      {error && (
+        <p className="text-[var(--color-error)] text-sm">{error}</p>
+      )}
+      <button
+        type="submit"
+        disabled={loading || code.length !== 6}
+        className="btn-primary disabled:opacity-50"
+      >
         {loading ? 'Finding event…' : 'Join event'}
       </button>
     </form>

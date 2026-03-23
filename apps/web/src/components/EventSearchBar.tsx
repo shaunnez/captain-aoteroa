@@ -8,7 +8,7 @@ interface EventSearchBarProps {
 export function EventSearchBar({ value, onChange }: EventSearchBarProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-purple opacity-40" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-primary)] opacity-40" />
       <input
         type="text"
         value={value}

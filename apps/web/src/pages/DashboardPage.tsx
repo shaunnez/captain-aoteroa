@@ -87,7 +87,7 @@ export function DashboardPage() {
                 <EventCard
                   key={event.id}
                   event={event}
-                  to={`/dashboard/events/${event.id}`}
+                  to={`/present/${event.code}`}
                 />
               ))}
             </div>

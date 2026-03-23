@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { DarkModeProvider } from './contexts/DarkModeContext'
 import { HomePage } from './pages/HomePage'
 import { EventPage } from './pages/EventPage'
 import { LoginPage } from './pages/LoginPage'
@@ -12,8 +13,9 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 
 export function AppRouter() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <DarkModeProvider>
+      <BrowserRouter>
+        <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/event/:code" element={<EventPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -23,7 +25,8 @@ export function AppRouter() {
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/dashboard/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
         <Route path="/dashboard/events/:id/present" element={<ProtectedRoute><DashboardPresentPage /></ProtectedRoute>} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </DarkModeProvider>
   )
 }
