@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Pencil, Check, X, Square } from 'lucide-react'
+import { ArrowLeft, Pencil, Check, X, Square, ExternalLink, CheckCircle, Sparkles, Loader2 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { socket } from '../lib/socket'
@@ -9,6 +9,7 @@ import { useCaptions } from '../hooks/useCaptions'
 import { CaptionDisplay } from '../components/CaptionDisplay'
 import { MicControl } from '../components/MicControl'
 import { QRDisplay } from '../components/QRDisplay'
+import { TranscriptDownload } from '../components/TranscriptDownload'
 import { DashboardShell } from '../components/DashboardShell'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { LanguagePickerModal } from '../components/LanguagePickerModal'
@@ -43,8 +44,42 @@ export function PresentPage() {
   const [editingDate, setEditingDate] = useState(false)
   const [editDate, setEditDate] = useState('')
 
+  const [sessionEnded, setSessionEnded] = useState(false)
+  const [generating, setGenerating] = useState(false)
+
+  const { data: transcriptData, refetch: refetchTranscript } = useQuery({
+    queryKey: ['transcript', code],
+    queryFn: () => api.get<{ status: string }>(`/api/events/${code}/transcript`).then((r) => r.data),
+    enabled: sessionEnded,
+    refetchInterval: (query) => {
+      const s = query.state.data?.status
+      return s === 'pending' || s === 'processing' ? 3000 : false
+    },
+  })
+
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const captureStartRef = useRef<number | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (event?.status === 'ended') setSessionEnded(true)
+  }, [event?.status])
+
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
   const viewerCount = useViewerCount(code ?? '')
+
+  useEffect(() => {
+    if (isCapturing) {
+      captureStartRef.current = Date.now() - elapsedSeconds * 1000
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds(Math.floor((Date.now() - (captureStartRef.current ?? Date.now())) / 1000))
+      }, 1000)
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCapturing])
   const { segments } = useCaptions(code ?? '', speakerLocale ?? 'en-NZ')
 
   const updateEvent = useMutation({
@@ -69,7 +104,17 @@ export function PresentPage() {
   async function handleEndSession() {
     stop()
     await api.patch(`/api/events/${code}/status`, { status: 'ended' })
-    navigate('/dashboard')
+    setSessionEnded(true)
+  }
+
+  async function handleGenerateTranscript() {
+    setGenerating(true)
+    try {
+      await api.post(`/api/events/${code}/transcript/retry`)
+      refetchTranscript()
+    } finally {
+      setGenerating(false)
+    }
   }
 
   function handleLanguageChange(azureCode: string) {
@@ -126,6 +171,12 @@ export function PresentPage() {
 
   const activeLang = speakerLangList.find((l) => l.code === activeSpeakerCode)
 
+  const elapsedFormatted = [
+    Math.floor(elapsedSeconds / 3600).toString().padStart(2, '0'),
+    Math.floor((elapsedSeconds % 3600) / 60).toString().padStart(2, '0'),
+    (elapsedSeconds % 60).toString().padStart(2, '0'),
+  ].join(':')
+
   const formattedDate = event.event_date
     ? new Date(event.event_date).toLocaleDateString('en-NZ', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -140,6 +191,7 @@ export function PresentPage() {
 
   return (
     <DashboardShell
+      fillMain
       headerActions={
         <button
           onClick={() => navigate('/dashboard')}
@@ -298,6 +350,15 @@ export function PresentPage() {
                 </span>
               )}
             </div>
+
+            <div className="mt-3 px-3 py-2 rounded-lg bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)]">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-on-surface-variant)] mb-0.5">
+                Elapsed
+              </p>
+              <p className="font-mono text-lg font-semibold text-[var(--color-on-surface)] tabular-nums">
+                {elapsedFormatted}
+              </p>
+            </div>
           </div>
 
           <div className="border-t border-[var(--color-outline-variant)]" />
@@ -332,6 +393,37 @@ export function PresentPage() {
             </div>
           )}
 
+          <div className="border-t border-[var(--color-outline-variant)]" />
+
+          {/* Audience Joining */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              Audience Joining
+            </h3>
+            <QRDisplay eventCode={event.code} />
+            <div className="rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] p-4 space-y-3">
+              <div>
+                <p className="text-xs text-[var(--color-on-surface-variant)] mb-1">Event code</p>
+                <p className="font-mono text-2xl font-bold tracking-widest text-[var(--color-on-surface)]">
+                  {event.code}
+                </p>
+              </div>
+              <div className="border-t border-[var(--color-outline-variant)] pt-3">
+                <p className="text-xs text-[var(--color-on-surface-variant)] mb-1">Join link</p>
+                <a
+                  href={`${window.location.origin}/event/${event.code}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-start gap-1.5 font-mono text-xs text-[var(--color-primary)]
+                             hover:underline break-all"
+                >
+                  <ExternalLink size={12} className="shrink-0 mt-0.5" />
+                  {window.location.origin}/event/{event.code}
+                </a>
+              </div>
+            </div>
+          </div>
+
           {/* Kowhaiwhai decorative pattern at bottom */}
           <div className="mt-auto opacity-10 pointer-events-none">
             <KowhaiwhaPattern />
@@ -339,52 +431,113 @@ export function PresentPage() {
         </div>
       }
       main={
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col items-center gap-6">
-            <MicControl
-              isCapturing={isCapturing}
-              onStart={handleStart}
-              onStop={handleStop}
-              error={audioError}
-            />
-            <button
-              onClick={handleEndSession}
-              className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium
-                         border border-[var(--color-error)] text-[var(--color-error)]
-                         hover:bg-[var(--color-error)] hover:text-white transition-colors"
-            >
-              <Square size={14} />
-              End Session
-            </button>
+        <div className="h-full flex flex-col gap-6">
+          {/* Session Controls Panel */}
+          <div className="rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden shrink-0">
+            <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+                Session Controls
+              </h3>
+              <div className="flex items-center gap-2">
+                {sessionEnded ? (
+                  <>
+                    <CheckCircle size={14} className="text-[var(--color-primary)]" />
+                    <span className="text-xs text-[var(--color-primary)] font-medium">Session Ended</span>
+                  </>
+                ) : (
+                  <>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isCapturing ? 'bg-green-500' : 'bg-[var(--color-outline)]'}`} />
+                    <span className="text-xs text-[var(--color-on-surface-variant)]">
+                      {isCapturing ? 'Streaming' : 'Idle'}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {sessionEnded ? (
+              <div className="p-5 flex flex-col gap-4">
+                <div className="flex items-center gap-3 text-[var(--color-on-surface-variant)]">
+                  <CheckCircle size={20} className="text-[var(--color-primary)] shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-[var(--color-on-surface)]">Session complete</p>
+                    <p className="text-xs">Duration: {elapsedFormatted}</p>
+                  </div>
+                </div>
+                <div className="border-t border-[var(--color-outline-variant)] pt-4 flex flex-wrap gap-3">
+                  {(() => {
+                    const ts = transcriptData?.status
+                    const isProcessing = generating || ts === 'pending' || ts === 'processing'
+                    const isReady = ts === 'ready'
+                    const isFailed = ts === 'failed'
+                    return (
+                      <button
+                        onClick={handleGenerateTranscript}
+                        disabled={isProcessing}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
+                                   bg-[var(--color-primary-fixed)] text-[var(--color-primary)]
+                                   hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isProcessing
+                          ? <Loader2 size={15} className="animate-spin" />
+                          : isReady
+                          ? <CheckCircle size={15} />
+                          : <Sparkles size={15} />
+                        }
+                        {isProcessing
+                          ? 'Processing…'
+                          : isReady
+                          ? 'Regenerate Transcript'
+                          : isFailed
+                          ? 'Retry Transcript'
+                          : 'Generate Transcript (AI Assist)'
+                        }
+                      </button>
+                    )
+                  })()}
+                  <TranscriptDownload
+                    eventCode={event.code}
+                    eventTitle={event.title}
+                    eventDate={event.event_date}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="p-5 flex items-end justify-center gap-8">
+                <MicControl
+                  isCapturing={isCapturing}
+                  onStart={handleStart}
+                  onStop={handleStop}
+                  error={audioError}
+                />
+                <div className="flex flex-col items-center gap-4">
+                  <button
+                    onClick={handleEndSession}
+                    className="w-20 h-20 rounded-full flex items-center justify-center transition-all
+                               shadow-lg text-white bg-[var(--color-error)] hover:opacity-90"
+                    aria-label="End session"
+                  >
+                    <Square size={32} />
+                  </button>
+                  <p className="text-sm font-medium text-[var(--color-on-surface-variant)]">End Session</p>
+                </div>
+              </div>
+            )}
           </div>
-          <div>
-            <p className="text-xs font-medium text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-2">
-              Live transcript
-            </p>
-            <CaptionDisplay
-              segments={segments}
-              className="h-64 bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] rounded-xl p-4"
-            />
-          </div>
-        </div>
-      }
-      right={
-        <div className="flex flex-col gap-4">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
-            Audience joining
-          </h3>
-          <QRDisplay eventCode={event.code} />
-          <div className="rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] p-4 space-y-2">
-            <p className="text-xs text-[var(--color-on-surface-variant)]">Join link</p>
-            <p className="font-mono text-xs text-[var(--color-on-surface)] break-all">
-              {window.location.origin}/event/{event.code}
-            </p>
-            <p className="text-xs text-[var(--color-on-surface-variant)] pt-1">
-              Code:{' '}
-              <span className="font-mono font-semibold text-[var(--color-on-surface)]">
-                {event.code}
-              </span>
-            </p>
+
+          {/* Live Transcript Panel — fills remaining space */}
+          <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden min-h-0">
+            <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] shrink-0">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+                Live Transcript
+              </h3>
+            </div>
+            <div className="flex-1 p-4 min-h-0">
+              <CaptionDisplay
+                segments={segments}
+                className="h-full bg-[var(--color-surface-container)] rounded-lg p-4"
+              />
+            </div>
           </div>
         </div>
       }

@@ -88,7 +88,12 @@ export function EventPage() {
             Caption Aotearoa
           </span>
           <div className="w-px h-5 bg-[var(--color-outline-variant)]" />
-          {isConnected && event.status === 'live' ? (
+          {event.status === 'ended' ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-outline)]" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">Ended</span>
+            </div>
+          ) : isConnected && event.status === 'live' ? (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border"
                  style={{ background: 'rgba(240,253,244,1)', borderColor: 'rgba(34,197,94,0.3)' }}>
               <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse" />
@@ -123,6 +128,16 @@ export function EventPage() {
         <aside className="w-72 shrink-0 bg-[var(--color-surface-container-low)]
                           border-r border-[var(--color-outline-variant)]
                           p-6 flex flex-col gap-8 overflow-y-auto">
+
+          {/* Event code */}
+          <section className="space-y-1">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              Event Code
+            </h3>
+            <p className="font-mono text-2xl font-bold tracking-widest text-[var(--color-on-surface)]">
+              {event.code}
+            </p>
+          </section>
 
           {/* Text Size */}
           <section className="space-y-3">
@@ -164,7 +179,7 @@ export function EventPage() {
                 }`}
                 aria-pressed={!isDark}
               >
-                <div className="w-8 h-8 rounded-full bg-[var(--color-background)] border border-[var(--color-outline-variant)]" />
+                <div className="w-8 h-8 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]" />
                 <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Light</span>
               </button>
               <button
@@ -205,7 +220,6 @@ export function EventPage() {
                   <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              <p className="font-mono text-xs text-[var(--color-on-surface-variant)]">#{event.code}</p>
             </div>
           </div>
         </aside>
@@ -270,13 +284,6 @@ export function EventPage() {
                   eventDate={event.event_date}
                 />
               )}
-              <button
-                className="p-2 rounded-lg bg-[var(--color-primary)]/5 hover:bg-[var(--color-primary)]/10 transition-colors"
-                title="Report issue"
-                aria-label="Report issue"
-              >
-                <span className="material-symbols-outlined text-[var(--color-primary)]">flag</span>
-              </button>
             </div>
             <span className="text-xs font-sans uppercase tracking-widest text-[var(--color-primary)]/40">
               Real-time
