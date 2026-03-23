@@ -1,11 +1,12 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
+import { DashboardShell } from '../components/DashboardShell'
 import { StatusBadge } from '../components/StatusBadge'
 import { QRDisplay } from '../components/QRDisplay'
 import { TranscriptDownload } from '../components/TranscriptDownload'
 import type { Event } from '@caption-aotearoa/shared'
-import { ArrowLeft, Play, Square, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Play, Square, RotateCcw, ExternalLink } from 'lucide-react'
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -31,100 +32,151 @@ export function EventDetailPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-brand-purple opacity-60">Loading event…</p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)]">
+        <p className="text-[var(--color-on-surface-variant)]">Loading event…</p>
       </div>
     )
   }
 
+  const formattedDate = event.event_date
+    ? new Date(event.event_date).toLocaleDateString('en-NZ', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      })
+    : null
+
   return (
-    <div className="min-h-screen">
-      <header className="bg-brand-navy text-white px-6 py-4 flex items-center gap-4">
-        <button onClick={() => navigate('/dashboard')} className="text-white opacity-70 hover:opacity-100">
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-serif text-xl font-semibold truncate">{event.title}</h1>
-          <span className="text-sm opacity-60 font-mono">{event.code}</span>
-        </div>
-        <StatusBadge status={event.status} />
-      </header>
-
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
-        {/* Event info */}
-        <section className="bg-white rounded-xl p-6 border-2 border-brand-purple border-opacity-10">
-          <h2 className="font-serif text-lg font-semibold text-brand-purple-dark mb-4">Event Details</h2>
-          {event.description && <p className="text-brand-black opacity-80 mb-3">{event.description}</p>}
-          {event.event_date && (
-            <p className="text-sm text-brand-black opacity-60">
-              {new Date(event.event_date).toLocaleDateString('en-NZ', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-                hour: 'numeric', minute: '2-digit',
-              })}
+    <DashboardShell
+      left={
+        <div className="flex flex-col gap-4">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
+                       hover:text-[var(--color-on-surface)] transition-colors -ml-1"
+          >
+            <ArrowLeft size={16} />
+            All events
+          </button>
+          <div className="border-t border-[var(--color-outline-variant)]" />
+          <div>
+            <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] leading-snug">
+              {event.title}
+            </h2>
+            <p className="font-mono text-xs text-[var(--color-on-surface-variant)] mt-1">
+              {event.code}
             </p>
-          )}
-          <p className="text-sm text-brand-black opacity-50 mt-2">{event.languages.length} languages configured</p>
-        </section>
-
-        {/* Controls */}
-        <section className="bg-white rounded-xl p-6 border-2 border-brand-purple border-opacity-10">
-          <h2 className="font-serif text-lg font-semibold text-brand-purple-dark mb-4">Controls</h2>
-          <div className="flex flex-wrap gap-3">
-            {event.status === 'upcoming' && (
-              <button
-                onClick={() => statusMutation.mutate('live')}
-                disabled={statusMutation.isPending}
-                className="btn-primary flex items-center gap-2"
-              >
-                <Play size={16} />
-                Start Captioning
-              </button>
+            {formattedDate && (
+              <p className="text-xs text-[var(--color-on-surface-variant)] mt-2">
+                {formattedDate}
+              </p>
             )}
-            {event.status === 'live' && (
-              <>
-                <Link
-                  to={`/dashboard/events/${event.id}/present`}
-                  className="btn-primary flex items-center gap-2"
+            <div className="mt-3">
+              <StatusBadge status={event.status} />
+            </div>
+          </div>
+        </div>
+      }
+      main={
+        <div className="space-y-6">
+          {/* Event details */}
+          <section className="rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] p-6">
+            <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] mb-3">
+              Event Details
+            </h2>
+            {event.description && (
+              <p className="text-[var(--color-on-surface-variant)] mb-3">{event.description}</p>
+            )}
+            <p className="text-sm text-[var(--color-on-surface-variant)]">
+              {event.languages.length} language{event.languages.length !== 1 ? 's' : ''} configured
+            </p>
+          </section>
+
+          {/* Controls */}
+          <section className="rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] p-6">
+            <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] mb-4">
+              Controls
+            </h2>
+            <div className="flex flex-wrap gap-3">
+              {event.status === 'upcoming' && (
+                <button
+                  onClick={() => statusMutation.mutate('live')}
+                  disabled={statusMutation.isPending}
+                  className="btn-primary flex items-center gap-2 disabled:opacity-50"
                 >
                   <Play size={16} />
-                  Open Presenter
-                </Link>
-                <button
-                  onClick={() => statusMutation.mutate('ended')}
-                  disabled={statusMutation.isPending}
-                  className="btn-secondary flex items-center gap-2 text-brand-error border-brand-error hover:bg-brand-error hover:text-white"
-                >
-                  <Square size={16} />
-                  End Event
+                  Start Captioning
                 </button>
-              </>
-            )}
-            {event.status === 'ended' && (
-              <button
-                onClick={() => retryTranscript.mutate()}
-                disabled={retryTranscript.isPending}
-                className="btn-secondary flex items-center gap-2"
-              >
-                <RotateCcw size={16} />
-                {retryTranscript.isPending ? 'Retrying…' : 'Retry Transcript'}
-              </button>
-            )}
-            <QRDisplay eventCode={event.code} />
-          </div>
-        </section>
-
-        {/* Transcript */}
-        {event.status === 'ended' && (
-          <section className="bg-white rounded-xl p-6 border-2 border-brand-purple border-opacity-10">
-            <h2 className="font-serif text-lg font-semibold text-brand-purple-dark mb-4">Transcript</h2>
-            <TranscriptDownload
-              eventCode={event.code}
-              eventTitle={event.title}
-              eventDate={event.event_date}
-            />
+              )}
+              {event.status === 'live' && (
+                <>
+                  {/* Fixed: was /dashboard/events/:id/present — now goes directly to /present/:code */}
+                  <Link
+                    to={`/present/${event.code}`}
+                    className="btn-primary flex items-center gap-2"
+                  >
+                    <ExternalLink size={16} />
+                    Open Presenter
+                  </Link>
+                  <button
+                    onClick={() => statusMutation.mutate('ended')}
+                    disabled={statusMutation.isPending}
+                    className="btn-secondary flex items-center gap-2 disabled:opacity-50
+                               text-[var(--color-error)] border-[var(--color-error)]
+                               hover:bg-[var(--color-error)] hover:text-white"
+                  >
+                    <Square size={16} />
+                    End Event
+                  </button>
+                </>
+              )}
+              {event.status === 'ended' && (
+                <button
+                  onClick={() => retryTranscript.mutate()}
+                  disabled={retryTranscript.isPending}
+                  className="btn-secondary flex items-center gap-2 disabled:opacity-50"
+                >
+                  <RotateCcw size={16} />
+                  {retryTranscript.isPending ? 'Retrying…' : 'Retry Transcript'}
+                </button>
+              )}
+            </div>
           </section>
-        )}
-      </main>
-    </div>
+
+          {/* Transcript */}
+          {event.status === 'ended' && (
+            <section className="rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] p-6">
+              <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] mb-4">
+                Transcript
+              </h2>
+              <TranscriptDownload
+                eventCode={event.code}
+                eventTitle={event.title}
+                eventDate={event.event_date}
+              />
+            </section>
+          )}
+        </div>
+      }
+      right={
+        <div className="flex flex-col gap-4">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+            Audience joining
+          </h3>
+          <QRDisplay eventCode={event.code} />
+          <div className="rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] p-4 space-y-2">
+            <p className="text-xs text-[var(--color-on-surface-variant)]">Join link</p>
+            <p className="font-mono text-xs text-[var(--color-on-surface)] break-all">
+              {window.location.origin}/event/{event.code}
+            </p>
+            <p className="text-xs text-[var(--color-on-surface-variant)] pt-1">
+              Code:{' '}
+              <span className="font-mono font-semibold text-[var(--color-on-surface)]">
+                {event.code}
+              </span>
+            </p>
+          </div>
+        </div>
+      }
+    />
   )
 }
