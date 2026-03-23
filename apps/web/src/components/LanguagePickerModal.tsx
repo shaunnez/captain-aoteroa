@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
-import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
+import { NZ_LANGUAGES, type NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
 import { AZURE_TRANSLATION_LANGUAGES } from '@caption-aotearoa/shared/azureLanguages'
 
 interface LanguagePickerModalProps {
@@ -8,11 +8,12 @@ interface LanguagePickerModalProps {
   onClose: () => void
   selectedLocale: string
   onSelect: (locale: string) => void
+  languages?: NzLanguage[]   // when provided: show only these, hide Translated section
 }
 
 const NZ_CODES = new Set(NZ_LANGUAGES.map((l) => l.code))
 
-export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect }: LanguagePickerModalProps) {
+export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect, languages }: LanguagePickerModalProps) {
   const [search, setSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -37,13 +38,15 @@ export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect 
 
   const query = search.toLowerCase()
 
-  const instantItems = NZ_LANGUAGES.filter((l) =>
+  const instantItems = (languages ?? NZ_LANGUAGES).filter((l) =>
     l.label.toLowerCase().includes(query)
   )
 
-  const translatedItems = AZURE_TRANSLATION_LANGUAGES.filter(
-    (l) => !NZ_CODES.has(l.code) && l.label.toLowerCase().includes(query)
-  )
+  const translatedItems = languages
+    ? []   // custom list — no translated section
+    : AZURE_TRANSLATION_LANGUAGES.filter(
+        (l) => !NZ_CODES.has(l.code) && l.label.toLowerCase().includes(query)
+      )
 
   function handleSelect(code: string) {
     onSelect(code)
@@ -98,7 +101,7 @@ export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect 
           {instantItems.length > 0 && (
             <section>
               <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)] mb-3">
-                Instant Languages
+                {languages ? 'Languages' : 'Instant Languages'}
               </p>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                 {instantItems.map((lang) => {

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { LanguagePickerModal } from '../components/LanguagePickerModal'
+import type { NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
 
 describe('LanguagePickerModal', () => {
   const defaultProps = {
@@ -58,5 +59,31 @@ describe('LanguagePickerModal', () => {
     // The backdrop is the outermost fixed div
     fireEvent.click(container.querySelector('[data-backdrop]')!)
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('shows only provided languages when languages prop is given', () => {
+    const langs: NzLanguage[] = [
+      { code: 'en', label: 'English', flag: '🇬🇧' },
+      { code: 'mi', label: 'Te reo Māori', flag: '🇳🇿' },
+    ]
+    render(<LanguagePickerModal {...defaultProps} languages={langs} />)
+    expect(screen.getByText('English')).toBeDefined()
+    expect(screen.getByText('Te reo Māori')).toBeDefined()
+    // Must NOT show the default section labels
+    expect(screen.queryByText('Instant Languages')).toBeNull()
+    expect(screen.queryByText('Translated')).toBeNull()
+  })
+
+  it('filters provided languages by search query', () => {
+    const langs: NzLanguage[] = [
+      { code: 'en', label: 'English', flag: '🇬🇧' },
+      { code: 'mi', label: 'Te reo Māori', flag: '🇳🇿' },
+    ]
+    render(<LanguagePickerModal {...defaultProps} languages={langs} />)
+    fireEvent.change(screen.getByPlaceholderText('Search for a language…'), {
+      target: { value: 'english' },
+    })
+    expect(screen.getByText('English')).toBeDefined()
+    expect(screen.queryByText('Te reo Māori')).toBeNull()
   })
 })
