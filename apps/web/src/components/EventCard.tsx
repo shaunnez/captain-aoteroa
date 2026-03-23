@@ -32,6 +32,11 @@ export function EventCard({ event, to }: EventCardProps) {
                          group-hover:text-[var(--color-primary)] transition-colors">
             {event.title}
           </h3>
+          {event.organiser_name && (
+            <p className="text-xs text-[var(--color-on-surface-variant)] mt-0.5">
+              by {event.organiser_name}
+            </p>
+          )}
           {formattedDate && (
             <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">{formattedDate}</p>
           )}

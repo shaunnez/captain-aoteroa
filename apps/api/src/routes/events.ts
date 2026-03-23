@@ -13,7 +13,7 @@ function generateCode(): string {
 
 // POST /api/events — create event (JWT protected)
 eventsRouter.post('/', verifyJWT, async (req, res) => {
-  const { title, description, event_date } = req.body
+  const { title, description, event_date, organiser_name, theme_color, phrase_list } = req.body
   if (!title) {
     res.status(400).json({ error: 'title required' })
     return
@@ -22,7 +22,16 @@ eventsRouter.post('/', verifyJWT, async (req, res) => {
   const code = generateCode()
   const { data, error } = await supabase
     .from('events')
-    .insert({ code, title, description, event_date, languages: NZ_LANGUAGES.map((l: { code: string }) => l.code) })
+    .insert({
+      code,
+      title,
+      description,
+      event_date,
+      organiser_name: organiser_name || null,
+      theme_color: theme_color || null,
+      phrase_list: Array.isArray(phrase_list) ? phrase_list : null,
+      languages: NZ_LANGUAGES.map((l: { code: string }) => l.code),
+    })
     .select()
     .single()
 
@@ -64,11 +73,13 @@ eventsRouter.get('/:code', async (req, res) => {
 
 // PATCH /api/events/:code — update event details (JWT protected)
 eventsRouter.patch('/:code', verifyJWT, async (req, res) => {
-  const { title, description, event_date } = req.body
+  const { title, description, event_date, organiser_name, theme_color } = req.body
   const patch: Record<string, unknown> = {}
   if (title !== undefined) patch.title = title
   if (description !== undefined) patch.description = description
   if (event_date !== undefined) patch.event_date = event_date
+  if (organiser_name !== undefined) patch.organiser_name = organiser_name
+  if (theme_color !== undefined) patch.theme_color = theme_color
 
   if (Object.keys(patch).length === 0) {
     res.status(400).json({ error: 'No fields to update' })

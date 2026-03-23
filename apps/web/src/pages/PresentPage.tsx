@@ -14,6 +14,8 @@ import { DashboardShell } from '../components/DashboardShell'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { LanguagePickerModal } from '../components/LanguagePickerModal'
 import { useViewerCount } from '../hooks/useViewerCount'
+import { useReactions } from '../hooks/useReactions'
+import { FloatingReactions } from '../components/FloatingReactions'
 import type { Event } from '@caption-aotearoa/shared'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 import type { NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
@@ -67,6 +69,7 @@ export function PresentPage() {
 
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
   const viewerCount = useViewerCount(code ?? '')
+  const { reactions } = useReactions(code ?? '')
 
   useEffect(() => {
     if (isCapturing) {
@@ -559,7 +562,8 @@ export function PresentPage() {
           </div>
 
           {/* Live Transcript Panel — fills remaining space */}
-          <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden min-h-0 relative">
+            <FloatingReactions reactions={reactions} />
             <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] shrink-0">
               <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
                 Live Transcript

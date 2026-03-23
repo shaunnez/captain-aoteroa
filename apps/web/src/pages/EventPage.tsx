@@ -17,6 +17,8 @@ import { useViewerCount } from '../hooks/useViewerCount'
 import { useDarkModeContext } from '../contexts/DarkModeContext'
 import type { Event } from '@caption-aotearoa/shared'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
+import { useReactions } from '../hooks/useReactions'
+import { ReactionBar } from '../components/ReactionBar'
 import { TTS_SUPPORTED_LANGUAGES } from '@caption-aotearoa/shared'
 
 export function EventPage() {
@@ -28,6 +30,7 @@ export function EventPage() {
   const { fontSize, setFontSize, highContrast, toggleHighContrast, dyslexiaFont, toggleDyslexiaFont, lineSpacing, setLineSpacing } = useAccessibility()
   const [askDrawerOpen, setAskDrawerOpen] = useState(false)
   const { submitQuestion } = useQA(code ?? '')
+  const { sendReaction } = useReactions(code ?? '')
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -307,9 +310,17 @@ export function EventPage() {
 
           <div className="relative z-10 mb-4 md:mb-10 flex items-end justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="font-serif text-xl md:text-3xl font-bold text-[var(--color-primary)] tracking-tight truncate">
+              <h1
+                className="font-serif text-xl md:text-3xl font-bold tracking-tight truncate"
+                style={{ color: event.theme_color || 'var(--color-primary)' }}
+              >
                 {event.title}
               </h1>
+              {event.organiser_name && (
+                <p className="text-xs text-[var(--color-on-surface-variant)] mt-0.5">
+                  by {event.organiser_name}
+                </p>
+              )}
               {event.description && (
                 <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">{event.description}</p>
               )}
@@ -363,9 +374,9 @@ export function EventPage() {
                 </button>
               )}
             </div>
-            <span className="text-xs font-sans uppercase tracking-widest text-[var(--color-primary)]/40">
-              Real-time
-            </span>
+            {event.status !== 'ended' && (
+              <ReactionBar onReact={sendReaction} />
+            )}
           </div>
         </section>
       </div>
