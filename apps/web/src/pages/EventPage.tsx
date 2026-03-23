@@ -18,7 +18,7 @@ export function EventPage() {
   const navigate = useNavigate()
   const [selectedLocale, setSelectedLocale] = useState('en')
   const [lobbyDismissed, setLobbyDismissed] = useState(false)
-  const { fontSize, highContrast, setFontSize, toggleHighContrast } = useAccessibility()
+  const { fontSize, setFontSize } = useAccessibility()
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
 
@@ -97,7 +97,7 @@ export function EventPage() {
             </div>
           ) : (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
-              <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-outline)]'}`} />
+              <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[var(--color-primary-container)]' : 'bg-[var(--color-outline)]'}`} />
               <span className="text-xs text-[var(--color-on-surface-variant)]">
                 {isConnected ? 'Connected' : 'Connecting…'}
               </span>
@@ -140,7 +140,7 @@ export function EventPage() {
                 min="1.25" max="3" step="0.25"
                 value={fontSize}
                 onChange={(e) => setFontSize(parseFloat(e.target.value))}
-                className="w-full h-2 rounded-lg appearance-none accent-[var(--color-primary)]"
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
                 style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
                 aria-label="Text size"
               />
@@ -178,15 +178,6 @@ export function EventPage() {
                 <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Dark</span>
               </button>
             </div>
-            <label className="flex items-center gap-2 cursor-pointer pt-1">
-              <input
-                type="checkbox"
-                checked={highContrast}
-                onChange={toggleHighContrast}
-                className="w-4 h-4 accent-[var(--color-primary)]"
-              />
-              <span className="text-sm text-[var(--color-on-surface)]">High contrast</span>
-            </label>
           </section>
 
           {/* Language & session */}
@@ -238,7 +229,6 @@ export function EventPage() {
               <CaptionDisplay
                 segments={segments}
                 variant="flat"
-                highContrast={highContrast}
                 className="flex-1"
                 style={{ fontSize: `${fontSize}rem` }}
               />
