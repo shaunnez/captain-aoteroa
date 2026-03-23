@@ -91,7 +91,7 @@ export function EventPage() {
   if (showLobby) return <EventLobby event={event} />
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[var(--color-background)]">
+    <div className={`flex flex-col h-screen overflow-hidden bg-[var(--color-background)]${highContrast ? ' high-contrast' : ''}${dyslexiaFont ? ' font-dyslexia' : ''}`}>
 
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-background)]/90 backdrop-blur-xl
@@ -332,7 +332,11 @@ export function EventPage() {
                 segments={segments}
                 variant="flat"
                 className="flex-1"
-                style={{ fontSize: `${fontSize}rem` }}
+                highContrast={highContrast}
+                style={{
+                  fontSize: `${fontSize}rem`,
+                  lineHeight: lineSpacing === 'compact' ? 1.3 : lineSpacing === 'relaxed' ? 2.2 : 1.6,
+                }}
               />
             )}
           </div>
@@ -347,7 +351,7 @@ export function EventPage() {
                   eventDate={event.event_date}
                 />
               )}
-              {event.status === 'live' && (
+              {event.status !== 'ended' && (
                 <button
                   onClick={() => setAskDrawerOpen(true)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
