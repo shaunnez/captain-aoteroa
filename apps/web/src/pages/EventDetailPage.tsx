@@ -7,6 +7,7 @@ import { QRDisplay } from '../components/QRDisplay'
 import { TranscriptDownload } from '../components/TranscriptDownload'
 import type { Event } from '@caption-aotearoa/shared'
 import { ArrowLeft, Play, Square, RotateCcw, ExternalLink } from 'lucide-react'
+import { QAPanel } from '../components/QAPanel'
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -175,6 +176,7 @@ export function EventDetailPage() {
               </span>
             </p>
           </div>
+          {event.status === 'live' && <QAPanel code={event.code} />}
         </div>
       }
     />

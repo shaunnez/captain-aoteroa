@@ -10,6 +10,9 @@ import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { TranscriptDownload } from '../components/TranscriptDownload'
 import { useAccessibility } from '../hooks/useAccessibility'
+import { useQA } from '../hooks/useQA'
+import { AccessibilityPanel } from '../components/AccessibilityPanel'
+import { AskQuestionDrawer } from '../components/AskQuestionDrawer'
 import { useViewerCount } from '../hooks/useViewerCount'
 import { useDarkModeContext } from '../contexts/DarkModeContext'
 import type { Event } from '@caption-aotearoa/shared'
@@ -22,7 +25,9 @@ export function EventPage() {
   const [selectedLocale, setSelectedLocale] = useState('en')
   const [lobbyDismissed, setLobbyDismissed] = useState(false)
   const [langPickerOpen, setLangPickerOpen] = useState(false)
-  const { fontSize, setFontSize } = useAccessibility()
+  const { fontSize, setFontSize, highContrast, toggleHighContrast, dyslexiaFont, toggleDyslexiaFont, lineSpacing, setLineSpacing } = useAccessibility()
+  const [askDrawerOpen, setAskDrawerOpen] = useState(false)
+  const { submitQuestion } = useQA(code ?? '')
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -227,6 +232,16 @@ export function EventPage() {
             </div>
           </section>
 
+          {/* Accessibility */}
+          <AccessibilityPanel
+            highContrast={highContrast}
+            onToggleHighContrast={toggleHighContrast}
+            dyslexiaFont={dyslexiaFont}
+            onToggleDyslexiaFont={toggleDyslexiaFont}
+            lineSpacing={lineSpacing}
+            onSetLineSpacing={setLineSpacing}
+          />
+
           {/* Language & session */}
           <div className="mt-auto pt-6 border-t border-[var(--color-outline-variant)]">
             <div className="bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)]
@@ -332,6 +347,17 @@ export function EventPage() {
                   eventDate={event.event_date}
                 />
               )}
+              {event.status === 'live' && (
+                <button
+                  onClick={() => setAskDrawerOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
+                             bg-[var(--color-primary)] text-[var(--color-on-primary)]
+                             hover:opacity-90 transition-opacity"
+                >
+                  <span className="material-symbols-outlined text-[18px]">question_answer</span>
+                  Ask a question
+                </button>
+              )}
             </div>
             <span className="text-xs font-sans uppercase tracking-widest text-[var(--color-primary)]/40">
               Real-time
@@ -339,6 +365,13 @@ export function EventPage() {
           </div>
         </section>
       </div>
+
+      <AskQuestionDrawer
+        isOpen={askDrawerOpen}
+        onClose={() => setAskDrawerOpen(false)}
+        onSubmit={submitQuestion}
+        language={selectedLocale}
+      />
     </div>
   )
 }
