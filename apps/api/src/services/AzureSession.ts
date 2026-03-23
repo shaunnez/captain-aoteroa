@@ -28,6 +28,8 @@ export class AzureSession {
   private recognizer!: sdk.TranslationRecognizer
   private ownSequence = 0
   private eventId: string | null = null
+  private partialTimer: ReturnType<typeof setTimeout> | null = null
+  private pendingPartial: { segments: Record<string, string> } | null = null
 
   constructor(options: AzureSessionOptions) {
     this.options = options
@@ -90,6 +92,9 @@ export class AzureSession {
     )
     translationConfig.speechRecognitionLanguage = sourceLocale
 
+    // Shorter segmentation silence → faster final segments (default ~2s → 500ms)
+    translationConfig.setProperty('Speech_SegmentationSilenceTimeoutMs', '500')
+
     // Add target languages (all non-source event languages)
     const sourceCode = bcp47ToTranslationCode(sourceLocale)
     for (const lang of languages) {
@@ -111,15 +116,26 @@ export class AzureSession {
       this.options.phraseList.forEach((p) => grammar.addPhrase(p))
     }
 
+    // Throttle partials to ~7/sec (trailing-edge) to avoid render thrashing
     this.recognizer.recognizing = (_, e) => {
       if (e.result.reason === effectiveSdk.ResultReason.TranslatingSpeech) {
-        const segments = this.buildSegments(e.result)
-        this.emitSegments(segments, false)
+        this.pendingPartial = { segments: this.buildSegments(e.result) }
+        if (!this.partialTimer) {
+          this.partialTimer = setTimeout(() => {
+            this.partialTimer = null
+            if (this.pendingPartial) {
+              this.emitSegments(this.pendingPartial.segments, false)
+              this.pendingPartial = null
+            }
+          }, 150)
+        }
       }
     }
 
     this.recognizer.recognized = (_, e) => {
       if (e.result.reason === effectiveSdk.ResultReason.TranslatedSpeech && e.result.text) {
+        // Flush any pending partial before emitting final
+        this.clearPartialTimer()
         const segments = this.buildSegments(e.result)
         this.emitSegments(segments, true)
       }
@@ -178,6 +194,14 @@ export class AzureSession {
     }
   }
 
+  private clearPartialTimer(): void {
+    if (this.partialTimer) {
+      clearTimeout(this.partialTimer)
+      this.partialTimer = null
+    }
+    this.pendingPartial = null
+  }
+
   /** BCP-47 locales Azure supports for speech recognition (derived from shared RECOGNITION_LOCALES). */
   static readonly SUPPORTED_LOCALES = Object.values(RECOGNITION_LOCALES)
 
@@ -198,6 +222,7 @@ export class AzureSession {
   }
 
   async stop(): Promise<void> {
+    this.clearPartialTimer()
     return new Promise((resolve, reject) => {
       this.recognizer.stopContinuousRecognitionAsync(() => {
         this.pushStream.close()
