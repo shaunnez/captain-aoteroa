@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { DashboardShell } from '../components/DashboardShell'
 import { EventCard } from '../components/EventCard'
 import { LogOut, Plus, LayoutList } from 'lucide-react'
+import { DarkModeToggle } from '../components/DarkModeToggle'
 import type { Event } from '@caption-aotearoa/shared'
 
 export function DashboardPage() {
@@ -32,15 +33,18 @@ export function DashboardPage() {
   return (
     <DashboardShell
       headerActions={
-        <button
-          onClick={handleSignOut}
-          title="Sign out"
-          className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
-                     hover:text-[var(--color-on-surface)] transition-colors"
-        >
-          <LogOut size={16} />
-          Sign out
-        </button>
+        <>
+          <DarkModeToggle />
+          <button
+            onClick={handleSignOut}
+            title="Sign out"
+            className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
+                       hover:text-[var(--color-on-surface)] transition-colors"
+          >
+            <LogOut size={16} />
+            Sign out
+          </button>
+        </>
       }
       left={
         <div className="flex flex-col gap-1">

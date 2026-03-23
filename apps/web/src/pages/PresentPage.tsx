@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Pencil, Check, X, Square, ExternalLink, CheckCircle, Sparkles, Loader2 } from 'lucide-react'
+import { DarkModeToggle } from '../components/DarkModeToggle'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { socket } from '../lib/socket'
@@ -201,14 +202,17 @@ export function PresentPage() {
     <DashboardShell
       fillMain
       headerActions={
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
-                     hover:text-[var(--color-on-surface)] transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Dashboard
-        </button>
+        <>
+          <DarkModeToggle />
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
+                       hover:text-[var(--color-on-surface)] transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Dashboard
+          </button>
+        </>
       }
       left={
         <div className="flex flex-col gap-5 h-full">
@@ -439,7 +443,7 @@ export function PresentPage() {
         </div>
       }
       main={
-        <div className="h-full flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:h-full">
           {/* Session Controls Panel */}
           <div className="rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden shrink-0">
             <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] flex items-center justify-between">
@@ -558,17 +562,17 @@ export function PresentPage() {
             )}
           </div>
 
-          {/* Live Transcript Panel — fills remaining space */}
-          <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden min-h-0">
+          {/* Live Transcript Panel — fills remaining space on desktop, expands naturally on mobile */}
+          <div className="lg:flex-1 lg:flex lg:flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] lg:overflow-hidden lg:min-h-0">
             <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] shrink-0">
               <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
                 Live Transcript
               </h3>
             </div>
-            <div className="flex-1 p-4 min-h-0">
+            <div className="p-4 lg:flex-1 lg:min-h-0">
               <CaptionDisplay
                 segments={segments}
-                className="h-full bg-[var(--color-surface-container)] rounded-lg p-4"
+                className="lg:h-full bg-[var(--color-surface-container)] rounded-lg p-4"
               />
             </div>
           </div>

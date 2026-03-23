@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { DarkModeToggle } from '../components/DarkModeToggle'
+import { Home } from 'lucide-react'
 
 export function SignupPage() {
   const [email, setEmail] = useState('')
@@ -48,6 +49,15 @@ export function SignupPage() {
             opacity="0.10"
           />
         </svg>
+        {/* Home link top-left */}
+        <Link
+          to="/"
+          className="absolute top-6 left-6 flex items-center gap-1.5 text-sm text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
+        >
+          <Home size={16} />
+          Home
+        </Link>
+
         <div className="relative w-full max-w-sm rounded-xl border border-[var(--color-outline-variant)]
                         bg-[var(--color-surface)] shadow-xl overflow-hidden p-8 text-center">
           <KowhaiwhaPattern opacity={0.03} />
@@ -95,6 +105,15 @@ export function SignupPage() {
           opacity="0.10"
         />
       </svg>
+
+      {/* Home link top-left */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 flex items-center gap-1.5 text-sm text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
+      >
+        <Home size={16} />
+        Home
+      </Link>
 
       {/* Dark mode toggle top-right */}
       <div className="absolute top-6 right-6">

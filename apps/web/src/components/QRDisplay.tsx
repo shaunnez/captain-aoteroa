@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import QRCode from 'react-qr-code'
 import { X, QrCode } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -22,32 +23,35 @@ export function QRDisplay({ eventCode }: Props) {
         Show QR code
       </button>
 
-      <AnimatePresence>
-        {fullscreen && (
-          <motion.div
-            initial={prefersReduced ? false : { opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed inset-0 bg-[var(--color-background)] flex flex-col items-center justify-center z-50 p-12"
-            onClick={() => setFullscreen(false)}
-          >
-            <button
-              className="absolute top-6 right-6 text-[var(--color-on-surface)] hover:opacity-70 transition-opacity"
-              aria-label="Close QR code"
+      {createPortal(
+        <AnimatePresence>
+          {fullscreen && (
+            <motion.div
+              initial={prefersReduced ? false : { opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="fixed inset-0 bg-[var(--color-background)] flex flex-col items-center justify-center z-50 p-12"
+              onClick={() => setFullscreen(false)}
             >
-              <X size={32} />
-            </button>
-            <QRCode value={audienceUrl} size={280} fgColor="#493276" bgColor="#fdfdf0" />
-            <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)] mt-8 tracking-widest">
-              {eventCode}
-            </p>
-            <p className="text-[var(--color-on-surface-variant)] mt-4 text-lg">
-              Scan to join · Tap anywhere to close
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <button
+                className="absolute top-6 right-6 text-[var(--color-on-surface)] hover:opacity-70 transition-opacity"
+                aria-label="Close QR code"
+              >
+                <X size={32} />
+              </button>
+              <QRCode value={audienceUrl} size={280} fgColor="#493276" bgColor="#fdfdf0" />
+              <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)] mt-8 tracking-widest">
+                {eventCode}
+              </p>
+              <p className="text-[var(--color-on-surface-variant)] mt-4 text-lg">
+                Scan to join · Tap anywhere to close
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   )
 }
