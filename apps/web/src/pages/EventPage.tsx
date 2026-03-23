@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
@@ -6,17 +6,20 @@ import { useCaptions } from '../hooks/useCaptions'
 import { CaptionDisplay } from '../components/CaptionDisplay'
 import { EventLobby } from '../components/EventLobby'
 import { LanguagePicker } from '../components/LanguagePicker'
+import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
+import { TranscriptDownload } from '../components/TranscriptDownload'
 import { useAccessibility } from '../hooks/useAccessibility'
 import { useViewerCount } from '../hooks/useViewerCount'
-import { Users } from 'lucide-react'
+import { useDarkModeContext } from '../contexts/DarkModeContext'
 import type { Event } from '@caption-aotearoa/shared'
 
 export function EventPage() {
   const { code } = useParams<{ code: string }>()
+  const navigate = useNavigate()
   const [selectedLocale, setSelectedLocale] = useState('en')
   const [lobbyDismissed, setLobbyDismissed] = useState(false)
   const { fontSize, highContrast, setFontSize, toggleHighContrast } = useAccessibility()
-  const [showSettings, setShowSettings] = useState(false)
+  const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
 
   const { data: event, isLoading, error } = useQuery({
@@ -28,21 +31,16 @@ export function EventPage() {
 
   const isConfiguredLanguage = event?.languages.includes(selectedLocale) ?? true
 
-  // Keep captions connected regardless of lobby state
   const { segments, isConnected, error: captionError } = useCaptions(
     code ?? '',
     selectedLocale,
     isConfiguredLanguage,
   )
 
-  // Auto-dismiss lobby when event goes live
   useEffect(() => {
-    if (event?.status === 'live') {
-      setLobbyDismissed(true)
-    }
+    if (event?.status === 'live') setLobbyDismissed(true)
   }, [event?.status])
 
-  // Show lobby when event_date is future AND status !== 'live' AND not dismissed
   const showLobby =
     !lobbyDismissed &&
     event &&
@@ -50,130 +48,227 @@ export function EventPage() {
     event.event_date &&
     new Date(event.event_date).getTime() > Date.now()
 
-  // Auto-dismiss when countdown expires
   useEffect(() => {
     if (!event?.event_date || lobbyDismissed || event.status === 'live') return
     const diff = new Date(event.event_date).getTime() - Date.now()
-    if (diff <= 0) {
-      setLobbyDismissed(true)
-      return
-    }
+    if (diff <= 0) { setLobbyDismissed(true); return }
     const timer = setTimeout(() => setLobbyDismissed(true), diff)
     return () => clearTimeout(timer)
   }, [event?.event_date, event?.status, lobbyDismissed])
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-brand-purple text-lg">Loading event…</p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)]">
+        <p className="text-[var(--color-primary)] text-lg">Loading event…</p>
       </div>
     )
   }
 
   if (error || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
-        <p className="text-brand-error text-lg">Event not found. Check your code and try again.</p>
+      <div className="min-h-screen flex items-center justify-center p-8 bg-[var(--color-background)]">
+        <p className="text-[var(--color-error)] text-lg">Event not found. Check your code and try again.</p>
       </div>
     )
   }
 
-  if (showLobby) {
-    return <EventLobby event={event} />
-  }
+  if (showLobby) return <EventLobby event={event} />
 
   return (
-    <div className={`min-h-screen flex flex-col ${highContrast ? 'bg-[#1e1c20] text-white' : ''}`}>
+    <div className="flex flex-col h-screen overflow-hidden bg-[var(--color-background)]">
+
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-brand-navy text-white px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="font-serif text-xl font-semibold">{event.title}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span
-              className={`inline-block w-2 h-2 rounded-full ${
-                isConnected ? 'bg-green-400' : 'bg-yellow-400'
-              }`}
-            />
-            <span className="text-sm opacity-80">
-              {isConnected ? (event.status === 'live' ? 'Live' : 'Connected') : 'Connecting…'}
-            </span>
-            {viewerCount > 0 && (
-              <span className="flex items-center gap-1 text-sm opacity-70">
-                <Users size={14} />
-                {viewerCount}
+      <header className="sticky top-0 z-10 bg-[var(--color-background)]/90 backdrop-blur-xl
+                         border-b border-[var(--color-outline-variant)] px-6 py-4
+                         flex items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4">
+          <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
+            Caption Aotearoa
+          </span>
+          <div className="w-px h-5 bg-[var(--color-outline-variant)]" />
+          {isConnected && event.status === 'live' ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border"
+                 style={{ background: 'rgba(240,253,244,1)', borderColor: 'rgba(34,197,94,0.3)' }}>
+              <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest text-green-700">Live</span>
+              {viewerCount > 0 && (
+                <span className="text-xs text-green-700 ml-1">· {viewerCount}</span>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
+              <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-outline)]'}`} />
+              <span className="text-xs text-[var(--color-on-surface-variant)]">
+                {isConnected ? 'Connected' : 'Connecting…'}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          {/* Language picker */}
-          <LanguagePicker
-            selectedLocale={selectedLocale}
-            onSelect={setSelectedLocale}
-          />
-          <button
-            onClick={() => setShowSettings((s) => !s)}
-            className="text-white opacity-80 hover:opacity-100 transition-opacity"
-            aria-label="Accessibility settings"
-            title="Accessibility settings"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--color-outline-variant)]
+                     text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
+        >
+          <span className="material-symbols-outlined text-[18px]">close</span>
+          Exit
+        </button>
       </header>
 
-      {/* Accessibility settings panel */}
-      {showSettings && (
-        <div className={`px-6 py-4 border-b ${highContrast ? 'bg-[#2a282c] border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-3">
-              <label htmlFor="font-size" className="text-sm font-medium whitespace-nowrap">
-                Text size
-              </label>
+      {/* Body row */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Sidebar */}
+        <aside className="w-72 shrink-0 bg-[var(--color-surface-container-low)]
+                          border-r border-[var(--color-outline-variant)]
+                          p-6 flex flex-col gap-8 overflow-y-auto">
+
+          {/* Text Size */}
+          <section className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              Text Size
+            </h3>
+            <div className="bg-[var(--color-surface-container-lowest)] p-4 rounded-xl
+                            border border-[var(--color-outline-variant)] shadow-sm space-y-3">
+              <div className="flex justify-between items-center px-1">
+                <span className="material-symbols-outlined text-[var(--color-primary)]"
+                      style={{ fontSize: '16px' }}>text_fields</span>
+                <span className="material-symbols-outlined text-[var(--color-primary)]"
+                      style={{ fontSize: '24px' }}>text_fields</span>
+              </div>
               <input
-                id="font-size"
                 type="range"
-                min="1.25"
-                max="3"
-                step="0.25"
+                min="1.25" max="3" step="0.25"
                 value={fontSize}
                 onChange={(e) => setFontSize(parseFloat(e.target.value))}
-                className="w-32"
+                className="w-full h-2 rounded-lg appearance-none accent-[var(--color-primary)]"
+                style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
+                aria-label="Text size"
               />
-              <span className="text-sm opacity-70 w-16">{fontSize}rem</span>
             </div>
-            <label className="flex items-center gap-2 cursor-pointer">
+          </section>
+
+          {/* Display mode */}
+          <section className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              Display
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => { if (isDark) toggle() }}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                  !isDark
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
+                    : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
+                }`}
+                aria-pressed={!isDark}
+              >
+                <div className="w-8 h-8 rounded-full bg-[var(--color-background)] border border-[var(--color-outline-variant)]" />
+                <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Light</span>
+              </button>
+              <button
+                onClick={() => { if (!isDark) toggle() }}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                  isDark
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
+                    : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
+                }`}
+                aria-pressed={isDark}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#0a0a0c]" />
+                <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Dark</span>
+              </button>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer pt-1">
               <input
                 type="checkbox"
                 checked={highContrast}
                 onChange={toggleHighContrast}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-[var(--color-primary)]"
               />
-              <span className="text-sm font-medium">High contrast</span>
+              <span className="text-sm text-[var(--color-on-surface)]">High contrast</span>
             </label>
-          </div>
-        </div>
-      )}
+          </section>
 
-      {/* Caption area */}
-      {captionError && (
-        <div className="bg-brand-error text-white px-6 py-3 text-sm">
-          {captionError}
-        </div>
-      )}
-      <main className="flex-1 overflow-hidden p-6">
-        {segments.length === 0 && event.status !== 'live' && (
-          <p className={`${highContrast ? 'text-white' : 'text-brand-purple'} opacity-60 text-lg text-center mt-16`}>
-            Waiting for captions to begin…
-          </p>
-        )}
-        <CaptionDisplay
-          segments={segments}
-          highContrast={highContrast}
-          className={`h-full border-2 ${highContrast ? 'bg-[#1e1c20] border-gray-600' : 'bg-white border-brand-purple border-opacity-20'}`}
-          style={{ fontSize: `${fontSize}rem` }}
-        />
-      </main>
+          {/* Language & session */}
+          <div className="mt-auto pt-6 border-t border-[var(--color-outline-variant)]">
+            <div className="bg-[var(--color-primary)]/5 border border-[var(--color-outline-variant)]
+                            rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-sm text-[var(--color-primary)]">translate</span>
+                <LanguagePicker selectedLocale={selectedLocale} onSelect={setSelectedLocale} />
+              </div>
+              <p className="font-mono text-xs text-[var(--color-on-surface-variant)]">#{event.code}</p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Caption canvas */}
+        <section className="flex-1 min-w-0 relative flex flex-col p-8 md:p-12 overflow-hidden">
+          <KowhaiwhaPattern opacity={0.03} />
+
+          {captionError && (
+            <div className="absolute top-0 inset-x-0 z-20 bg-[var(--color-error)] text-white px-6 py-3 text-sm">
+              {captionError}
+            </div>
+          )}
+
+          <div className="relative z-10 mb-10 flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="font-serif text-3xl font-bold text-[var(--color-primary)] tracking-tight truncate">
+                {event.title}
+              </h1>
+              {event.description && (
+                <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">{event.description}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="relative z-10 flex-1 overflow-hidden flex flex-col">
+            {segments.length === 0 && event.status === 'live' ? (
+              <div className="flex items-center gap-2 py-6">
+                <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-bounce" />
+                <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-bounce [animation-delay:0.2s]" />
+                <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-bounce [animation-delay:0.4s]" />
+              </div>
+            ) : segments.length === 0 ? (
+              <p className="text-[var(--color-primary)] opacity-50 text-lg mt-16">
+                Waiting for captions to begin…
+              </p>
+            ) : (
+              <CaptionDisplay
+                segments={segments}
+                variant="flat"
+                highContrast={highContrast}
+                className="flex-1"
+                style={{ fontSize: `${fontSize}rem` }}
+              />
+            )}
+          </div>
+
+          <div className="relative z-10 mt-8 flex justify-between items-center
+                          border-t border-[var(--color-outline-variant)] pt-6 shrink-0">
+            <div className="flex gap-2">
+              {event.status === 'ended' && (
+                <TranscriptDownload
+                  eventCode={event.code}
+                  eventTitle={event.title}
+                  eventDate={event.event_date}
+                />
+              )}
+              <button
+                className="p-2 rounded-lg bg-[var(--color-primary)]/5 hover:bg-[var(--color-primary)]/10 transition-colors"
+                title="Report issue"
+                aria-label="Report issue"
+              >
+                <span className="material-symbols-outlined text-[var(--color-primary)]">flag</span>
+              </button>
+            </div>
+            <span className="text-xs font-sans uppercase tracking-widest text-[var(--color-primary)]/40">
+              Real-time
+            </span>
+          </div>
+        </section>
+      </div>
     </div>
   )
 }
