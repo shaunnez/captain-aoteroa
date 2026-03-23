@@ -29,20 +29,20 @@ export function QRDisplay({ eventCode }: Props) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed inset-0 bg-brand-sand flex flex-col items-center justify-center z-50 p-12"
+            className="fixed inset-0 bg-[var(--color-background)] flex flex-col items-center justify-center z-50 p-12"
             onClick={() => setFullscreen(false)}
           >
             <button
-              className="absolute top-6 right-6 text-brand-purple hover:text-brand-purple-dark"
+              className="absolute top-6 right-6 text-[var(--color-on-surface)] hover:opacity-70 transition-opacity"
               aria-label="Close QR code"
             >
               <X size={32} />
             </button>
             <QRCode value={audienceUrl} size={280} fgColor="#493276" bgColor="#fdfdf0" />
-            <p className="font-mono text-5xl font-bold text-brand-purple mt-8 tracking-widest">
+            <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)] mt-8 tracking-widest">
               {eventCode}
             </p>
-            <p className="text-brand-purple opacity-60 mt-4 text-lg">
+            <p className="text-[var(--color-on-surface-variant)] mt-4 text-lg">
               Scan to join · Tap anywhere to close
             </p>
           </motion.div>
