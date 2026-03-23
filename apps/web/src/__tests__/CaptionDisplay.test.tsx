@@ -60,3 +60,63 @@ describe('CaptionDisplay', () => {
     expect(log.style.fontSize).toBe('2rem')
   })
 })
+
+describe('CaptionDisplay variant="flat"', () => {
+  const segments: DisplaySegment[] = [
+    { sequence: 1, text: 'First segment', isFinal: true, isTranslating: false, id: '1' },
+    { sequence: 2, text: 'Second segment', isFinal: true, isTranslating: false, id: '2' },
+    { sequence: 3, text: 'Current segment', isFinal: false, isTranslating: false, id: '3' },
+  ]
+
+  it('still has role="log" and aria-live="polite"', () => {
+    render(<CaptionDisplay segments={segments} variant="flat" />)
+    const log = screen.getByRole('log')
+    expect(log.getAttribute('aria-live')).toBe('polite')
+  })
+
+  it('does not render the rounded box container class', () => {
+    render(<CaptionDisplay segments={segments} variant="flat" />)
+    const log = screen.getByRole('log')
+    expect(log.className).not.toContain('rounded-lg')
+  })
+
+  it('renders all segment texts', () => {
+    render(<CaptionDisplay segments={segments} variant="flat" />)
+    expect(screen.getByText('First segment')).toBeDefined()
+    expect(screen.getByText('Second segment')).toBeDefined()
+    expect(screen.getByText('Current segment')).toBeDefined()
+  })
+
+  it('applies faded style to all segments except the last', () => {
+    const { container } = render(<CaptionDisplay segments={segments} variant="flat" />)
+    const paras = container.querySelectorAll('p')
+    expect(paras[0].className).toContain('opacity-20')
+    expect(paras[1].className).toContain('opacity-20')
+    expect(paras[2].className).not.toContain('opacity-20')
+  })
+
+  it('applies left-border accent to the last segment', () => {
+    const { container } = render(<CaptionDisplay segments={segments} variant="flat" />)
+    const paras = container.querySelectorAll('p')
+    expect(paras[2].className).toContain('border-l-8')
+  })
+
+  it('with highContrast=true, faded segments are not faded', () => {
+    const { container } = render(
+      <CaptionDisplay segments={segments} variant="flat" highContrast={true} />
+    )
+    const paras = container.querySelectorAll('p')
+    expect(paras[0].className).not.toContain('opacity-20')
+    expect(paras[1].className).not.toContain('opacity-20')
+  })
+
+  it('with a single segment, that segment gets the active style', () => {
+    const single: DisplaySegment[] = [
+      { sequence: 1, text: 'Only segment', isFinal: true, isTranslating: false, id: '1' },
+    ]
+    const { container } = render(<CaptionDisplay segments={single} variant="flat" />)
+    const para = container.querySelector('p')!
+    expect(para.className).toContain('border-l-8')
+    expect(para.className).not.toContain('opacity-20')
+  })
+})
