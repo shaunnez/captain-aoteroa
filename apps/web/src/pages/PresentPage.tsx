@@ -190,6 +190,14 @@ export function PresentPage() {
     : ''
 
   return (
+    <>
+    <LanguagePickerModal
+      isOpen={langPickerOpen}
+      onClose={() => setLangPickerOpen(false)}
+      selectedLocale={activeSpeakerCode}
+      onSelect={handleSpeakerSelect}
+      languages={speakerLangList}
+    />
     <DashboardShell
       fillMain
       headerActions={
@@ -503,25 +511,50 @@ export function PresentPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-5 flex items-end justify-center gap-8">
+              <div className="p-4 md:p-5">
+              {/* Mobile: language selector visible inline */}
+              {speakerLangList.length > 0 && (
+                <div className="lg:hidden mb-4">
+                  <p className="text-xs font-medium text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-2">
+                    I am speaking in
+                  </p>
+                  <button
+                    onClick={() => setLangPickerOpen(true)}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                               bg-[var(--color-surface-container-high)]
+                               text-[var(--color-on-surface)]
+                               border border-[var(--color-outline-variant)]
+                               hover:bg-[var(--color-surface-container-highest)] transition-colors"
+                  >
+                    <span className="text-base leading-none">{activeLang?.flag ?? '🌐'}</span>
+                    <span className="flex-1 text-left truncate">{activeLang?.label ?? activeSpeakerCode}</span>
+                    <svg className="w-3 h-3 opacity-60 shrink-0" viewBox="0 0 12 12" fill="none">
+                      <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              <div className="flex items-end justify-center gap-6 md:gap-8">
                 <MicControl
                   isCapturing={isCapturing}
                   onStart={handleStart}
                   onStop={handleStop}
                   error={audioError}
                 />
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-3 md:gap-4">
                   <button
                     onClick={handleEndSession}
-                    className="w-20 h-20 rounded-full flex items-center justify-center transition-all
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all
                                shadow-lg text-white bg-[var(--color-error)] hover:opacity-90"
                     aria-label="End session"
                   >
-                    <Square size={32} />
+                    <Square size={28} className="md:hidden" />
+                    <Square size={32} className="hidden md:block" />
                   </button>
-                  <p className="text-sm font-medium text-[var(--color-on-surface-variant)]">End Session</p>
+                  <p className="text-xs md:text-sm font-medium text-[var(--color-on-surface-variant)]">End Session</p>
                 </div>
               </div>
+            </div>
             )}
           </div>
 
@@ -542,5 +575,6 @@ export function PresentPage() {
         </div>
       }
     />
+    </>
   )
 }

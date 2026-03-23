@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
 import { useCaptions } from '../hooks/useCaptions'
 import { CaptionDisplay } from '../components/CaptionDisplay'
@@ -25,6 +25,8 @@ export function EventPage() {
   const { fontSize, setFontSize } = useAccessibility()
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [])
 
   const { isEnabled: audioEnabled, enable: enableAudio, disable: disableAudio } =
     useAudioPlayer(code ?? '', selectedLocale)
@@ -90,18 +92,28 @@ export function EventPage() {
       <header className="sticky top-0 z-10 bg-[var(--color-background)]/90 backdrop-blur-xl
                          border-b border-[var(--color-outline-variant)] px-6 py-4
                          flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          <button
+            onClick={() => setSidebarOpen((o) => !o)}
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg
+                       text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container)] transition-colors"
+            aria-label="Toggle settings"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              {sidebarOpen ? 'close' : 'tune'}
+            </span>
+          </button>
           <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
             Caption Aotearoa
           </span>
-          <div className="w-px h-5 bg-[var(--color-outline-variant)]" />
+          <div className="hidden md:block w-px h-5 bg-[var(--color-outline-variant)]" />
           {event.status === 'ended' ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
               <span className="w-2 h-2 rounded-full bg-[var(--color-outline)]" />
               <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">Ended</span>
             </div>
           ) : isConnected && event.status === 'live' ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border"
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border"
                  style={{ background: 'rgba(240,253,244,1)', borderColor: 'rgba(34,197,94,0.3)' }}>
               <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-widest text-green-700">Live</span>
@@ -110,7 +122,7 @@ export function EventPage() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--color-outline-variant)]">
               <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[var(--color-primary-container)]' : 'bg-[var(--color-outline)]'}`} />
               <span className="text-xs text-[var(--color-on-surface-variant)]">
                 {isConnected ? 'Connected' : 'Connecting…'}
@@ -131,10 +143,21 @@ export function EventPage() {
       {/* Body row */}
       <div className="flex flex-1 overflow-hidden">
 
+        {/* Sidebar backdrop (mobile) */}
+        {sidebarOpen && (
+          <div
+            className="md:hidden fixed inset-0 z-30 bg-black/40"
+            onClick={closeSidebar}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className="w-72 shrink-0 bg-[var(--color-surface-container-low)]
+        <aside className={`fixed md:static inset-y-0 left-0 z-40 w-72 shrink-0
+                          bg-[var(--color-surface-container-low)]
                           border-r border-[var(--color-outline-variant)]
-                          p-6 flex flex-col gap-8 overflow-y-auto">
+                          p-6 flex flex-col gap-8 overflow-y-auto
+                          transition-transform duration-200 ease-in-out
+                          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
 
           {/* Event code */}
           <section className="space-y-1">
@@ -258,7 +281,7 @@ export function EventPage() {
         />
 
         {/* Caption canvas */}
-        <section className="flex-1 min-w-0 relative flex flex-col p-8 md:p-12 overflow-hidden">
+        <section className="flex-1 min-w-0 relative flex flex-col p-4 md:p-8 lg:p-12 overflow-hidden">
           <KowhaiwhaPattern opacity={0.03} />
 
           {captionError && (
@@ -267,9 +290,9 @@ export function EventPage() {
             </div>
           )}
 
-          <div className="relative z-10 mb-10 flex items-end justify-between gap-4">
+          <div className="relative z-10 mb-4 md:mb-10 flex items-end justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="font-serif text-3xl font-bold text-[var(--color-primary)] tracking-tight truncate">
+              <h1 className="font-serif text-xl md:text-3xl font-bold text-[var(--color-primary)] tracking-tight truncate">
                 {event.title}
               </h1>
               {event.description && (
