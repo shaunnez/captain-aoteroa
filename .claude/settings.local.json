@@ -11,7 +11,10 @@
       "Bash(pnpm --filter web tsc --noEmit)",
       "Bash(pnpm --filter api exec tsc --noEmit)",
       "Bash(pnpm --filter web exec tsc --noEmit)",
-      "Bash(cat /Users/shaunnesbitt/Desktop/accessibility-work/node_modules/.pnpm/socket.io-client*/node_modules/socket.io-client/build/esm/index.d.ts)"
+      "Bash(cat /Users/shaunnesbitt/Desktop/accessibility-work/node_modules/.pnpm/socket.io-client*/node_modules/socket.io-client/build/esm/index.d.ts)",
+      "Bash(pnpm --filter web add html2canvas)",
+      "Bash(pnpm --filter web remove jspdf)",
+      "Bash(pnpm --filter web test --run TranscriptDownload)"
     ]
   }
 }
