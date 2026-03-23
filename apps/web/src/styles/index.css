@@ -91,13 +91,14 @@
   .btn-primary {
     @apply bg-[var(--color-primary)] text-white rounded-pill px-6 py-2.5 font-medium
            hover:opacity-90 transition-opacity focus:outline-none
-           focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2;
+           focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2
+           active:scale-[0.97];
   }
 
   .btn-secondary {
     @apply bg-transparent text-[var(--color-primary)] border-2 border-[var(--color-primary)]
            rounded-pill px-6 py-2.5 font-medium hover:bg-[var(--color-primary)]
-           hover:text-white transition-colors;
+           hover:text-white transition-colors active:scale-[0.97];
   }
 
   .input-field {
@@ -169,4 +170,50 @@
     background-color: #311b92;
     border-radius: 10px;
   }
+}
+
+/* Feature 6: Animation utilities */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg,
+    var(--color-surface-container) 25%,
+    var(--color-surface-container-low) 50%,
+    var(--color-surface-container) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Feature 1: Accessibility utilities */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+.font-dyslexia {
+  font-family: 'OpenDyslexic', sans-serif;
+}
+
+.high-contrast {
+  --color-on-surface: #000000;
+  --color-on-surface-variant: #000000;
+  --color-outline-variant: #000000;
+}
+
+.dark .high-contrast {
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #ffffff;
+  --color-outline-variant: #ffffff;
 }
