@@ -16,6 +16,7 @@ vi.mock('microsoft-cognitiveservices-speech-sdk', () => {
       fromSubscription: vi.fn(() => ({
         speechRecognitionLanguage: '',
         addTargetLanguage: vi.fn(),
+        setProperty: vi.fn(),
       })),
     },
     AudioConfig: {

@@ -113,6 +113,7 @@ export const fakeSdk = {
         addTargetLanguage(code: string) {
           this._targetLanguages.push(code)
         },
+        setProperty(_name: string, _value: string) {},
       }
     },
   },

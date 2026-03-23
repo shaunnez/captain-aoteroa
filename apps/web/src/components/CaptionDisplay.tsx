@@ -33,7 +33,7 @@ export function CaptionDisplay({ segments, className = '', style, highContrast =
           const activeClass = isLast
             ? 'border-l-8 border-[var(--color-primary)] pl-10 transition-all duration-700 ease-out'
             : ''
-          const italicClass = !seg.isFinal ? 'italic' : ''
+          const italicClass = !seg.isFinal ? 'opacity-90' : ''
 
           return (
             <motion.p
@@ -75,7 +75,7 @@ export function CaptionDisplay({ segments, className = '', style, highContrast =
           className={`leading-relaxed transition-colors duration-200 flex items-center gap-2 ${
             seg.isFinal
               ? 'text-[var(--color-on-surface)]'
-              : 'text-[var(--color-primary)] opacity-70 italic'
+              : 'text-[var(--color-primary)] opacity-90'
           }`}
         >
           <span>{seg.text}</span>
