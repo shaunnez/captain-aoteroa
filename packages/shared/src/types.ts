@@ -1,6 +1,7 @@
 export { NZ_LANGUAGES } from './nzLanguages.js'
 export type { NzLanguage } from './nzLanguages.js'
 export { RECOGNITION_LOCALES } from './recognitionLocales.js'
+export { TTS_SUPPORTED_LANGUAGES } from './ttsLanguages.js'
 
 // Domain types
 export interface Event {
@@ -47,6 +48,7 @@ export interface ServerToClientEvents {
   'caption:history': (payload: CaptionHistoryPayload) => void
   'caption:error': (payload: CaptionErrorPayload) => void
   'viewer:count': (payload: { count: number }) => void
+  'audio:tts': (payload: { language: string; sequence: number; data: ArrayBuffer }) => void
 }
 
 export interface ClientToServerEvents {
@@ -57,4 +59,6 @@ export interface ClientToServerEvents {
   'session:end': (code: string) => void
   'session:set-language': (payload: { code: string; locale: string }) => void
   'session:set-mode': (payload: { code: string; mode: 'single' | 'dual' }) => void
+  'audio:subscribe': (payload: { code: string; language: string }) => void
+  'audio:unsubscribe': (payload: { code: string; language: string }) => void
 }
