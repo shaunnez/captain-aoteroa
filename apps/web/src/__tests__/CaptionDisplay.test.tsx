@@ -119,4 +119,20 @@ describe('CaptionDisplay variant="flat"', () => {
     expect(para.className).toContain('border-l-8')
     expect(para.className).not.toContain('opacity-20')
   })
+
+  it('paragraph inherits font-size from parent style, not hardcoded tailwind sizes', () => {
+    const seg: DisplaySegment[] = [
+      { sequence: 1, text: 'Size test', isFinal: true, isTranslating: false, id: '1' },
+    ]
+    const { container } = render(
+      <CaptionDisplay segments={seg} variant="flat" style={{ fontSize: '2rem' }} />
+    )
+    const para = container.querySelector('p')!
+    // Must NOT have hardcoded responsive size classes
+    expect(para.className).not.toContain('text-3xl')
+    expect(para.className).not.toContain('text-5xl')
+    expect(para.className).not.toContain('text-7xl')
+    // Must use text-[1em] so it inherits the parent fontSize
+    expect(para.className).toContain('text-[1em]')
+  })
 })
