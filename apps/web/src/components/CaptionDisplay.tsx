@@ -41,7 +41,7 @@ export function CaptionDisplay({ segments, className = '', style, highContrast =
               initial={prefersReduced ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className={`text-[1em] leading-[inherit] text-[var(--color-primary)] ${fadedClass} ${activeClass} ${italicClass}`.trim()}
+              className={`text-[1em] text-[var(--color-primary)] ${fadedClass} ${activeClass} ${italicClass}`.trim()}
             >
               <span>{seg.text}</span>
               {seg.isTranslating && (
@@ -78,7 +78,7 @@ export function CaptionDisplay({ segments, className = '', style, highContrast =
               : 'text-[var(--color-primary)] opacity-90'
           }`}
         >
-          <span>{seg.text}</span>
+          <span className="text-lg font-medium">{seg.text}</span>
           {seg.isTranslating && (
             <span
               className="inline-block w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin flex-shrink-0"

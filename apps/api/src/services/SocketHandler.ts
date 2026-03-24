@@ -257,6 +257,16 @@ export function setupSocketHandler(io: AppServer): void {
       io.to(code).emit('qa:update', { question })
     })
 
+    // Emoji reactions (ephemeral, no DB)
+    const reactionThrottles = new Map<string, number>()
+    socket.on('reaction:send', ({ code, emoji }) => {
+      const key = `${socket.id}:${emoji}`
+      const now = Date.now()
+      if ((reactionThrottles.get(key) ?? 0) > now - 2000) return
+      reactionThrottles.set(key, now)
+      io.to(code).emit('reaction:burst', { emoji, count: 1 })
+    })
+
     // Incoming PCM audio chunk from organiser
     let chunkCount = 0
     socket.on('audio:chunk', (chunk) => {

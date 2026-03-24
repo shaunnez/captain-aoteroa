@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { LogoImg } from './LogoImg'
 
 interface DashboardShellProps {
   left: React.ReactNode
@@ -18,7 +19,7 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
   const reducedDuration = { duration: 0 }
 
   return (
-    <div className={`${fillMain ? 'min-h-screen lg:h-screen lg:overflow-hidden' : 'min-h-screen'} flex flex-col bg-[var(--color-background)]`}>
+    <div className={`${fillMain ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col bg-[var(--color-background)]`}>
       {/* Header */}
       <header className="h-14 shrink-0 border-b border-[var(--color-outline-variant)]
                          bg-[var(--color-surface-container-low)]
@@ -34,7 +35,8 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
               {sidebarOpen ? 'close' : 'menu'}
             </span>
           </button>
-          <span className="font-serif text-lg font-bold text-[var(--color-on-surface)]">
+          <LogoImg className="h-8" />
+          <span className="font-serif  text-lg md:text-xl font-bold text-[var(--color-primary)]">
             HearMe NZ
           </span>
         </div>
@@ -46,7 +48,7 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
       </header>
 
       {/* Body */}
-      <div className={`flex flex-1 ${fillMain ? 'lg:overflow-hidden' : 'overflow-hidden'}`}>
+      <div className={`flex flex-1 overflow-hidden`}>
         {/* Sidebar backdrop (mobile) */}
         <AnimatePresence>
           {sidebarOpen && (
@@ -89,7 +91,7 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
         </aside>
 
         {/* Main content */}
-        <main className={`flex-1 p-4 md:p-6 lg:p-8 ${fillMain ? 'lg:overflow-hidden lg:flex lg:flex-col' : 'overflow-y-auto'}`}>
+        <main className={`flex-1 p-4 md:p-6 lg:p-8 ${fillMain ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
           {main}
         </main>
 

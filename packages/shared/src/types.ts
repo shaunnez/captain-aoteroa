@@ -13,6 +13,10 @@ export interface Event {
   event_date: string | null
   languages: string[]   // BCP-47 locales e.g. ["en-NZ", "mi-NZ"]
   created_at: string
+  organiser_name?: string
+  image_url?: string
+  logo_url?: string
+  theme_color?: string
 }
 
 export interface CaptionSegment {
@@ -62,6 +66,7 @@ export interface ServerToClientEvents {
   'qa:new': (payload: { question: QaQuestion }) => void
   'qa:update': (payload: { question: QaQuestion }) => void
   'qa:history': (payload: { questions: QaQuestion[] }) => void
+  'reaction:burst': (payload: { emoji: string; count: number }) => void
 }
 
 export interface ClientToServerEvents {
@@ -75,5 +80,6 @@ export interface ClientToServerEvents {
   'audio:subscribe': (payload: { code: string; language: string }) => void
   'audio:unsubscribe': (payload: { code: string; language: string }) => void
   'qa:submit': (payload: { code: string; body: string; language: string }) => void
-  'qa:moderate': (payload: { code: string; questionId: string; status: 'pinned' | 'dismissed' }) => void
+  'qa:moderate': (payload: { code: string; questionId: string; status: 'pending' | 'pinned' | 'dismissed' }) => void
+  'reaction:send': (payload: { code: string; emoji: string }) => void
 }

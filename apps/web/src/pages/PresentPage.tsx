@@ -17,11 +17,15 @@ import { QAPanel } from '../components/QAPanel'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { LanguagePickerModal } from '../components/LanguagePickerModal'
 import { useViewerCount } from '../hooks/useViewerCount'
+import { useReactions } from '../hooks/useReactions'
 import { useQA } from '../hooks/useQA'
+import { FloatingReactions } from '../components/FloatingReactions'
 import type { Event } from '@caption-aotearoa/shared'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 import type { NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
 import { RECOGNITION_LOCALES } from '@caption-aotearoa/shared/recognitionLocales'
+import { QAPanel } from '../components/QAPanel'
+import { QAModal } from '../components/QAModal'
 
 /** Māori uses Papa Reo on the backend — add it separately to the UI map. */
 const PRESENTER_LOCALES: Record<string, string> = { ...RECOGNITION_LOCALES, mi: 'mi-NZ' }
@@ -47,14 +51,12 @@ export function PresentPage() {
   const [editDesc, setEditDesc] = useState('')
   const [editingDate, setEditingDate] = useState(false)
   const [editDate, setEditDate] = useState('')
+  const [editingOrganiser, setEditingOrganiser] = useState(false)
+  const [editOrganiser, setEditOrganiser] = useState('')
 
   const [sessionEnded, setSessionEnded] = useState(false)
   const [generating, setGenerating] = useState(false)
-  const [qaSheetOpen, setQaSheetOpen] = useState(false)
-  const [hasNewQuestion, setHasNewQuestion] = useState(false)
-  const { pendingQuestions } = useQA(code ?? '')
-  const pendingCount = pendingQuestions.length
-  const prevPendingRef = useRef(0)
+  const [qaModalOpen, setQaModalOpen] = useState(false)
 
   const { data: transcriptData, refetch: refetchTranscript } = useQuery({
     queryKey: ['transcript', code],
@@ -83,6 +85,9 @@ export function PresentPage() {
 
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
   const viewerCount = useViewerCount(code ?? '')
+  const { reactions } = useReactions(code ?? '')
+  const { pinnedQuestions, pendingQuestions } = useQA(code ?? '')
+  const qaCount = pinnedQuestions.length + pendingQuestions.length
 
   useEffect(() => {
     if (isCapturing) {
@@ -99,7 +104,7 @@ export function PresentPage() {
   const { segments } = useCaptions(code ?? '', speakerLocale ?? 'en-NZ')
 
   const updateEvent = useMutation({
-    mutationFn: (patch: Partial<Pick<Event, 'title' | 'description' | 'event_date'>>) =>
+    mutationFn: (patch: Partial<Pick<Event, 'title' | 'description' | 'event_date' | 'organiser_name'>>) =>
       api.patch(`/api/events/${code}`, patch).then((r) => r.data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['event', code] }),
   })
@@ -214,19 +219,26 @@ export function PresentPage() {
       onSelect={handleSpeakerSelect}
       languages={speakerLangList}
     />
+    <QAModal
+      isOpen={qaModalOpen}
+      onClose={() => setQaModalOpen(false)}
+      code={event.code}
+    />
     <DashboardShell
       fillMain
       headerActions={
         <>
           <DarkModeToggle />
+
           <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
-                       hover:text-[var(--color-on-surface)] transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Dashboard
-          </button>
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--color-outline-variant)]
+                     text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Back
+        </button>
+
         </>
       }
       left={
@@ -262,7 +274,7 @@ export function PresentPage() {
               </div>
             ) : (
               <div className="group flex items-start gap-1">
-                <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] leading-snug flex-1">
+                <h2 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] leading-snug flex-1" style={{ color: event.theme_color || 'var(--color-primary)' }}>
                   {event.title}
                 </h2>
                 <button
@@ -313,6 +325,52 @@ export function PresentPage() {
                   onClick={() => { setEditDesc(event.description ?? ''); setEditingDesc(true) }}
                   className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
                   aria-label="Edit description"
+                >
+                  <Pencil size={13} />
+                </button>
+              </div>
+            )}
+
+            {/* Editable organiser name */}
+            {editingOrganiser ? (
+              <div className="flex items-start gap-1 mt-2">
+                <input
+                  autoFocus
+                  value={editOrganiser}
+                  onChange={(e) => setEditOrganiser(e.target.value)}
+                  placeholder="Speaker / organiser name"
+                  className="flex-1 text-sm bg-transparent border-b border-[var(--color-primary)]
+                             text-[var(--color-on-surface-variant)] outline-none"
+                />
+                <button
+                  onClick={() => {
+                    updateEvent.mutate({ organiser_name: editOrganiser })
+                    setEditingOrganiser(false)
+                  }}
+                  className="p-1 text-[var(--color-primary)] hover:opacity-80"
+                  aria-label="Save organiser name"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  onClick={() => setEditingOrganiser(false)}
+                  className="p-1 text-[var(--color-on-surface-variant)] hover:opacity-80"
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-start gap-1 mt-1">
+                <p className="text-xs text-[var(--color-on-surface-variant)] flex-1">
+                  {event.organiser_name
+                    ? <span className="font-medium">{event.organiser_name}</span>
+                    : <span className="opacity-40 italic">No speaker name</span>}
+                </p>
+                <button
+                  onClick={() => { setEditOrganiser(event.organiser_name ?? ''); setEditingOrganiser(true) }}
+                  className="p-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-on-surface-variant)] transition-opacity"
+                  aria-label="Edit organiser name"
                 >
                   <Pencil size={13} />
                 </button>
@@ -380,7 +438,7 @@ export function PresentPage() {
 
             <div className="mt-3 px-3 py-2 rounded-lg bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)]">
               <p className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-on-surface-variant)] mb-0.5">
-                Elapsed
+                Recording Time
               </p>
               <p className="font-mono text-lg font-semibold text-[var(--color-on-surface)] tabular-nums">
                 {elapsedFormatted}
@@ -422,6 +480,7 @@ export function PresentPage() {
 
           <div className="border-t border-[var(--color-outline-variant)]" />
 
+
           {/* Audience Joining */}
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
@@ -458,14 +517,30 @@ export function PresentPage() {
         </div>
       }
       main={
-        <div className="flex flex-col gap-6 lg:h-full">
+        <div className="flex flex-col gap-6 h-full">
           {/* Session Controls Panel */}
           <div className="rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden shrink-0">
             <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
                 Session Controls
               </h3>
               <div className="flex items-center gap-2">
+                {/* Q&A button — only visible when the right sidebar is hidden */}
+                <button
+                  onClick={() => setQaModalOpen(true)}
+                  className="xl:hidden relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                             bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]
+                             hover:bg-[var(--color-surface-container-highest)] transition-colors"
+                  aria-label={`Audience Q&A${qaCount > 0 ? `, ${qaCount} question${qaCount !== 1 ? 's' : ''}` : ''}`}
+                >
+                  Q&amp;A
+                  {qaCount > 0 && (
+                    <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold
+                                     bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+                      {qaCount}
+                    </span>
+                  )}
+                </button>
                 {sessionEnded ? (
                   <>
                     <CheckCircle size={14} className="text-[var(--color-primary)]" />
@@ -533,20 +608,20 @@ export function PresentPage() {
               <div className="p-4 md:p-5">
               {/* Mobile: language selector visible inline */}
               {speakerLangList.length > 0 && (
-                <div className="lg:hidden mb-4">
-                  <p className="text-xs font-medium text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-2">
+                <div className="lg:hidden mb-4 flex flex-col items-center gap-2">
+                  <p className="text-xs font-medium text-[var(--color-on-surface-variant)] uppercase tracking-widest">
                     I am speaking in
                   </p>
                   <button
                     onClick={() => setLangPickerOpen(true)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                    className="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium
                                bg-[var(--color-surface-container-high)]
                                text-[var(--color-on-surface)]
                                border border-[var(--color-outline-variant)]
                                hover:bg-[var(--color-surface-container-highest)] transition-colors"
                   >
                     <span className="text-base leading-none">{activeLang?.flag ?? '🌐'}</span>
-                    <span className="flex-1 text-left truncate">{activeLang?.label ?? activeSpeakerCode}</span>
+                    <span>{activeLang?.label ?? activeSpeakerCode}</span>
                     <svg className="w-3 h-3 opacity-60 shrink-0" viewBox="0 0 12 12" fill="none">
                       <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -577,20 +652,32 @@ export function PresentPage() {
             )}
           </div>
 
+          {/* Live Transcript Panel — fills remaining space */}
+          {/* <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden min-h-0 relative"> */}
           {/* Live Transcript Panel — fills remaining space on desktop, expands naturally on mobile */}
-          <div className="lg:flex-1 lg:flex lg:flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] lg:overflow-hidden lg:min-h-0">
+          <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] overflow-hidden min-h-0">
+            <FloatingReactions reactions={reactions} />
             <div className="px-5 py-3 border-b border-[var(--color-outline-variant)] shrink-0">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
                 Live Transcript
               </h3>
             </div>
-            <div className="p-4 lg:flex-1 lg:min-h-0">
+            <div className="p-4 flex-1 min-h-0">
               <CaptionDisplay
                 segments={segments}
-                className="lg:h-full bg-[var(--color-surface-container)] rounded-lg p-4"
+                className="h-full bg-[var(--color-surface-container)] rounded-lg p-4"
               />
             </div>
+
+            
           </div>
+          
+          
+        </div>
+      }
+      right={
+        <div className="flex flex-col gap-5 h-full">
+          <QAPanel code={event.code} />
         </div>
       }
     />

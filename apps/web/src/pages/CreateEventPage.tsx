@@ -13,6 +13,8 @@ export function CreateEventPage() {
   const [description, setDescription] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [phraseList, setPhraseList] = useState('')
+  const [organiserName, setOrganiserName] = useState('')
+  const [themeColor, setThemeColor] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -26,6 +28,8 @@ export function CreateEventPage() {
         description: description || null,
         event_date: eventDate ? new Date(eventDate).toISOString() : null,
         phrase_list: phraseList.split(',').map((s) => s.trim()).filter(Boolean),
+        organiser_name: organiserName || null,
+        theme_color: themeColor || null,
       })
       navigate(`/present/${data.code}`)
     } catch {
@@ -108,6 +112,50 @@ export function CreateEventPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-on-surface)] mb-1">
+                Organiser / speaker name
+              </label>
+              <input
+                className={inputClass}
+                value={organiserName}
+                onChange={(e) => setOrganiserName(e.target.value)}
+                placeholder="e.g. Te Pūtahi Kōrero"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-on-surface)] mb-1">
+                Theme colour
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: 'Default', value: '' },
+                  { label: 'Tūī', value: '#1a5276' },
+                  { label: 'Pōhutukawa', value: '#c0392b' },
+                  { label: 'Kōwhai', value: '#d4a017' },
+                  { label: 'Pounamu', value: '#1e8449' },
+                  { label: 'Tohorā', value: '#2e4057' },
+                  { label: 'Kōrari', value: '#7d3c98' },
+                ].map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setThemeColor(c.value)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                      themeColor === c.value
+                        ? 'border-[var(--color-primary)] shadow-sm'
+                        : 'border-transparent'
+                    }`}
+                    style={{
+                      background: c.value || 'var(--color-surface-container)',
+                      color: c.value ? '#fff' : 'var(--color-on-surface)',
+                    }}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--color-on-surface)] mb-1">

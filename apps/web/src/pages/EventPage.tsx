@@ -17,6 +17,9 @@ import { useViewerCount } from '../hooks/useViewerCount'
 import { useDarkModeContext } from '../contexts/DarkModeContext'
 import type { Event } from '@caption-aotearoa/shared'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
+import { LogoImg } from '../components/LogoImg'
+import { useReactions } from '../hooks/useReactions'
+import { ReactionBar } from '../components/ReactionBar'
 import { TTS_SUPPORTED_LANGUAGES } from '@caption-aotearoa/shared'
 
 export function EventPage() {
@@ -28,6 +31,7 @@ export function EventPage() {
   const { fontSize, setFontSize, highContrast, toggleHighContrast, dyslexiaFont, toggleDyslexiaFont, lineSpacing, setLineSpacing } = useAccessibility()
   const [askDrawerOpen, setAskDrawerOpen] = useState(false)
   const { submitQuestion } = useQA(code ?? '')
+  const { reactions, sendReaction } = useReactions(code ?? '')
   const { isDark, toggle } = useDarkModeContext()
   const viewerCount = useViewerCount(code ?? '')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -101,14 +105,16 @@ export function EventPage() {
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg
-                       text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container)] transition-colors"
+                       text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container)] transition-colors  border border-[var(--color-outline-variant)]"
             aria-label="Toggle settings"
           >
             <span className="material-symbols-outlined text-[20px]">
               {sidebarOpen ? 'close' : 'tune'}
             </span>
+            
           </button>
-          <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
+          <LogoImg className="h-8" />
+          <span className="font-serif  text-lg md:text-xl font-bold text-[var(--color-primary)]">
             HearMe NZ
           </span>
           <div className="hidden md:block w-px h-5 bg-[var(--color-outline-variant)]" />
@@ -138,7 +144,7 @@ export function EventPage() {
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--color-outline-variant)]
-                     text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
+                     text-sm text-[var(--color-primary)] hover:bg-[var(--color-surface-container)] transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">close</span>
           Exit
@@ -160,73 +166,126 @@ export function EventPage() {
         <aside className={`fixed md:static inset-y-0 left-0 z-40 w-72 shrink-0
                           bg-[var(--color-surface-container-low)]
                           border-r border-[var(--color-outline-variant)]
-                          p-6 flex flex-col gap-8 overflow-y-auto
+                          p-6 flex flex-col gap-5 overflow-y-auto
                           transition-transform duration-200 ease-in-out
                           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
 
-          {/* Event code */}
-          <section className="space-y-1">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
-              Event Code
-            </h3>
-            <p className="font-mono text-2xl font-bold tracking-widest text-[var(--color-on-surface)]">
-              {event.code}
-            </p>
+          {/* Event details */}
+          <section className="space-y-1 pb-4 border-b border-[var(--color-outline-variant)]">
+            <h2
+              className="font-serif text-base font-bold leading-snug text-[var(--color-on-surface)]"
+              style={{ color: event.theme_color || undefined }}
+            >
+              {event.title}
+            </h2>
+            {event.organiser_name && (
+              <p className="text-xs text-[var(--color-on-surface-variant)]">
+                {event.organiser_name}
+              </p>
+            )}
+            {event.description && (
+              <p className="text-sm text-[var(--color-on-surface-variant)] leading-snug pt-0.5">
+                {event.description}
+              </p>
+            )}
+
+            {event.event_date && (
+              <p className="text-xs text-[var(--color-on-surface-variant)]">
+                {new Date(event.event_date).toLocaleString(undefined, {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+              </p>
+            )}
           </section>
 
+        
+
           {/* Text Size */}
-          <section className="space-y-3">
+          <section className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
               Text Size
             </h3>
-            <div className="bg-[var(--color-surface-container-lowest)] p-4 rounded-xl
-                            border border-[var(--color-outline-variant)] shadow-sm space-y-3">
-              <div className="flex justify-between items-center px-1">
+            <div className="bg-[var(--color-surface-container-lowest)] px-3 py-2.5 rounded-xl
+                            border border-[var(--color-outline-variant)] shadow-sm space-y-2">
+              <div className="flex justify-between items-center px-0.5">
                 <span className="material-symbols-outlined text-[var(--color-primary)]"
-                      style={{ fontSize: '16px' }}>text_fields</span>
+                      style={{ fontSize: '14px' }}>text_fields</span>
                 <span className="material-symbols-outlined text-[var(--color-primary)]"
-                      style={{ fontSize: '24px' }}>text_fields</span>
+                      style={{ fontSize: '22px' }}>text_fields</span>
               </div>
               <input
                 type="range"
                 min="1.25" max="3" step="0.25"
                 value={fontSize}
                 onChange={(e) => setFontSize(parseFloat(e.target.value))}
-                className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
                 style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
                 aria-label="Text size"
               />
             </div>
           </section>
 
+          {/* Line Spacing */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
+              Line Spacing
+            </h3>
+            <div className="bg-[var(--color-surface-container-lowest)] px-3 py-2.5 rounded-xl
+                            border border-[var(--color-outline-variant)] shadow-sm space-y-2">
+              <div className="flex justify-between items-center px-0.5">
+                <span className="material-symbols-outlined text-[var(--color-primary)]"
+                      style={{ fontSize: '14px' }}>density_small</span>
+                <span className="material-symbols-outlined text-[var(--color-primary)]"
+                      style={{ fontSize: '14px' }}>density_large</span>
+              </div>
+              <input
+                type="range"
+                min="1" max="3" step="1"
+                value={lineSpacing === 'compact' ? 1 : lineSpacing === 'normal' ? 2 : 3}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value)
+                  setLineSpacing(v === 1 ? 'compact' : v === 3 ? 'relaxed' : 'normal')
+                }}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
+                style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
+                aria-label="Line spacing"
+              />
+            </div>
+          </section>
+
           {/* Display mode */}
-          <section className="space-y-3">
+          <section className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
               Display
             </h3>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => { if (isDark) toggle() }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                   !isDark
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
                     : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
                 }`}
                 aria-pressed={!isDark}
               >
-                <div className="w-8 h-8 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]" />
+                <div className="w-6 h-6 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]" />
                 <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Light</span>
               </button>
               <button
                 onClick={() => { if (!isDark) toggle() }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                   isDark
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
                     : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
                 }`}
                 aria-pressed={isDark}
               >
-                <div className="w-8 h-8 rounded-full bg-[#0a0a0c]" />
+                <div className="w-6 h-6 rounded-full bg-[#0a0a0c]" />
                 <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Dark</span>
               </button>
             </div>
@@ -299,22 +358,23 @@ export function EventPage() {
         <section className="flex-1 min-w-0 relative flex flex-col p-4 md:p-8 lg:p-12 overflow-hidden">
           <KowhaiwhaPattern opacity={0.03} />
 
+          {/* Floating emoji reactions */}
+          {reactions.map((r) => (
+            <span
+              key={r.id}
+              className="pointer-events-none absolute bottom-24 text-3xl animate-float-up"
+              style={{ left: `${r.x}%` }}
+            >
+              {r.emoji}
+            </span>
+          ))}
+
           {captionError && (
             <div className="absolute top-0 inset-x-0 z-20 bg-[var(--color-error)] text-white px-6 py-3 text-sm">
               {captionError}
             </div>
           )}
 
-          <div className="relative z-10 mb-4 md:mb-10 flex items-end justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="font-serif text-xl md:text-3xl font-bold text-[var(--color-primary)] tracking-tight truncate">
-                {event.title}
-              </h1>
-              {event.description && (
-                <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">{event.description}</p>
-              )}
-            </div>
-          </div>
 
           <div className="relative z-10 flex-1 overflow-hidden flex flex-col">
             {segments.length === 0 && event.status === 'live' ? (
@@ -363,9 +423,9 @@ export function EventPage() {
                 </button>
               )}
             </div>
-            <span className="text-xs font-sans uppercase tracking-widest text-[var(--color-primary)]/40">
-              Real-time
-            </span>
+            {event.status !== 'ended' && (
+              <ReactionBar onReact={sendReaction} />
+            )}
           </div>
         </section>
       </div>

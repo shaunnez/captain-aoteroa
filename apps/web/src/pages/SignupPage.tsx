@@ -1,9 +1,49 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { DarkModeToggle } from '../components/DarkModeToggle'
 import { Home } from 'lucide-react'
+import { LogoImg } from '../components/LogoImg'
+
+const waveVariants = {
+  wave1: {
+    animate: { y: [0, -22, -6, -20, 0] as number[] },
+    transition: { repeat: Infinity, duration: 6.5, ease: 'easeInOut' as const },
+  },
+  wave2: {
+    animate: { y: [0, -8, -18, -4, 0] as number[] },
+    transition: { repeat: Infinity, duration: 8, ease: 'easeInOut' as const, delay: 0.8 },
+  },
+}
+
+function WaveBackground() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 w-full h-full"
+      preserveAspectRatio="xMidYMid slice"
+      viewBox="0 0 1440 900"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <motion.path
+        d="M0,300 C360,200 720,400 1080,300 C1260,250 1380,320 1440,300 L1440,900 L0,900 Z"
+        fill="#311b92"
+        opacity="0.18"
+        animate={waveVariants.wave1.animate}
+        transition={waveVariants.wave1.transition}
+      />
+      <motion.path
+        d="M0,480 C400,380 800,560 1200,460 C1320,420 1400,480 1440,460 L1440,900 L0,900 Z"
+        fill="#1c0070"
+        opacity="0.10"
+        animate={waveVariants.wave2.animate}
+        transition={waveVariants.wave2.transition}
+      />
+    </svg>
+  )
+}
 
 export function SignupPage() {
   const [email, setEmail] = useState('')
@@ -31,24 +71,7 @@ export function SignupPage() {
     return (
       <div className="relative min-h-screen flex items-center justify-center p-8
                       bg-[var(--color-surface-container-low)] overflow-hidden">
-        <svg
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 w-full h-full"
-          preserveAspectRatio="xMidYMid slice"
-          viewBox="0 0 1440 900"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M0,300 C360,200 720,400 1080,300 C1260,250 1380,320 1440,300 L1440,900 L0,900 Z"
-            fill="#311b92"
-            opacity="0.18"
-          />
-          <path
-            d="M0,480 C400,380 800,560 1200,460 C1320,420 1400,480 1440,460 L1440,900 L0,900 Z"
-            fill="#1c0070"
-            opacity="0.10"
-          />
-        </svg>
+        <WaveBackground />
         {/* Home link top-left */}
         <Link
           to="/"
@@ -86,37 +109,17 @@ export function SignupPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center p-8
                     bg-[var(--color-surface-container-low)] overflow-hidden">
-      {/* Wave background */}
-      <svg
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 w-full h-full"
-        preserveAspectRatio="xMidYMid slice"
-        viewBox="0 0 1440 900"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M0,300 C360,200 720,400 1080,300 C1260,250 1380,320 1440,300 L1440,900 L0,900 Z"
-          fill="#311b92"
-          opacity="0.18"
-        />
-        <path
-          d="M0,480 C400,380 800,560 1200,460 C1320,420 1400,480 1440,460 L1440,900 L0,900 Z"
-          fill="#1c0070"
-          opacity="0.10"
-        />
-      </svg>
+      <WaveBackground />
 
-      {/* Home link top-left */}
-      <Link
-        to="/"
-        className="absolute top-6 left-6 flex items-center gap-1.5 text-sm text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
-      >
-        <Home size={16} />
-        Home
-      </Link>
-
-      {/* Dark mode toggle top-right */}
-      <div className="absolute top-6 right-6">
+      {/* Top bar */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
+        <Link
+          to="/"
+          className="flex items-center gap-1.5 text-md font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
+        >
+          <Home size={30} />
+          Home
+        </Link>
         <DarkModeToggle />
       </div>
 
@@ -127,6 +130,7 @@ export function SignupPage() {
         <div className="relative">
           {/* Brand */}
           <div className="text-center mb-8">
+            <LogoImg className="h-14 mx-auto mb-3" />
             <span className="font-serif text-2xl font-bold text-[var(--color-primary)]">
               HearMe NZ
             </span>

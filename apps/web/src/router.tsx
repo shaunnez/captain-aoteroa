@@ -8,8 +8,6 @@ import { SignupPage } from './pages/SignupPage'
 import { CreateEventPage } from './pages/CreateEventPage'
 import { PresentPage } from './pages/PresentPage'
 import { DashboardPage } from './pages/DashboardPage'
-import { EventDetailPage } from './pages/EventDetailPage'
-import { DashboardPresentPage } from './pages/DashboardPresentPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function AnimatedRoutes() {
@@ -34,8 +32,6 @@ function AnimatedRoutes() {
           <Route path="/create" element={<ProtectedRoute><CreateEventPage /></ProtectedRoute>} />
           <Route path="/present/:code" element={<ProtectedRoute><PresentPage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/dashboard/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
-          <Route path="/dashboard/events/:id/present" element={<ProtectedRoute><DashboardPresentPage /></ProtectedRoute>} />
         </Routes>
       </motion.div>
     </AnimatePresence>

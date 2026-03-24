@@ -38,8 +38,8 @@ export function DashboardPage() {
           <button
             onClick={handleSignOut}
             title="Sign out"
-            className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
-                       hover:text-[var(--color-on-surface)] transition-colors"
+            className="flex items-center gap-2  px-4 py-2  text-sm text-[var(--color-on-surface-variant)] border border-[var(--color-outline-variant)]
+                       hover:text-[var(--color-on-surface)] transition-colors rounded-xl"
           >
             <LogOut size={16} />
             Sign out
@@ -67,6 +67,8 @@ export function DashboardPage() {
             <Plus size={16} />
             Create Event
           </Link>
+          
+          
         </div>
       }
       main={
@@ -96,17 +98,6 @@ export function DashboardPage() {
               ))}
             </div>
           )}
-        </div>
-      }
-      right={
-        <div className="flex flex-col gap-4">
-          <Link to="/create" className="btn-primary text-center">
-            <Plus size={16} className="inline mr-2" />
-            New Event
-          </Link>
-          <p className="text-xs text-[var(--color-on-surface-variant)] leading-relaxed">
-            Share an event code or QR code with your audience — no app install needed.
-          </p>
         </div>
       }
     />

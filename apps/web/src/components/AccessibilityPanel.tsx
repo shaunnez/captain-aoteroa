@@ -3,8 +3,8 @@ interface AccessibilityPanelProps {
   onToggleHighContrast: () => void
   dyslexiaFont: boolean
   onToggleDyslexiaFont: () => void
-  lineSpacing: 'compact' | 'normal' | 'relaxed'
-  onSetLineSpacing: (spacing: 'compact' | 'normal' | 'relaxed') => void
+  lineSpacing?: 'compact' | 'normal' | 'relaxed'
+  onSetLineSpacing?: (spacing: 'compact' | 'normal' | 'relaxed') => void
 }
 
 export function AccessibilityPanel({
@@ -12,12 +12,10 @@ export function AccessibilityPanel({
   onToggleHighContrast,
   dyslexiaFont,
   onToggleDyslexiaFont,
-  lineSpacing,
-  onSetLineSpacing,
 }: AccessibilityPanelProps) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-on-surface-variant)] mb-3">
+    <div className="space-y-3">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-on-surface-variant)]">
         Accessibility
       </h3>
 
@@ -55,32 +53,6 @@ export function AccessibilityPanel({
             style={{ transform: dyslexiaFont ? 'translateX(22px)' : 'translateX(4px)' }}
           />
         </button>
-      </div>
-
-      {/* Line Spacing radio group */}
-      <div>
-        <span className="text-sm text-[var(--color-on-surface)] block mb-2">Line spacing</span>
-        <div
-          role="radiogroup"
-          aria-label="Line spacing"
-          className="grid grid-cols-3 gap-1"
-        >
-          {(['compact', 'normal', 'relaxed'] as const).map((option) => (
-            <button
-              key={option}
-              role="radio"
-              aria-checked={lineSpacing === option}
-              onClick={() => onSetLineSpacing(option)}
-              className={`rounded-lg py-1.5 text-xs font-medium transition-colors capitalize focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 ${
-                lineSpacing === option
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'bg-[var(--color-surface-container)] text-[var(--color-on-surface)]'
-              }`}
-            >
-              {option.charAt(0).toUpperCase() + option.slice(1)}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   )

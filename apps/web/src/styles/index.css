@@ -117,6 +117,20 @@
   .dark .nav-glass {
     background: rgba(10, 10, 12, 0.8);
   }
+
+  /* Logo image — recolored via CSS mask */
+  .logo-img {
+    background-color: #1c0070;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    -webkit-mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    mask-position: center;
+  }
+  .dark .logo-img {
+    background-color: white;
+  }
 }
 
 /* ── Dark mode component overrides ─────────────────────────── */
@@ -216,4 +230,14 @@
   --color-on-surface: #ffffff;
   --color-on-surface-variant: #ffffff;
   --color-outline-variant: #ffffff;
+}
+
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-300px) scale(1.3); }
+}
+
+.animate-float-up {
+  animation: float-up 2s ease-out forwards;
 }
