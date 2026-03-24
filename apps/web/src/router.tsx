@@ -8,8 +8,6 @@ import { SignupPage } from './pages/SignupPage'
 import { CreateEventPage } from './pages/CreateEventPage'
 import { PresentPage } from './pages/PresentPage'
 import { DashboardPage } from './pages/DashboardPage'
-import { EventDetailPage } from './pages/EventDetailPage'
-import { DashboardPresentPage } from './pages/DashboardPresentPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function AnimatedRoutes() {
