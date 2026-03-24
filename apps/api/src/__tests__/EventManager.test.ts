@@ -16,20 +16,20 @@ describe('EventManager', () => {
 
   it('starts a new session for a code', async () => {
     const onSegment = vi.fn()
-    await EventManager.start('KAI492', { languages: ['en'] }, onSegment, vi.fn())
+    await EventManager.start('KAI492', {}, onSegment, vi.fn())
     expect(EventManager.has('KAI492')).toBe(true)
   })
 
   it('pushes a chunk to an active session', async () => {
     const onSegment = vi.fn()
-    await EventManager.start('KAI492', { languages: ['en'] }, onSegment, vi.fn())
+    await EventManager.start('KAI492', {}, onSegment, vi.fn())
     const chunk = Buffer.alloc(320)
     EventManager.pushChunk('KAI492', chunk)
     // No error thrown = pass
   })
 
   it('ends and removes a session', async () => {
-    await EventManager.start('KAI492', { languages: ['en'] }, vi.fn(), vi.fn())
+    await EventManager.start('KAI492', {}, vi.fn(), vi.fn())
     await EventManager.end('KAI492')
     expect(EventManager.has('KAI492')).toBe(false)
   })

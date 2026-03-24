@@ -27,7 +27,6 @@ describe('DualAzureSession', () => {
     onError = vi.fn()
     session = new DualAzureSession({
       eventCode: 'TEST01',
-      languages: ['en-NZ', 'mi-NZ', 'sm'],
       onSegment,
       onError,
     })

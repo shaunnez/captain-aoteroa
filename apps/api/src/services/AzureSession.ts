@@ -2,7 +2,6 @@ import * as sdk from 'microsoft-cognitiveservices-speech-sdk'
 import { v4 as uuidv4 } from 'uuid'
 import { config } from '../config'
 import { supabase } from './supabase'
-import { bcp47ToTranslationCode, translationCodeToBcp47 } from './languageMap'
 import { RECOGNITION_LOCALES, type CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 const useMock = process.env.AZURE_MOCK === 'true'
@@ -15,7 +14,6 @@ export interface SequenceCounter {
 interface AzureSessionOptions {
   eventCode: string
   phraseList?: string[]
-  languages: string[]           // Azure Translator codes (e.g. 'en', 'mi', 'zh-Hans')
   speakerLocale?: string | null // BCP-47 recognition locale; null or undefined = 'en-NZ'
   onSegment: (payload: CaptionSegmentPayload) => void
   onError?: (message: string, fatal: boolean) => void
@@ -25,7 +23,7 @@ interface AzureSessionOptions {
 export class AzureSession {
   private options: AzureSessionOptions
   private pushStream!: sdk.PushAudioInputStream
-  private recognizer!: sdk.TranslationRecognizer
+  private recognizer!: sdk.SpeechRecognizer
   private ownSequence = 0
   private eventId: string | null = null
   private partialTimer: ReturnType<typeof setTimeout> | null = null
@@ -77,8 +75,8 @@ export class AzureSession {
   }
 
   private createRecognizer(): void {
-    const { languages, speakerLocale } = this.options
-    const sourceLocale = speakerLocale ?? languages[0]
+    const { speakerLocale } = this.options
+    const sourceLocale = speakerLocale ?? 'en-NZ'
 
     // Use fake SDK when AZURE_MOCK=true (for E2E/integration tests)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -86,29 +84,20 @@ export class AzureSession {
       ? require('./__mocks__/azureSpeechStub').fakeSdk
       : sdk
 
-    const translationConfig = effectiveSdk.SpeechTranslationConfig.fromSubscription(
+    const speechConfig = effectiveSdk.SpeechConfig.fromSubscription(
       config.azure.speechKey,
       config.azure.speechRegion,
     )
-    translationConfig.speechRecognitionLanguage = sourceLocale
+    speechConfig.speechRecognitionLanguage = sourceLocale
 
     // Shorter segmentation silence → faster final segments (default ~2s → 500ms)
-    translationConfig.setProperty('Speech_SegmentationSilenceTimeoutMs', '500')
-
-    // Add target languages (all non-source event languages)
-    const sourceCode = bcp47ToTranslationCode(sourceLocale)
-    for (const lang of languages) {
-      const code = bcp47ToTranslationCode(lang)
-      if (code !== sourceCode) {
-        translationConfig.addTargetLanguage(code)
-      }
-    }
+    speechConfig.setProperty('Speech_SegmentationSilenceTimeoutMs', '500')
 
     this.pushStream = effectiveSdk.AudioInputStream.createPushStream(
       effectiveSdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1),
     )
     const audioConfig = effectiveSdk.AudioConfig.fromStreamInput(this.pushStream)
-    this.recognizer = new effectiveSdk.TranslationRecognizer(translationConfig, audioConfig)
+    this.recognizer = new effectiveSdk.SpeechRecognizer(speechConfig, audioConfig)
 
     // Load custom phrase hints (te reo etc.)
     if (this.options.phraseList && this.options.phraseList.length > 0) {
@@ -118,7 +107,7 @@ export class AzureSession {
 
     // Throttle partials to ~7/sec (trailing-edge) to avoid render thrashing
     this.recognizer.recognizing = (_, e) => {
-      if (e.result.reason === effectiveSdk.ResultReason.TranslatingSpeech) {
+      if (e.result.reason === effectiveSdk.ResultReason.RecognizingSpeech) {
         this.pendingPartial = { segments: this.buildSegments(e.result) }
         if (!this.partialTimer) {
           this.partialTimer = setTimeout(() => {
@@ -133,7 +122,7 @@ export class AzureSession {
     }
 
     this.recognizer.recognized = (_, e) => {
-      if (e.result.reason === effectiveSdk.ResultReason.TranslatedSpeech && e.result.text) {
+      if (e.result.reason === effectiveSdk.ResultReason.RecognizedSpeech && e.result.text) {
         // Flush any pending partial before emitting final
         this.clearPartialTimer()
         const segments = this.buildSegments(e.result)
@@ -147,23 +136,9 @@ export class AzureSession {
     }
   }
 
-  private buildSegments(result: sdk.TranslationRecognitionResult): Record<string, string> {
-    const sourceLocale = this.options.speakerLocale ?? this.options.languages[0]
-    const segments: Record<string, string> = { [sourceLocale]: result.text }
-
-    // Add translations from the TranslationRecognizer result
-    const translations = result.translations
-    if (translations) {
-      translations.languages?.forEach((langCode: string) => {
-        const text = translations.get(langCode)
-        if (text) {
-          const bcp47 = translationCodeToBcp47(langCode, this.options.languages)
-          segments[bcp47] = text
-        }
-      })
-    }
-
-    return segments
+  private buildSegments(result: sdk.SpeechRecognitionResult): Record<string, string> {
+    const sourceLocale = this.options.speakerLocale ?? 'en-NZ'
+    return { [sourceLocale]: result.text }
   }
 
   private emitSegments(segments: Record<string, string>, isFinal: boolean): void {
@@ -180,16 +155,18 @@ export class AzureSession {
 
     // Persist only final segments
     if (isFinal && this.eventId) {
-      const rows = Object.entries(segments).map(([language, text]) => ({
+      const sourceLocale = this.options.speakerLocale ?? 'en-NZ'
+      const text = segments[sourceLocale] ?? Object.values(segments)[0]
+      const row = {
         id: uuidv4(),
         event_id: this.eventId!,
         sequence: seq,
         text,
-        language,
+        language: sourceLocale,
         is_final: true,
-      }))
-      supabase.from('caption_segments').insert(rows).then(({ error }) => {
-        if (error) console.error('Failed to persist segments:', error.message)
+      }
+      supabase.from('caption_segments').insert([row]).then(({ error }) => {
+        if (error) console.error('Failed to persist segment:', error.message)
       })
     }
   }

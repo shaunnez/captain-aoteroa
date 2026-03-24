@@ -29,10 +29,6 @@ async function resolveEventId(code: string): Promise<string | null> {
   return null
 }
 
-function isMaoriOnly(segments: Record<string, string>): boolean {
-  return Object.keys(segments).length === 1 && 'mi' in segments
-}
-
 /** Resolve text from segments, handling BCP-47 ↔ short code mismatches (e.g. 'en' ↔ 'en-NZ'). */
 function resolveSegmentText(segments: Record<string, string>, lang: string): string | undefined {
   return segments[lang]
@@ -164,23 +160,26 @@ export function setupSocketHandler(io: AppServer): void {
         return
       }
 
-      const languages = NZ_LANGUAGES.map((l: { code: string }) => l.code)
-      console.log(`[socket] session:start languages=${JSON.stringify(languages)}`)
+      console.log(`[socket] session:start speakerLocale=${locale ?? 'default'}`)
 
       try {
         await EventManager.start(
           code,
-          { languages, speakerLocale: locale ?? undefined },
+          { speakerLocale: locale ?? undefined },
           (payload) => {
             console.log(`[socket] emitting caption:segment seq=${payload.sequence} final=${payload.isFinal}`)
             io.to(code).emit('caption:segment', payload)
             if (!payload.isFinal) return
 
-            // Translate te reo-only segments to all other NZ languages (fire-and-forget)
-            if (isMaoriOnly(payload.segments)) {
-              const maoriText = payload.segments['mi']
-              const targetLangs = NZ_LANGUAGES.map((l) => l.code).filter((c) => c !== 'mi')
-              translateText(maoriText, 'mi', targetLangs)
+            // Translate source-only segments to all other NZ languages (fire-and-forget)
+            const segmentKeys = Object.keys(payload.segments)
+            if (segmentKeys.length === 1) {
+              const sourceLang = segmentKeys[0]
+              const sourceText = payload.segments[sourceLang]
+              // Use short code for Azure Translator API (e.g. 'en-NZ' → 'en')
+              const sourceShort = sourceLang.includes('-') ? sourceLang.split('-')[0] : sourceLang
+              const targetLangs = NZ_LANGUAGES.map((l) => l.code).filter((c) => c !== sourceShort && c !== sourceLang)
+              translateText(sourceText, sourceShort, targetLangs)
                 .then(async (translations) => {
                   if (Object.keys(translations).length === 0) return
                   // Merge translations and re-emit so all audiences see captions

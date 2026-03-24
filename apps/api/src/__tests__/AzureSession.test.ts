@@ -12,10 +12,9 @@ vi.mock('microsoft-cognitiveservices-speech-sdk', () => {
     canceled: null as any,
   }
   return {
-    SpeechTranslationConfig: {
+    SpeechConfig: {
       fromSubscription: vi.fn(() => ({
         speechRecognitionLanguage: '',
-        addTargetLanguage: vi.fn(),
         setProperty: vi.fn(),
       })),
     },
@@ -28,11 +27,11 @@ vi.mock('microsoft-cognitiveservices-speech-sdk', () => {
     AudioStreamFormat: {
       getWaveFormatPCM: vi.fn(),
     },
-    TranslationRecognizer: vi.fn(() => recognizerMock),
+    SpeechRecognizer: vi.fn(() => recognizerMock),
     PhraseListGrammar: {
       fromRecognizer: vi.fn(() => ({ addPhrase: vi.fn() })),
     },
-    ResultReason: { TranslatingSpeech: 1, TranslatedSpeech: 2 },
+    ResultReason: { RecognizingSpeech: 1, RecognizedSpeech: 2 },
   }
 })
 
@@ -47,7 +46,6 @@ describe('AzureSession', () => {
     session = new AzureSession({
       eventCode: 'KAI492',
       phraseList: ['karakia'],
-      languages: ['en-NZ'],
       onSegment,
     })
   })

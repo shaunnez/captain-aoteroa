@@ -6,7 +6,6 @@ import { config } from '../config'
 import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 interface SessionOptions {
-  languages: string[]
   speakerLocale?: string
 }
 
@@ -59,7 +58,6 @@ class EventManagerClass {
     } else {
       const azureSession = new AzureSession({
         eventCode: code,
-        languages: options.languages,
         speakerLocale: options.speakerLocale ?? 'en-NZ',
         onSegment,
         onError: async (message, fatal) => {
@@ -115,7 +113,6 @@ class EventManagerClass {
 
       const azureSession = new AzureSession({
         eventCode: entry.eventCode,
-        languages: entry.options.languages,
         speakerLocale: locale,
         onSegment: entry.onSegment,
         onError: async (message, fatal) => {
@@ -148,7 +145,6 @@ class EventManagerClass {
     if (mode === 'dual') {
       const dualSession = new DualAzureSession({
         eventCode: entry.eventCode,
-        languages: entry.options.languages,
         onSegment: entry.onSegment,
         onError: async (message, fatal) => {
           entry.onError(message, fatal)
@@ -160,7 +156,6 @@ class EventManagerClass {
     } else {
       const singleSession = new AzureSession({
         eventCode: entry.eventCode,
-        languages: entry.options.languages,
         onSegment: entry.onSegment,
         onError: async (message, fatal) => {
           entry.onError(message, fatal)

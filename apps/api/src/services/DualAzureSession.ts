@@ -4,7 +4,6 @@ import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 interface DualAzureSessionOptions {
   eventCode: string
-  languages: string[]
   onSegment: (payload: CaptionSegmentPayload) => void
   onError?: (message: string, fatal: boolean) => void
 }
@@ -24,11 +23,10 @@ export class DualAzureSession {
   }
 
   async start(): Promise<void> {
-    const { eventCode, languages, onSegment, onError } = this.options
+    const { eventCode, onSegment, onError } = this.options
 
     const enSession = new AzureSession({
       eventCode,
-      languages,
       speakerLocale: 'en-NZ',
       onSegment,
       onError,
@@ -37,7 +35,6 @@ export class DualAzureSession {
 
     const miSession = new AzureSession({
       eventCode,
-      languages,
       speakerLocale: 'mi-NZ',
       onSegment,
       onError,

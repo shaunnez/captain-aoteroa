@@ -4,15 +4,15 @@
  * the full pipeline without incurring Azure costs.
  */
 
-import { MOCK_TRANSLATIONS, MOCK_SOURCE_TEXT } from '../../__tests__/fixtures/translations'
+import { MOCK_SOURCE_TEXT } from '../../__tests__/fixtures/translations'
 
 // ---------------------------------------------------------------------------
 // Enum-like constants matching the real SDK
 // (declared before the classes that reference them)
 // ---------------------------------------------------------------------------
 const ResultReason = {
-  TranslatingSpeech: 1,
-  TranslatedSpeech: 2,
+  RecognizingSpeech: 1,
+  RecognizedSpeech: 2,
 } as const
 
 const CancellationErrorCode = {
@@ -24,7 +24,7 @@ const CancellationErrorCode = {
 // ---------------------------------------------------------------------------
 class FakePushStream {
   private bytesReceived = 0
-  private recognizer: FakeTranslationRecognizer | null = null
+  private recognizer: FakeSpeechRecognizer | null = null
 
   /** Called by AzureSession.pushChunk → this.pushStream.write(chunk) */
   write(chunk: ArrayBuffer | Buffer): void {
@@ -42,26 +42,24 @@ class FakePushStream {
   }
 
   /** Internal: link the push stream to its recognizer so writes can trigger events. */
-  _setRecognizer(rec: FakeTranslationRecognizer): void {
+  _setRecognizer(rec: FakeSpeechRecognizer): void {
     this.recognizer = rec
   }
 }
 
 // ---------------------------------------------------------------------------
-// Fake TranslationRecognizer
-// (used internally; the public export is the class assigned to fakeSdk.TranslationRecognizer)
+// Fake SpeechRecognizer
+// (used internally; the public export is the class assigned to fakeSdk.SpeechRecognizer)
 // ---------------------------------------------------------------------------
-class FakeTranslationRecognizer {
+class FakeSpeechRecognizer {
   recognizing: ((sender: any, e: any) => void) | null = null
   recognized: ((sender: any, e: any) => void) | null = null
   canceled: ((sender: any, e: any) => void) | null = null
 
-  private targetLanguages: string[]
   private running = false
   private pushStream: FakePushStream | null = null
 
   constructor(config: any, audioConfig: any) {
-    this.targetLanguages = config._targetLanguages ?? []
     if (audioConfig?._stream instanceof FakePushStream) {
       this.pushStream = audioConfig._stream
       this.pushStream!._setRecognizer(this)
@@ -86,16 +84,10 @@ class FakeTranslationRecognizer {
   _fireRecognized(): void {
     if (!this.running || !this.recognized) return
 
-    const translations = {
-      languages: this.targetLanguages,
-      get: (code: string) => MOCK_TRANSLATIONS[code] ?? `[mock:${code}]`,
-    }
-
     this.recognized(null, {
       result: {
-        reason: ResultReason.TranslatedSpeech,
+        reason: ResultReason.RecognizedSpeech,
         text: MOCK_SOURCE_TEXT,
-        translations,
       },
     })
   }
@@ -105,14 +97,10 @@ class FakeTranslationRecognizer {
 // Public export matching `import * as sdk from 'microsoft-cognitiveservices-speech-sdk'`
 // ---------------------------------------------------------------------------
 export const fakeSdk = {
-  SpeechTranslationConfig: {
+  SpeechConfig: {
     fromSubscription(_key: string, _region: string) {
       return {
         speechRecognitionLanguage: '' as string,
-        _targetLanguages: [] as string[],
-        addTargetLanguage(code: string) {
-          this._targetLanguages.push(code)
-        },
         setProperty(_name: string, _value: string) {},
       }
     },
@@ -136,7 +124,7 @@ export const fakeSdk = {
     },
   },
 
-  TranslationRecognizer: FakeTranslationRecognizer,
+  SpeechRecognizer: FakeSpeechRecognizer,
 
   PhraseListGrammar: {
     fromRecognizer(_rec: any) {
