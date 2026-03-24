@@ -107,7 +107,7 @@ describe('PapaReoSession', () => {
     mockWsOnHandlers['message']?.(Buffer.from(msg))
     expect(onSegment).toHaveBeenCalledWith(
       expect.objectContaining({
-        segments: { 'mi-NZ': 'Kia ora' },
+        segments: { 'mi': 'Kia ora' },
         isFinal: true,
       }),
     )

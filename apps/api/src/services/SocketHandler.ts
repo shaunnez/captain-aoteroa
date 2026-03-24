@@ -8,10 +8,30 @@ import { TtsService } from './TtsService'
 import { OpenAiTtsService } from './OpenAiTtsService'
 import { AudioSubscriptionManager } from './AudioSubscriptionManager'
 import { config } from '../config'
+import { translateText } from './translateText'
+import { v4 as uuidv4 } from 'uuid'
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents>
 
 const HISTORY_SIZE = 20
+
+// Cache event code → UUID to avoid repeated DB lookups
+const eventIdCache = new Map<string, string>()
+
+async function resolveEventId(code: string): Promise<string | null> {
+  const cached = eventIdCache.get(code)
+  if (cached) return cached
+  const { data } = await supabase.from('events').select('id').eq('code', code).single()
+  if (data?.id) {
+    eventIdCache.set(code, data.id)
+    return data.id
+  }
+  return null
+}
+
+function isMaoriOnly(segments: Record<string, string>): boolean {
+  return Object.keys(segments).length === 1 && 'mi' in segments
+}
 
 async function broadcastViewerCount(io: AppServer, code: string): Promise<void> {
   const sockets = await io.in(code).fetchSockets()
@@ -147,6 +167,40 @@ export function setupSocketHandler(io: AppServer): void {
             console.log(`[socket] emitting caption:segment seq=${payload.sequence} final=${payload.isFinal}`)
             io.to(code).emit('caption:segment', payload)
             if (!payload.isFinal) return
+
+            // Translate te reo-only segments to all other NZ languages (fire-and-forget)
+            if (isMaoriOnly(payload.segments)) {
+              const maoriText = payload.segments['mi']
+              const targetLangs = NZ_LANGUAGES.map((l) => l.code).filter((c) => c !== 'mi')
+              translateText(maoriText, 'mi', targetLangs)
+                .then(async (translations) => {
+                  if (Object.keys(translations).length === 0) return
+                  // Merge translations and re-emit so all audiences see captions
+                  const enrichedPayload = {
+                    ...payload,
+                    segments: { ...payload.segments, ...translations },
+                  }
+                  io.to(code).emit('caption:segment', enrichedPayload)
+
+                  // Persist translated segments to DB
+                  const eventId = await resolveEventId(code)
+                  if (eventId) {
+                    const rows = Object.entries(translations).map(([lang, text]) => ({
+                      id: uuidv4(),
+                      event_id: eventId,
+                      sequence: payload.sequence,
+                      text,
+                      language: lang,
+                      is_final: true,
+                    }))
+                    const { error } = await supabase.from('caption_segments').insert(rows)
+                    if (error) console.error('[SocketHandler] Failed to persist translated segments:', error.message)
+                  }
+                })
+                .catch((err) => {
+                  console.error('[SocketHandler] Te reo translation failed:', err)
+                })
+            }
             const subscribers = audioSubs.getSubscribers(code)
             for (const [lang, sockets] of subscribers) {
               if (sockets.size === 0) continue
@@ -249,24 +303,8 @@ export function setupSocketHandler(io: AppServer): void {
       try {
         const targetLangs = (event.languages || []).filter((l: string) => l !== language).map((l: string) => l.split('-')[0])
         if (targetLangs.length > 0 && config.azure?.speechKey) {
-          const res = await fetch(
-            `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${language.split('-')[0]}&to=${targetLangs.join('&to=')}`,
-            {
-              method: 'POST',
-              headers: {
-                'Ocp-Apim-Subscription-Key': config.azure.speechKey,
-                'Ocp-Apim-Subscription-Region': config.azure.speechRegion,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify([{ Text: body.trim() }]),
-            }
-          )
-          if (res.ok) {
-            const translations: Record<string, string> = {}
-            const data = await res.json()
-            for (const t of data[0]?.translations || []) {
-              translations[t.to] = t.text
-            }
+          const translations = await translateText(body.trim(), language.split('-')[0], targetLangs)
+          if (Object.keys(translations).length > 0) {
             await supabase.from('qa_questions').update({ translations }).eq('id', question.id)
             question.translations = translations
           }
