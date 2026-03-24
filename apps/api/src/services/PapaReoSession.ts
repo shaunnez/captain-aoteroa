@@ -118,7 +118,7 @@ export class PapaReoSession {
 
     this.options.onSegment(payload)
 
-    // Persist final segments (single row with JSONB segments per sequence)
+    // Persist final segments
     if (isFinal && this.eventId) {
       const row = {
         id: uuidv4(),
@@ -127,11 +127,10 @@ export class PapaReoSession {
         text: msg.text,
         language: 'mi',
         is_final: true,
-        segments: { 'mi': msg.text },
       }
       supabase
         .from('caption_segments')
-        .upsert(row, { onConflict: 'event_id,sequence' })
+        .insert([row])
         .then(({ error }) => {
           if (error) console.error('Failed to persist Papa Reo segment:', error.message)
         })

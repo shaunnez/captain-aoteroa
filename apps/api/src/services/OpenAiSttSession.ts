@@ -176,15 +176,14 @@ export class OpenAiSttSession {
         if (this.eventId) {
           supabase
             .from('caption_segments')
-            .upsert([{
+            .insert([{
               id: uuidv4(),
               event_id: this.eventId,
               sequence: seq,
               text,
               language: 'mi',
               is_final: true,
-              segments: { 'mi': text },
-            }], { onConflict: 'event_id,sequence' })
+            }])
             .then(({ error }) => {
               if (error) console.error('[OpenAiStt] Failed to persist segment:', error.message)
             })

@@ -24,10 +24,9 @@ export interface CaptionSegment {
   event_id: string
   sequence: number
   text: string
-  language: string      // BCP-47 locale (source language)
+  language: string      // BCP-47 locale
   is_final: boolean
   created_at: string
-  segments?: Record<string, string>  // JSONB: all locale → text variants
 }
 
 // Socket.io event payloads

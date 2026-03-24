@@ -48,10 +48,10 @@ export class TranscriptProcessor {
     }
 
     try {
-      // Fetch all final caption segments with JSONB segments column
+      // Fetch all final caption segments grouped by language
       const { data: segments, error: segError } = await supabase
         .from('caption_segments')
-        .select('segments, text, language, sequence')
+        .select('text, language, sequence')
         .eq('event_id', eventId)
         .eq('is_final', true)
         .order('sequence', { ascending: true })
@@ -65,16 +65,13 @@ export class TranscriptProcessor {
         return
       }
 
-      // Group segments by language using JSONB (fall back to legacy text/language)
+      // Group segments by language
       const byLanguage = new Map<string, string[]>()
       for (const seg of segments) {
-        const segMap: Record<string, string> = seg.segments ?? { [seg.language]: seg.text }
-        for (const [lang, text] of Object.entries(segMap)) {
-          if (!byLanguage.has(lang)) {
-            byLanguage.set(lang, [])
-          }
-          byLanguage.get(lang)!.push(text)
+        if (!byLanguage.has(seg.language)) {
+          byLanguage.set(seg.language, [])
         }
+        byLanguage.get(seg.language)!.push(seg.text)
       }
 
       // Process all languages through Claude API in parallel
