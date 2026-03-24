@@ -67,6 +67,8 @@ export function DashboardPage() {
             <Plus size={16} />
             Create Event
           </Link>
+          
+          
         </div>
       }
       main={

@@ -15,7 +15,7 @@ export function EventLobby({ event }: EventLobbyProps) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-sand p-6">
       <div className="bg-white border-2 border-brand-purple border-opacity-20 rounded-2xl p-8 max-w-lg w-full text-center shadow-sm">
-        <h1 className="font-serif text-2xl font-semibold text-brand-purple-dark mb-2">
+        <h1 className="font-serif text-2xl font-semibold text-brand-purple-dark mb-2" style={{ color: event.theme_color || 'var(--color-primary)' }}>
           {event.title}
         </h1>
 

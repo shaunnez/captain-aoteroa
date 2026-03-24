@@ -104,12 +104,13 @@ export function EventPage() {
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg
-                       text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container)] transition-colors"
+                       text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container)] transition-colors  border border-[var(--color-outline-variant)]"
             aria-label="Toggle settings"
           >
             <span className="material-symbols-outlined text-[20px]">
               {sidebarOpen ? 'close' : 'tune'}
             </span>
+            
           </button>
           <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
             HearMe NZ
@@ -141,7 +142,7 @@ export function EventPage() {
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--color-outline-variant)]
-                     text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
+                     text-sm text-[var(--color-primary)] hover:bg-[var(--color-surface-container)] transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">close</span>
           Exit
@@ -185,17 +186,22 @@ export function EventPage() {
                 {event.description}
               </p>
             )}
+
+            {event.event_date && (
+              <p className="text-xs text-[var(--color-on-surface-variant)]">
+                {new Date(event.event_date).toLocaleString(undefined, {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+              </p>
+            )}
           </section>
 
-          {/* Event code */}
-          <section className="space-y-1">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
-              Event Code
-            </h3>
-            <p className="font-mono text-2xl font-bold tracking-widest text-[var(--color-on-surface)]">
-              {event.code}
-            </p>
-          </section>
+        
 
           {/* Text Size */}
           <section className="space-y-2">
@@ -367,24 +373,6 @@ export function EventPage() {
             </div>
           )}
 
-          <div className="relative z-10 mb-4 md:mb-10 flex items-end justify-between gap-4">
-            <div className="min-w-0">
-              <h1
-                className="font-serif text-xl md:text-3xl font-bold tracking-tight truncate"
-                style={{ color: event.theme_color || 'var(--color-primary)' }}
-              >
-                {event.title}
-              </h1>
-              {event.organiser_name && (
-                <p className="text-xs text-[var(--color-on-surface-variant)] mt-0.5">
-                  by {event.organiser_name}
-                </p>
-              )}
-              {event.description && (
-                <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">{event.description}</p>
-              )}
-            </div>
-          </div>
 
           <div className="relative z-10 flex-1 overflow-hidden flex flex-col">
             {segments.length === 0 && event.status === 'live' ? (

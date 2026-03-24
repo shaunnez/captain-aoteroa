@@ -30,7 +30,7 @@ export function EventCard({ event, to }: EventCardProps) {
       <div className="flex items-start justify-between gap-3 flex-1">
         <div className="min-w-0 flex-1">
           <h3 className="font-serif text-lg font-semibold text-[var(--color-on-surface)] truncate
-                         group-hover:text-[var(--color-primary)] transition-colors">
+                         group-hover:text-[var(--color-primary)] transition-colors" style={{ color: event.theme_color || 'var(--color-primary)' }}>
             {event.title}
           </h3>
           {event.organiser_name && (
