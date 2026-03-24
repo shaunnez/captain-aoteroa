@@ -17,6 +17,7 @@ import { useViewerCount } from '../hooks/useViewerCount'
 import { useDarkModeContext } from '../contexts/DarkModeContext'
 import type { Event } from '@caption-aotearoa/shared'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
+import { LogoImg } from '../components/LogoImg'
 import { useReactions } from '../hooks/useReactions'
 import { ReactionBar } from '../components/ReactionBar'
 import { TTS_SUPPORTED_LANGUAGES } from '@caption-aotearoa/shared'
@@ -112,7 +113,8 @@ export function EventPage() {
             </span>
             
           </button>
-          <span className="font-serif text-xl font-bold text-[var(--color-primary)]">
+          <LogoImg className="h-8" />
+          <span className="font-serif  text-lg md:text-xl font-bold text-[var(--color-primary)]">
             HearMe NZ
           </span>
           <div className="hidden md:block w-px h-5 bg-[var(--color-outline-variant)]" />

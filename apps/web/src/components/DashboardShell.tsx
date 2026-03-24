@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { LogoImg } from './LogoImg'
 
 interface DashboardShellProps {
   left: React.ReactNode
@@ -34,7 +35,8 @@ export function DashboardShell({ left, main, right, headerActions, fillMain }: D
               {sidebarOpen ? 'close' : 'menu'}
             </span>
           </button>
-          <span className="font-serif text-lg font-bold text-[var(--color-on-surface)]">
+          <LogoImg className="h-8" />
+          <span className="font-serif  text-lg md:text-xl font-bold text-[var(--color-primary)]">
             HearMe NZ
           </span>
         </div>

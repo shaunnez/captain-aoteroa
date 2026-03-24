@@ -227,7 +227,7 @@ export function PresentPage() {
                      text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
         >
           <ArrowLeft size={16} />
-          Dashboard
+          Back
         </button>
 
         </>

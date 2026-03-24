@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
 import { DarkModeToggle } from '../components/DarkModeToggle'
 import { Home } from 'lucide-react'
+import { LogoImg } from '../components/LogoImg'
 
 export function LoginPage() {
   const [email, setEmail]       = useState('')
@@ -74,6 +75,7 @@ export function LoginPage() {
         <div className="relative">
           {/* Brand */}
           <div className="text-center mb-8">
+            <LogoImg className="h-14 mx-auto mb-3" />
             <span className="font-serif text-2xl font-bold text-[var(--color-primary)]">
               HearMe NZ
             </span>
