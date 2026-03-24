@@ -12,7 +12,10 @@ vi.mock('../services/supabase', () => ({
 
 // Mock the auth middleware to always pass in tests
 vi.mock('../middleware/auth', () => ({
-  verifyJWT: vi.fn((_req: any, _res: any, next: any) => next()),
+  verifyJWT: vi.fn((req: any, _res: any, next: any) => {
+    req.user = { id: 'test-user-id', email: 'test@example.com' }
+    next()
+  }),
 }))
 
 const mockEvent = {

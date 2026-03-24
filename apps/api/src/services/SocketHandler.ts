@@ -195,19 +195,42 @@ export function setupSocketHandler(io: AppServer): void {
                     if (sockets.size === 0) continue
                     const text = resolveSegmentText(translations, lang)
                     if (!text) continue
-                    tts.synthesize(text, lang).then((audio) => {
-                      if (!audio) {
-                        console.warn(`[SocketHandler] No TTS voice for translated language: ${lang}`)
-                        return
-                      }
-                      io.to([...sockets]).emit('audio:tts', {
-                        language: lang,
-                        sequence: payload.sequence,
-                        data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+
+                    if (lang === 'mi' && openAiTts) {
+                      // Use OpenAI TTS for te reo (Azure has no Māori voice)
+                      const socketIds = [...sockets]
+                      openAiTts.synthesizeStream(text, (chunk) => {
+                        io.to(socketIds).emit('audio:tts-stream', {
+                          language: lang,
+                          sequence: payload.sequence,
+                          chunk: chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer,
+                          done: false,
+                        })
+                      }).then(() => {
+                        io.to(socketIds).emit('audio:tts-stream', {
+                          language: lang,
+                          sequence: payload.sequence,
+                          chunk: new ArrayBuffer(0),
+                          done: true,
+                        })
+                      }).catch((err) => {
+                        console.error('[SocketHandler] OpenAI TTS stream failed for translated te reo:', err)
                       })
-                    }).catch((err) => {
-                      console.error('[SocketHandler] TTS synthesis failed for te reo translation:', err)
-                    })
+                    } else {
+                      tts.synthesize(text, lang).then((audio) => {
+                        if (!audio) {
+                          console.warn(`[SocketHandler] No TTS voice for translated language: ${lang}`)
+                          return
+                        }
+                        io.to([...sockets]).emit('audio:tts', {
+                          language: lang,
+                          sequence: payload.sequence,
+                          data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+                        })
+                      }).catch((err) => {
+                        console.error('[SocketHandler] TTS synthesis failed for translation:', err)
+                      })
+                    }
                   }
 
                   // Persist translated segments to DB
