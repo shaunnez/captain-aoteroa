@@ -15,7 +15,18 @@ A decorative animated layer added to the existing hero `<section>` on `HomePage.
 ## Component
 
 **File:** `apps/web/src/components/HeroWordDrift.tsx`
-**Used in:** `apps/web/src/pages/HomePage.tsx` — inside the hero `<section>`, replacing `KowhaiwhaPattern` or layered above it.
+**Used in:** `apps/web/src/pages/HomePage.tsx` — inside the hero `<section>`, layered above `KowhaiwhaPattern`.
+**Client-only:** This component uses `ResizeObserver` and `useRef` for DOM measurement. It is safe for a Vite/React SPA (no SSR). If SSR is ever introduced, wrap with a client-only guard.
+
+### Props
+
+```ts
+type HeroWordDriftProps = {
+  prefersReduced: boolean
+}
+```
+
+`prefersReduced` is sourced in `HomePage.tsx` via Framer Motion's `useReducedMotion()` hook, which is already imported and used there (`const prefersReduced = useReducedMotion()`). Pass the same value to `HeroWordDrift`.
 
 ---
 
@@ -40,66 +51,143 @@ Ten te reo Māori words, each related to communication, accessibility, or the se
 
 ## Animation Behaviour
 
-- Each word is a `motion.span` (Framer Motion) positioned absolutely within a `drift-layer` div (`position: absolute; inset: 0; overflow: hidden; pointer-events: none`).
-- Words are spread horizontally across the full banner width via fixed `left` percentages.
+- Each word is a `motion.span` (Framer Motion) positioned absolutely within a `drift-layer` div (`position: absolute; inset: 0; overflow: hidden; pointer-events: none; aria-hidden: true`).
+- Words are spread horizontally across the full banner width via fixed `left` percentages defined in the word config (see Word Configuration below).
 - Each word has an independently staggered `delay` (0–6s) and slightly varying `duration` (7–10s) so cycles never feel synchronised.
-- **Travel distance:** each word rises ~55% of the banner's rendered height. The banner height is measured once via a `useRef` + `ResizeObserver` and stored in state.
-- **Opacity envelope per cycle:**
-  - 0–8% of cycle: fade in (0 → 1)
-  - 8–60%: fully visible
-  - 60–80%: fade out (1 → 0)
-  - 80–100%: invisible (word resets to bottom for next cycle)
-- **Implementation:** Framer Motion `animate` prop with `repeat: Infinity, repeatType: "loop"`. Each word's keyframes are expressed as arrays: `y: [startY, endY]`, `opacity: [0, 1, 1, 0, 0]`, with `times: [0, 0.08, 0.60, 0.80, 1]`.
+- **Travel distance:** each word rises 55% of the banner's rendered height (`travelPx = containerHeight * 0.55`). The banner height is measured via a `useRef` + `ResizeObserver` stored in a `containerHeight` state variable. Initial value is `0`; words and the scan line are not rendered until `containerHeight > 0` to avoid a flash at `top: 8px` on first paint.
+
+### Framer Motion keyframes
+
+Each `motion.span` uses the following `animate` keyframe arrays. Both `y` and `opacity` have five values aligned to the same `times` array:
+
+```ts
+animate={{
+  y:       [0, 0, -(travelPx * 0.6), -(travelPx * 0.8), -travelPx],
+  opacity: [0, 1,  1,                  0,                  0],
+}}
+transition={{
+  duration,
+  delay,
+  repeat: Infinity,
+  repeatType: 'loop',
+  ease: 'linear',
+  times: [0, 0.08, 0.60, 0.80, 1],
+}}
+```
+
+The word's CSS `top` is set to `containerHeight + 8` (px), so `y: 0` places it just below the visible area and `y: -travelPx` places it 55% up from the bottom.
+
+### Resize behaviour
+
+On a `ResizeObserver` resize event, `containerHeight` state is updated. Framer Motion will re-render the `animate` prop with new `y` values. Words mid-cycle will smoothly transition to the updated target — no manual restart required. The slight position jump on resize is acceptable (resize is rare and brief).
 
 ### Scan line
 
-A single `motion.div` (1.5px tall, full width) sweeps upward through the same lower zone on a `duration: 5s, repeat: Infinity` loop. It fades out before reaching the ~45% mark (well below the headline). Uses a horizontal gradient for a soft glow effect.
+A single `motion.div` (1.5px tall, full width, `pointer-events: none`) sweeps upward through the lower 55% zone. It intentionally leads the words slightly — it begins moving immediately at `t=0` while words hold for 8% of their cycle. This is by design: the scan line acts as a "reveal" sweep that precedes the words.
+
+```ts
+animate={{
+  y:       [0, 0, -(travelPx * 0.6), -(travelPx * 0.8), -travelPx],
+  opacity: [0, 1,  1,                  0,                  0],
+}}
+transition={{
+  duration: 5,
+  delay: 0,
+  repeat: Infinity,
+  repeatType: 'loop',
+  ease: 'linear',
+  times: [0, 0.05, 0.70, 0.88, 1],
+}}
+```
+
+Initial CSS `top` is `containerHeight + 8` (same as words). Fade completes at 88% of the cycle — the line reaches ~45% up from the bottom, well below the headline. Uses a horizontal CSS gradient for the glow; see Theming section.
 
 ### Whakataukī
 
 A short Māori proverb is pinned to the bottom of the banner:
 *"Ko ngā kupu he ara — words are a pathway"*
-Rendered as a `<p>` with `position: absolute; bottom: 14px`, `z-index: 2`, styled with `--color-secondary` and low opacity (0.65). It sits above the drift layer but below the main hero content.
+
+Rendered as `<p lang="mi">` with Tailwind classes `absolute bottom-3.5 left-0 right-0 text-center text-xs font-semibold italic tracking-wider opacity-65 z-[2]`. Styled with `--color-secondary` (light) / `#8ad3d7` (dark).
+
+**The whakataukī is always rendered, even when `prefersReduced` is `true`.** Only the animated words and scan line are suppressed under reduced motion.
+
+**Cultural note:** *"Ko ngā kupu he ara"* is a contemporary Māori composition, not a documented traditional whakataukī. It should be reviewed by a Māori language advisor before the feature ships publicly. A placeholder note may be left in the code.
 
 ---
 
 ## Theming (Light / Dark)
 
-The component reads dark mode from `useDarkMode()` (the existing `DarkModeContext`).
+The component reads dark mode from `useDarkMode()` (existing `DarkModeContext`).
 
 | Element | Light | Dark |
 |---|---|---|
-| Primary words | `--color-primary` (#1c0070) | `#c7bfff` + `text-shadow: 0 0 16px rgba(199,191,255,0.5)` |
-| Teal words | `--color-secondary` (#14696d) | `#8ad3d7` + `text-shadow: 0 0 16px rgba(138,211,215,0.5)` |
-| Scan line | `rgba(20,105,109,0.5)` gradient | `rgba(138,211,215,0.45)` gradient |
-| Whakataukī | `--color-secondary` | `#8ad3d7` |
+| Primary words | `color: var(--color-primary)` | `color: #c7bfff; text-shadow: 0 0 16px rgba(199,191,255,0.5)` |
+| Teal words | `color: var(--color-secondary)` | `color: #8ad3d7; text-shadow: 0 0 16px rgba(138,211,215,0.5)` |
+| Scan line | `linear-gradient(90deg, transparent, rgba(20,105,109,0.5) 50%, transparent)` | `linear-gradient(90deg, transparent, rgba(138,211,215,0.45) 50%, transparent)` |
+| Whakataukī | `color: var(--color-secondary)` | `color: #8ad3d7` |
 
-Words alternate between primary and teal colours based on their position in the array.
+Each word's colour is determined by its explicit `teal: boolean` field in the word config array (not by index parity). This gives full control over which words are indigo vs teal.
 
 ---
 
 ## Word Configuration
 
-Each word entry:
+The config array is hardcoded inside `HeroWordDrift.tsx` (no external constants file needed). The full values to use:
+
+```ts
+const WORDS: DriftWord[] = [
+  { text: 'Kōrero',      teal: false, leftPct: 6,  sizeRem: 0.82, duration: 7,   delay: 0    },
+  { text: 'Whakarongo',  teal: true,  leftPct: 22, sizeRem: 1.00, duration: 8.5, delay: 1.4  },
+  { text: 'Māramatanga', teal: false, leftPct: 40, sizeRem: 0.72, duration: 6.5, delay: 0.8  },
+  { text: 'Kite',        teal: true,  leftPct: 56, sizeRem: 0.90, duration: 9,   delay: 2.2  },
+  { text: 'Aroha',       teal: false, leftPct: 70, sizeRem: 0.78, duration: 7.5, delay: 0.3  },
+  { text: 'Rongo',       teal: true,  leftPct: 82, sizeRem: 0.82, duration: 8,   delay: 3.1  },
+  { text: 'Mōhio',       teal: false, leftPct: 14, sizeRem: 0.70, duration: 9.5, delay: 4.2  },
+  { text: 'Ngā Reo',     teal: true,  leftPct: 48, sizeRem: 0.92, duration: 7,   delay: 5.0  },
+  { text: 'Tūhura',      teal: false, leftPct: 76, sizeRem: 0.68, duration: 8,   delay: 1.8  },
+  { text: 'Mātauranga',  teal: true,  leftPct: 30, sizeRem: 0.75, duration: 10,  delay: 6.0  },
+]
+```
+
+Each entry:
 
 ```ts
 type DriftWord = {
   text: string
-  teal: boolean       // true = teal colour, false = primary colour
-  leftPct: number     // horizontal position as % of container width
-  sizRem: number      // font-size in rem (0.68–1.0)
-  duration: number    // animation cycle length in seconds
-  delay: number       // initial delay before first cycle starts
+  teal: boolean      // true = teal colour, false = primary colour
+  leftPct: number    // horizontal position as % of container width
+  sizeRem: number    // font-size in rem (range: 0.68–1.0)
+  duration: number   // animation cycle length in seconds
+  delay: number      // initial delay before first cycle in seconds
 }
 ```
 
 ---
 
+## Reduced Motion
+
+When `prefersReduced` is `true`:
+- The animated `motion.span` words and `motion.div` scan line are **not rendered**.
+- The whakataukī `<p lang="mi">` is **still rendered** — it has content value independent of animation.
+
+---
+
+## Z-index Stack (hero section)
+
+| Layer | z-index | Notes |
+|---|---|---|
+| `KowhaiwhaPattern` SVG | auto (0) | Absolutely positioned, no z-index set |
+| `HeroWordDrift` drift layer div | auto (0) | Absolutely positioned, no z-index set — sits above KowhaiwhaPattern in DOM order |
+| `HeroWordDrift` whakataukī `<p>` | `z-[2]` | Pinned text, above drift layer |
+| Main hero `motion.div` (headline + form) | `relative` / default stacking | In normal flow via `position: relative`, naturally above absolute layers |
+
+---
+
 ## Accessibility
 
-- The drift layer is `aria-hidden="true"` — purely decorative.
-- The whakataukī `<p>` is visible text and does NOT get `aria-hidden`.
-- `useReducedMotion()` (already used in `HomePage.tsx`) is passed as a prop. When `true`, the component renders `null` — no animation, no DOM overhead.
+- The outer drift layer div has `aria-hidden="true"` — purely decorative.
+- The whakataukī `<p lang="mi">` is not hidden and carries `lang="mi"` so screen readers use the correct Māori pronunciation engine.
+- All animation respects `prefersReduced` (see above).
 
 ---
 
@@ -124,7 +212,7 @@ After this change:
 </section>
 ```
 
-`KowhaiwhaPattern` stays (very subtle BG tile at 4% opacity). `HeroWordDrift` sits above it as a second decorative layer, below the main content.
+`KowhaiwhaPattern` stays (very subtle BG tile at 4% opacity). `HeroWordDrift` sits above it as a second decorative layer, below the main content `motion.div`.
 
 ---
 
