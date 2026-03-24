@@ -63,6 +63,7 @@ export interface ServerToClientEvents {
   'caption:error': (payload: CaptionErrorPayload) => void
   'viewer:count': (payload: { count: number }) => void
   'audio:tts': (payload: { language: string; sequence: number; data: ArrayBuffer }) => void
+  'audio:tts-stream': (payload: { language: string; sequence: number; chunk: ArrayBuffer; done: boolean }) => void
   'qa:new': (payload: { question: QaQuestion }) => void
   'qa:update': (payload: { question: QaQuestion }) => void
   'qa:history': (payload: { questions: QaQuestion[] }) => void

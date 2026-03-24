@@ -3,8 +3,8 @@ import * as sdk from 'microsoft-cognitiveservices-speech-sdk'
 /** Azure Neural TTS voice names keyed by Azure Translator language code. */
 const VOICE_MAP: Record<string, string> = {
   'en':      'en-NZ-MollyNeural',
-  'mi':      'mi-NZ-MereNeural',
-  'sm':      'sm-WS-NerauNeural',
+  // 'mi':      'mi-NZ-MereNeural',
+  // 'sm':      'sm-WS-NerauNeural',
   'zh-Hans': 'zh-CN-XiaoxiaoNeural',
   'zh-Hant': 'zh-TW-HsiaoChenNeural',
   'hi':      'hi-IN-SwaraNeural',

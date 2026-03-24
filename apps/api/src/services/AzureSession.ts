@@ -218,7 +218,11 @@ export class AzureSession {
   }
 
   pushChunk(chunk: Buffer): void {
-    this.pushStream.write(chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer)
+    try {
+      this.pushStream.write(chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer)
+    } catch {
+      // Stream may be closed during session transitions — silently drop the chunk
+    }
   }
 
   async stop(): Promise<void> {

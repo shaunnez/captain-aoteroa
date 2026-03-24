@@ -1,6 +1,8 @@
-import { AzureSession } from './AzureSession'
+import { AzureSession, type SequenceCounter } from './AzureSession'
 import { DualAzureSession } from './DualAzureSession'
 import { PapaReoSession } from './PapaReoSession'
+import { OpenAiSttSession } from './OpenAiSttSession'
+import { config } from '../config'
 import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 interface SessionOptions {
@@ -11,8 +13,10 @@ interface SessionOptions {
 type OnSegment = (payload: CaptionSegmentPayload) => void
 type OnError = (message: string, fatal: boolean) => void
 
+type MaoriSttSession = PapaReoSession | OpenAiSttSession
+
 interface SessionEntry {
-  session: AzureSession | DualAzureSession | PapaReoSession
+  session: AzureSession | DualAzureSession | MaoriSttSession
   options: SessionOptions
   eventCode: string
   onSegment: OnSegment
@@ -22,6 +26,19 @@ interface SessionEntry {
 class EventManagerClass {
   private sessions = new Map<string, SessionEntry>()
 
+  /** Create the best available te reo STT session: OpenAI if key set, Papa Reo otherwise. */
+  private createMaoriSession(
+    eventCode: string,
+    onSegment: OnSegment,
+    onError: (msg: string, fatal: boolean) => void,
+    sharedSequence?: SequenceCounter,
+  ): MaoriSttSession {
+    if (config.openaiApiKey) {
+      return new OpenAiSttSession({ apiKey: config.openaiApiKey, eventCode, onSegment, onError, sharedSequence })
+    }
+    return new PapaReoSession({ eventCode, onSegment, onError, sharedSequence })
+  }
+
   async start(
     code: string,
     options: SessionOptions,
@@ -30,19 +47,15 @@ class EventManagerClass {
   ): Promise<void> {
     if (this.sessions.has(code)) await this.end(code)
 
-    let session: AzureSession | PapaReoSession
+    let session: AzureSession | MaoriSttSession
 
     if (options.speakerLocale === 'mi-NZ') {
-      const papaReoSession = new PapaReoSession({
-        eventCode: code,
-        onSegment,
-        onError: (message, fatal) => {
-          onError(message, fatal)
-          if (fatal) this.sessions.delete(code)
-        },
+      const maoriSession = this.createMaoriSession(code, onSegment, (message, fatal) => {
+        onError(message, fatal)
+        if (fatal) this.sessions.delete(code)
       })
-      await papaReoSession.start()
-      session = papaReoSession
+      await maoriSession.start()
+      session = maoriSession
     } else {
       const azureSession = new AzureSession({
         eventCode: code,
@@ -83,24 +96,20 @@ class EventManagerClass {
       await this.setMode(code, 'single')
     }
 
-    const needsPapaReo = locale === 'mi-NZ'
-    const currentIsPapaReo = entry.session instanceof PapaReoSession
+    const needsMaori = locale === 'mi-NZ'
+    const currentIsMaori = entry.session instanceof PapaReoSession || entry.session instanceof OpenAiSttSession
 
-    if (needsPapaReo && !currentIsPapaReo) {
-      // Switch from Azure → Papa Reo
+    if (needsMaori && !currentIsMaori) {
+      // Switch from Azure → Māori STT
       try { await entry.session.stop() } catch { /* ignore */ }
 
-      const papaReoSession = new PapaReoSession({
-        eventCode: entry.eventCode,
-        onSegment: entry.onSegment,
-        onError: (message, fatal) => {
-          entry.onError(message, fatal)
-          if (fatal) this.sessions.delete(code)
-        },
+      const maoriSession = this.createMaoriSession(entry.eventCode, entry.onSegment, (message, fatal) => {
+        entry.onError(message, fatal)
+        if (fatal) this.sessions.delete(code)
       })
-      await papaReoSession.start()
-      entry.session = papaReoSession
-    } else if (!needsPapaReo && currentIsPapaReo) {
+      await maoriSession.start()
+      entry.session = maoriSession
+    } else if (!needsMaori && currentIsMaori) {
       // Switch from Papa Reo → Azure
       try { await entry.session.stop() } catch { /* ignore */ }
 
@@ -123,7 +132,7 @@ class EventManagerClass {
       })
       await azureSession.start()
       entry.session = azureSession
-    } else if (!needsPapaReo && entry.session instanceof AzureSession) {
+    } else if (!needsMaori && entry.session instanceof AzureSession) {
       // Stay on Azure, just change language
       await entry.session.setLanguage(locale)
     }

@@ -9,7 +9,7 @@ import { EventCardSkeleton } from '../components/EventCardSkeleton'
 import { EventSearchBar } from '../components/EventSearchBar'
 import { DarkModeToggle } from '../components/DarkModeToggle'
 import { KowhaiwhaPattern } from '../components/KowhaiwhaPattern'
-import { HeroWordDrift } from '../components/HeroWordDrift'
+// import { HeroWordDrift } from '../components/HeroWordDrift'
 import { AnimatedCounter } from '../components/AnimatedCounter'
 import type { Event } from '@caption-aotearoa/shared'
 import { LogoImg } from '../components/LogoImg'
@@ -88,7 +88,7 @@ export function HomePage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden py-24 px-6 text-center">
         <KowhaiwhaPattern />
-        <HeroWordDrift prefersReduced={!!prefersReduced} />
+        {/* <HeroWordDrift prefersReduced={!!prefersReduced} /> */}
         <motion.div
           className="relative max-w-2xl mx-auto"
           variants={heroVariants}

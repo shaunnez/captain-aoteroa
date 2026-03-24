@@ -36,10 +36,19 @@ export function useCaptions(
     return Array.from(allSegmentsRef.current.values())
       .sort((a, b) => a.sequence - b.sequence)
       .map((s) => {
-        const hasTranslation = localeRef.current in s.segments
+        const locale = localeRef.current
+        // Match short codes to BCP-47 keys and vice versa (e.g. 'mi' ↔ 'mi-NZ')
+        const text = s.segments[locale]
+          ?? Object.entries(s.segments).find(
+            ([k]) => k.startsWith(locale + '-') || locale.startsWith(k + '-')
+          )?.[1]
+          ?? s.segments['en-NZ']
+          ?? s.segments['en']
+          ?? ''
+        const hasTranslation = !!text
         return {
           id: s.id,
-          text: s.segments[localeRef.current] ?? s.segments['en-NZ'] ?? '',
+          text,
           isFinal: s.isFinal,
           sequence: s.sequence,
           isTranslating: s.isFinal && !isConfiguredRef.current && !hasTranslation,

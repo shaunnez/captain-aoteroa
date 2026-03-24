@@ -5,6 +5,7 @@ import { EventManager } from './EventManager'
 import { supabase } from './supabase'
 import { verifyJWT as verifyToken } from '../middleware/auth'
 import { TtsService } from './TtsService'
+import { OpenAiTtsService } from './OpenAiTtsService'
 import { AudioSubscriptionManager } from './AudioSubscriptionManager'
 import { config } from '../config'
 
@@ -19,6 +20,7 @@ async function broadcastViewerCount(io: AppServer, code: string): Promise<void> 
 
 export function setupSocketHandler(io: AppServer): void {
   const tts = new TtsService({ speechKey: config.azure.speechKey, speechRegion: config.azure.speechRegion })
+  const openAiTts = config.openaiApiKey ? new OpenAiTtsService({ apiKey: config.openaiApiKey }) : null
   const audioSubs = new AudioSubscriptionManager()
 
   io.on('connection', (socket) => {
@@ -150,16 +152,50 @@ export function setupSocketHandler(io: AppServer): void {
               if (sockets.size === 0) continue
               const text = payload.segments[lang]
               if (!text) continue
-              tts.synthesize(text, lang).then((audio) => {
-                if (!audio) return
-                io.to([...sockets]).emit('audio:tts', {
-                  language: lang,
-                  sequence: payload.sequence,
-                  data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+
+              if (lang === 'mi' && openAiTts) {
+                // Stream PCM chunks from OpenAI in realtime
+                const socketIds = [...sockets]
+                openAiTts.synthesizeStream(text, (chunk) => {
+                  io.to(socketIds).emit('audio:tts-stream', {
+                    language: lang,
+                    sequence: payload.sequence,
+                    chunk: chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer,
+                    done: false,
+                  })
+                }).then(() => {
+                  io.to(socketIds).emit('audio:tts-stream', {
+                    language: lang,
+                    sequence: payload.sequence,
+                    chunk: new ArrayBuffer(0),
+                    done: true,
+                  })
+                }).catch((err) => {
+                  console.error('[SocketHandler] OpenAI TTS stream failed, falling back to Azure:', err)
+                  // Fallback to Azure TTS
+                  tts.synthesize(text, lang).then((audio) => {
+                    if (!audio) return
+                    io.to(socketIds).emit('audio:tts', {
+                      language: lang,
+                      sequence: payload.sequence,
+                      data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+                    })
+                  }).catch((fallbackErr) => {
+                    console.error('[SocketHandler] Azure TTS fallback also failed:', fallbackErr)
+                  })
                 })
-              }).catch((err) => {
-                console.error('[SocketHandler] TTS synthesis failed:', err)
-              })
+              } else {
+                tts.synthesize(text, lang).then((audio) => {
+                  if (!audio) return
+                  io.to([...sockets]).emit('audio:tts', {
+                    language: lang,
+                    sequence: payload.sequence,
+                    data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+                  })
+                }).catch((err) => {
+                  console.error('[SocketHandler] TTS synthesis failed:', err)
+                })
+              }
             }
           },
           (message, fatal) => {

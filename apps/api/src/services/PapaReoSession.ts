@@ -111,7 +111,7 @@ export class PapaReoSession {
 
     const payload: CaptionSegmentPayload = {
       id: uuidv4(),
-      segments: { 'mi-NZ': msg.text },
+      segments: { 'mi': msg.text },
       isFinal,
       sequence: seq,
     }
@@ -125,7 +125,7 @@ export class PapaReoSession {
         event_id: this.eventId,
         sequence: seq,
         text: msg.text,
-        language: 'mi-NZ',
+        language: 'mi',
         is_final: true,
       }
       supabase

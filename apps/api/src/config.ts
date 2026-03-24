@@ -20,4 +20,5 @@ export const config = {
     apiUrl: process.env.PAPAREO_API_URL ?? 'https://api.papareo.io',
   },
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  openaiApiKey: process.env.OPENAI_API_KEY ?? '',
 }

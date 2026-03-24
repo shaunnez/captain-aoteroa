@@ -4,3 +4,4 @@ dist
 .env.local
 .package-lock.json
 .claude/worktrees
+.superpowers
