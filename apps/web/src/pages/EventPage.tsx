@@ -42,6 +42,11 @@ export function EventPage() {
 
   const audioSupported = TTS_SUPPORTED_LANGUAGES.has(selectedLocale)
 
+  // Auto-disable audio when switching to a language with no TTS support
+  useEffect(() => {
+    if (audioEnabled && !audioSupported) disableAudio()
+  }, [audioSupported, audioEnabled, disableAudio])
+
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', code],
     queryFn: () => api.get<Event>(`/api/events/${code}`).then((r) => r.data),
@@ -352,6 +357,7 @@ export function EventPage() {
           onClose={() => setLangPickerOpen(false)}
           selectedLocale={selectedLocale}
           onSelect={setSelectedLocale}
+          showAudioIndicator
         />
 
         {/* Caption canvas */}

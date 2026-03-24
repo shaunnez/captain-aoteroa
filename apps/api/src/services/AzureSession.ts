@@ -149,7 +149,10 @@ export class AzureSession {
 
   private buildSegments(result: sdk.TranslationRecognitionResult): Record<string, string> {
     const sourceLocale = this.options.speakerLocale ?? this.options.languages[0]
-    const segments: Record<string, string> = { [sourceLocale]: result.text }
+    // Normalize to Azure Translator short code so TTS subscribers can match by short code
+    // e.g. 'en-NZ' → 'en', 'zh-Hans' → 'zh-Hans' (script tags preserved)
+    const sourceKey = bcp47ToTranslationCode(sourceLocale)
+    const segments: Record<string, string> = { [sourceKey]: result.text }
 
     // Add translations from the TranslationRecognizer result
     const translations = result.translations

@@ -145,20 +145,32 @@ export function setupSocketHandler(io: AppServer): void {
             console.log(`[socket] emitting caption:segment seq=${payload.sequence} final=${payload.isFinal}`)
             io.to(code).emit('caption:segment', payload)
             if (!payload.isFinal) return
+            const segmentKeys = Object.keys(payload.segments)
+            console.log(`[tts] final seq=${payload.sequence} segment keys=${JSON.stringify(segmentKeys)}`)
             const subscribers = audioSubs.getSubscribers(code)
+            const subscribedLangs = [...subscribers.entries()].map(([l, s]) => `${l}(${s.size})`).join(', ')
+            console.log(`[tts] subscribers: ${subscribedLangs || 'none'}`)
             for (const [lang, sockets] of subscribers) {
               if (sockets.size === 0) continue
               const text = payload.segments[lang]
-              if (!text) continue
+              if (!text) {
+                console.log(`[tts] lang=${lang} — no segment text (keys: ${JSON.stringify(segmentKeys)})`)
+                continue
+              }
+              console.log(`[tts] synthesizing lang=${lang} text="${text.slice(0, 60)}"`)
               tts.synthesize(text, lang).then((audio) => {
-                if (!audio) return
+                if (!audio) {
+                  console.log(`[tts] lang=${lang} — synthesis returned null (no voice or Azure error)`)
+                  return
+                }
+                console.log(`[tts] lang=${lang} — emitting audio:tts size=${audio.byteLength} to ${sockets.size} socket(s)`)
                 io.to([...sockets]).emit('audio:tts', {
                   language: lang,
                   sequence: payload.sequence,
                   data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
                 })
               }).catch((err) => {
-                console.error('[SocketHandler] TTS synthesis failed:', err)
+                console.error(`[tts] lang=${lang} — synthesis threw:`, err)
               })
             }
           },

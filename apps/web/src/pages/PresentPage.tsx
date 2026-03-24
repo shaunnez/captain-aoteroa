@@ -92,7 +92,12 @@ export function PresentPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCapturing])
-  const { segments } = useCaptions(code ?? '', speakerLocale ?? 'en-NZ')
+  // Normalize BCP-47 speakerLocale to Azure Translator short code (e.g. 'en-NZ' → 'en')
+  // Segments are now keyed by short code after the AzureSession fix
+  const captionLocale = speakerLocale
+    ? (() => { const p = speakerLocale.split('-'); return p.length >= 2 && p[1].length === 4 ? `${p[0]}-${p[1]}` : p[0] })()
+    : 'en'
+  const { segments } = useCaptions(code ?? '', captionLocale)
 
   const updateEvent = useMutation({
     mutationFn: (patch: Partial<Pick<Event, 'title' | 'description' | 'event_date' | 'organiser_name'>>) =>

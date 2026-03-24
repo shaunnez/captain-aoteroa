@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
-import { NZ_LANGUAGES, type NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
+import { NZ_LANGUAGES, type NzLanguage, TTS_SUPPORTED_LANGUAGES } from '@caption-aotearoa/shared'
 import { AZURE_TRANSLATION_LANGUAGES } from '@caption-aotearoa/shared/azureLanguages'
 
 interface LanguagePickerModalProps {
@@ -9,11 +9,12 @@ interface LanguagePickerModalProps {
   selectedLocale: string
   onSelect: (locale: string) => void
   languages?: NzLanguage[]   // when provided: show only these, hide Translated section
+  showAudioIndicator?: boolean  // show "no audio" badge for languages without TTS
 }
 
 const NZ_CODES = new Set(NZ_LANGUAGES.map((l) => l.code))
 
-export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect, languages }: LanguagePickerModalProps) {
+export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect, languages, showAudioIndicator }: LanguagePickerModalProps) {
   const [search, setSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -110,7 +111,7 @@ export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect,
                     <button
                       key={lang.code}
                       onClick={() => handleSelect(lang.code)}
-                      className={`rounded-xl p-4 flex flex-col items-center gap-2 border transition-colors text-center
+                      className={`rounded-xl p-4 flex flex-col items-center gap-2 border transition-colors text-center relative
                         ${isSelected
                           ? 'border-[var(--color-primary-container)] bg-[var(--color-primary-fixed)]'
                           : 'border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] hover:border-[var(--color-primary-container)]'
@@ -120,6 +121,11 @@ export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect,
                       <span className="text-sm font-semibold text-[var(--color-on-surface)] leading-tight">
                         {lang.label}
                       </span>
+                      {showAudioIndicator && !TTS_SUPPORTED_LANGUAGES.has(lang.code) && (
+                        <span className="text-[10px] text-[var(--color-on-surface-variant)] opacity-60">
+                          No audio
+                        </span>
+                      )}
                     </button>
                   )
                 })}
@@ -148,11 +154,18 @@ export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect,
                         }`}
                     >
                       <span>{lang.label}</span>
-                      <span className="text-xs bg-[var(--color-surface-container-high)]
-                                       text-[var(--color-on-surface-variant)]
-                                       rounded-full px-2 py-0.5 ml-3 shrink-0">
-                        Translated
-                      </span>
+                      <div className="flex items-center gap-1.5 ml-3 shrink-0">
+                        {showAudioIndicator && !TTS_SUPPORTED_LANGUAGES.has(lang.code) && (
+                          <span className="text-xs text-[var(--color-on-surface-variant)] opacity-60">
+                            No audio
+                          </span>
+                        )}
+                        <span className="text-xs bg-[var(--color-surface-container-high)]
+                                         text-[var(--color-on-surface-variant)]
+                                         rounded-full px-2 py-0.5">
+                          Translated
+                        </span>
+                      </div>
                     </button>
                   )
                 })}

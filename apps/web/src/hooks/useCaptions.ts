@@ -39,7 +39,7 @@ export function useCaptions(
         const hasTranslation = localeRef.current in s.segments
         return {
           id: s.id,
-          text: s.segments[localeRef.current] ?? s.segments['en-NZ'] ?? '',
+          text: s.segments[localeRef.current] ?? s.segments['en'] ?? '',
           isFinal: s.isFinal,
           sequence: s.sequence,
           isTranslating: s.isFinal && !isConfiguredRef.current && !hasTranslation,

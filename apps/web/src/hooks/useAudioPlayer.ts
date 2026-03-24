@@ -55,15 +55,21 @@ export function useAudioPlayer(eventCode: string, language: string) {
     }
 
     function handleAudioTts({ language: lang, data }: AudioTtsPayload) {
-      if (lang !== languageRef.current) return
+      console.log(`[audioPlayer] audio:tts received lang=${lang} size=${data.byteLength} wantLang=${languageRef.current}`)
+      if (lang !== languageRef.current) {
+        console.log(`[audioPlayer] ignoring — lang mismatch`)
+        return
+      }
       audioCtx.decodeAudioData(data.slice(0)).then((buffer) => {
+        console.log(`[audioPlayer] decoded OK duration=${buffer.duration.toFixed(2)}s queueLen=${queueRef.current.length}`)
         queueRef.current.push(buffer)
         if (!isPlayingRef.current) playNext()
       }).catch((err) => {
-        console.error('[useAudioPlayer] decodeAudioData failed:', err)
+        console.error('[audioPlayer] decodeAudioData failed:', err)
       })
     }
 
+    console.log(`[audioPlayer] subscribing lang=${language} ctx.state=${audioCtx.state}`)
     socket.on('audio:tts', handleAudioTts)
 
     return () => {
@@ -78,6 +84,7 @@ export function useAudioPlayer(eventCode: string, language: string) {
 
   const enable = () => {
     languageRef.current = language
+    console.log(`[audioPlayer] enable — subscribing code=${eventCode} lang=${language}`)
     socket.emit('audio:subscribe', { code: eventCode, language })
     setIsEnabled(true)
   }
