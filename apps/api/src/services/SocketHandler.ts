@@ -15,15 +15,17 @@ type AppServer = Server<ClientToServerEvents, ServerToClientEvents>
 
 const HISTORY_SIZE = 20
 
-// Cache event code → UUID to avoid repeated DB lookups
-const eventIdCache = new Map<string, string>()
+// Cache event code → UUID with TTL to avoid repeated DB lookups
+const EVENT_ID_CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+const eventIdCache = new Map<string, { id: string; expiresAt: number }>()
 
 async function resolveEventId(code: string): Promise<string | null> {
   const cached = eventIdCache.get(code)
-  if (cached) return cached
+  if (cached && cached.expiresAt > Date.now()) return cached.id
+  if (cached) eventIdCache.delete(code)
   const { data } = await supabase.from('events').select('id').eq('code', code).single()
   if (data?.id) {
-    eventIdCache.set(code, data.id)
+    eventIdCache.set(code, { id: data.id, expiresAt: Date.now() + EVENT_ID_CACHE_TTL })
     return data.id
   }
   return null
@@ -100,31 +102,25 @@ export function setupSocketHandler(io: AppServer): void {
         .limit(50)
       socket.emit('qa:history', { questions: qaQuestions || [] })
 
-      // Each sequence has one row per language, so over-fetch rows and collect
-      // the most recent HISTORY_SIZE distinct sequences in JS before grouping.
+      // With JSONB segments column, one row per sequence — simple LIMIT query
       const { data } = await supabase
         .from('caption_segments')
-        .select('*')
+        .select('id, sequence, segments, text, language')
         .eq('event_id', eventRow.id)
         .eq('is_final', true)
         .order('sequence', { ascending: false })
-        .limit(HISTORY_SIZE * 100)
+        .limit(HISTORY_SIZE)
 
       if (data && data.length > 0) {
-        // Collect the most recent HISTORY_SIZE sequences, then group their rows.
-        // Rows arrive descending by sequence so same-sequence rows are adjacent.
-        const grouped = new Map<number, { id: string; segments: Record<string, string>; sequence: number }>()
-        for (const row of data) {
-          if (!grouped.has(row.sequence)) {
-            if (grouped.size >= HISTORY_SIZE) break
-            grouped.set(row.sequence, { id: row.id, segments: {}, sequence: row.sequence })
-          }
-          grouped.get(row.sequence)!.segments[row.language] = row.text
-        }
-        // Emit in chronological order
-        const segments = Array.from(grouped.values())
-          .sort((a, b) => a.sequence - b.sequence)
-          .map((s) => ({ ...s, isFinal: true }))
+        const segments = data
+          .reverse()
+          .map((row) => ({
+            id: row.id,
+            // Use JSONB segments if available, fall back to legacy text/language columns
+            segments: row.segments ?? { [row.language]: row.text },
+            sequence: row.sequence,
+            isFinal: true,
+          }))
         socket.emit('caption:history', { segments })
       }
     })
@@ -233,19 +229,24 @@ export function setupSocketHandler(io: AppServer): void {
                     }
                   }
 
-                  // Persist translated segments to DB
+                  // Merge translated segments into the existing JSONB row
                   const eventId = await resolveEventId(code)
                   if (eventId) {
-                    const rows = Object.entries(translations).map(([lang, text]) => ({
-                      id: uuidv4(),
-                      event_id: eventId,
-                      sequence: payload.sequence,
-                      text,
-                      language: lang,
-                      is_final: true,
-                    }))
-                    const { error } = await supabase.from('caption_segments').insert(rows)
-                    if (error) console.error('[SocketHandler] Failed to persist translated segments:', error.message)
+                    // Fetch existing segments JSONB and merge translations
+                    const { data: existing } = await supabase
+                      .from('caption_segments')
+                      .select('segments')
+                      .eq('event_id', eventId)
+                      .eq('sequence', payload.sequence)
+                      .single()
+
+                    const merged = { ...(existing?.segments ?? {}), ...translations }
+                    const { error } = await supabase
+                      .from('caption_segments')
+                      .update({ segments: merged })
+                      .eq('event_id', eventId)
+                      .eq('sequence', payload.sequence)
+                    if (error) console.error('[SocketHandler] Failed to merge translated segments:', error.message)
                   }
                 })
                 .catch((err) => {

@@ -153,7 +153,7 @@ export class AzureSession {
 
     this.options.onSegment(payload)
 
-    // Persist only final segments
+    // Persist only final segments (single row with JSONB segments per sequence)
     if (isFinal && this.eventId) {
       const sourceLocale = this.options.speakerLocale ?? 'en-NZ'
       const text = segments[sourceLocale] ?? Object.values(segments)[0]
@@ -164,8 +164,9 @@ export class AzureSession {
         text,
         language: sourceLocale,
         is_final: true,
+        segments,
       }
-      supabase.from('caption_segments').insert([row]).then(({ error }) => {
+      supabase.from('caption_segments').upsert(row, { onConflict: 'event_id,sequence' }).then(({ error }) => {
         if (error) console.error('Failed to persist segment:', error.message)
       })
     }

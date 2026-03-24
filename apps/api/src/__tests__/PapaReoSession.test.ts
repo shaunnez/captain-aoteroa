@@ -34,6 +34,7 @@ vi.mock('../services/supabase', () => ({
       limit: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: { id: 'event-uuid' } }),
       insert: vi.fn().mockResolvedValue({ error: null }),
+      upsert: vi.fn().mockResolvedValue({ error: null }),
     })),
   },
 }))

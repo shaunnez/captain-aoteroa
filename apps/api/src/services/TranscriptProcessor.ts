@@ -48,10 +48,10 @@ export class TranscriptProcessor {
     }
 
     try {
-      // Fetch all final caption segments grouped by language
+      // Fetch all final caption segments with JSONB segments column
       const { data: segments, error: segError } = await supabase
         .from('caption_segments')
-        .select('text, language, sequence')
+        .select('segments, text, language, sequence')
         .eq('event_id', eventId)
         .eq('is_final', true)
         .order('sequence', { ascending: true })
@@ -65,37 +65,38 @@ export class TranscriptProcessor {
         return
       }
 
-      // Group segments by language
+      // Group segments by language using JSONB (fall back to legacy text/language)
       const byLanguage = new Map<string, string[]>()
       for (const seg of segments) {
-        if (!byLanguage.has(seg.language)) {
-          byLanguage.set(seg.language, [])
-        }
-        byLanguage.get(seg.language)!.push(seg.text)
-      }
-
-      // Process each language through Claude API
-      const results: TranscriptResult[] = []
-
-      for (const [language, texts] of byLanguage) {
-        const rawText = texts.join(' ')
-
-        if (!config.anthropicApiKey) {
-          // No API key — store raw concatenation as-is
-          console.log(`[TranscriptProcessor] No ANTHROPIC_API_KEY, storing raw text for ${language}`)
-          results.push({ language, content: rawText })
-          continue
-        }
-
-        try {
-          const cleaned = await TranscriptProcessor.cleanWithClaude(rawText, language)
-          results.push({ language, content: cleaned })
-        } catch (err) {
-          console.error(`[TranscriptProcessor] Claude API error for ${language}:`, err)
-          // Fall back to raw text
-          results.push({ language, content: rawText })
+        const segMap: Record<string, string> = seg.segments ?? { [seg.language]: seg.text }
+        for (const [lang, text] of Object.entries(segMap)) {
+          if (!byLanguage.has(lang)) {
+            byLanguage.set(lang, [])
+          }
+          byLanguage.get(lang)!.push(text)
         }
       }
+
+      // Process all languages through Claude API in parallel
+      const languageEntries = Array.from(byLanguage.entries())
+      const results: TranscriptResult[] = await Promise.all(
+        languageEntries.map(async ([language, texts]) => {
+          const rawText = texts.join(' ')
+
+          if (!config.anthropicApiKey) {
+            console.log(`[TranscriptProcessor] No ANTHROPIC_API_KEY, storing raw text for ${language}`)
+            return { language, content: rawText }
+          }
+
+          try {
+            const cleaned = await TranscriptProcessor.cleanWithClaude(rawText, language)
+            return { language, content: cleaned }
+          } catch (err) {
+            console.error(`[TranscriptProcessor] Claude API error for ${language}:`, err)
+            return { language, content: rawText }
+          }
+        })
+      )
 
       // Delete existing transcript_languages for this transcript (retry case)
       await supabase
