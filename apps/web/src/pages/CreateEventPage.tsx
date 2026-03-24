@@ -26,7 +26,7 @@ export function CreateEventPage() {
       const { data } = await api.post<Event>('/api/events', {
         title,
         description: description || null,
-        event_date: eventDate ? new Date(eventDate).toISOString() : null,
+        event_date: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
         phrase_list: phraseList.split(',').map((s) => s.trim()).filter(Boolean),
         organiser_name: organiserName || null,
         theme_color: themeColor || null,

@@ -75,6 +75,13 @@ export function PresentPage() {
   }, [event?.status])
 
   const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
+
+  // Stop recording when the presenter navigates away from this page
+  const stopRef = useRef(stop)
+  useEffect(() => { stopRef.current = stop }, [stop])
+  useEffect(() => {
+    return () => { stopRef.current() }
+  }, [])
   const viewerCount = useViewerCount(code ?? '')
   const { reactions } = useReactions(code ?? '')
   const { pinnedQuestions, pendingQuestions } = useQA(code ?? '')

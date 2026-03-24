@@ -53,9 +53,9 @@ export function EventCard({ event, to }: EventCardProps) {
         <span className="text-xs font-mono text-[var(--color-primary)] opacity-70 tracking-wider">
           {event.code}
         </span>
-        <span className="text-xs text-[var(--color-on-surface-variant)]">
+        {/* <span className="text-xs text-[var(--color-on-surface-variant)]">
           {event.languages.length} languages
-        </span>
+        </span> */}
       </div>
     </button>
   )

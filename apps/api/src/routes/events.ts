@@ -18,7 +18,7 @@ eventsRouter.post('/', verifyJWT, async (req, res) => {
     res.status(400).json({ error: 'title required' })
     return
   }
-
+  const { user } = req as any;
   const code = generateCode()
   const { data, error } = await supabase
     .from('events')
@@ -27,6 +27,7 @@ eventsRouter.post('/', verifyJWT, async (req, res) => {
       title,
       description,
       event_date,
+      organiser_id: user.id,
       organiser_name: organiser_name || null,
       theme_color: theme_color || null,
       phrase_list: Array.isArray(phrase_list) ? phrase_list : null,
@@ -50,7 +51,31 @@ eventsRouter.get('/', async (req, res) => {
     .from('events')
     .select('*')
     .limit(9)
-    .order('event_date', { ascending: true, nullsFirst: false })
+    .order('event_date', { ascending: false, nullsFirst: false })
+
+  if (search) {
+    query = query.ilike('title', `%${search}%`)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    res.status(500).json({ error: error.message })
+    return
+  }
+  res.json(data ?? [])
+})
+
+
+// GET /api/events — list all events (mine), optional ?search= query param
+eventsRouter.get('/mine', verifyJWT, async (req, res) => {
+  const search = typeof req.query.search === 'string' ? req.query.search.trim() : ''
+  const { user } = req as any;
+  let query = supabase
+    .from('events')
+    .select('*')
+    .filter('organiser_id', 'eq', user.id)
+    .order('event_date', { ascending: false, nullsFirst: false })
 
   if (search) {
     query = query.ilike('title', `%${search}%`)

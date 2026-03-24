@@ -34,20 +34,12 @@ export function useAudioPlayer(eventCode: string, language: string) {
       languageRef.current = language
       return
     }
-    const prev = languageRef.current
-    if (prev !== language) {
-      socket.emit('audio:unsubscribe', { code: eventCode, language: prev })
-      socket.emit('audio:subscribe', { code: eventCode, language })
-      languageRef.current = language
-      queueRef.current = []
-      pendingChunksRef.current.clear()
-    }
-  }, [language, isEnabled, eventCode])
 
-  useEffect(() => {
-    if (!isEnabled) return
-
+    // Subscribe for this language and set up the correct listener
     languageRef.current = language
+    const activeLanguage = language
+    socket.emit('audio:subscribe', { code: eventCode, language })
+
     const isStreaming = STREAMING_LANGUAGES.has(language)
     const sampleRate = isStreaming ? OPENAI_SAMPLE_RATE : undefined
     const audioCtx = new AudioContext(sampleRate ? { sampleRate } : undefined)
@@ -128,7 +120,7 @@ export function useAudioPlayer(eventCode: string, language: string) {
     }
 
     return () => {
-      socket.emit('audio:unsubscribe', { code: eventCode, language: languageRef.current })
+      socket.emit('audio:unsubscribe', { code: eventCode, language: activeLanguage })
       cleanup()
       audioCtx.close()
       audioCtxRef.current = null
@@ -136,11 +128,9 @@ export function useAudioPlayer(eventCode: string, language: string) {
       isPlayingRef.current = false
       pendingChunksRef.current.clear()
     }
-  }, [isEnabled, eventCode]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isEnabled, eventCode, language]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const enable = () => {
-    languageRef.current = language
-    socket.emit('audio:subscribe', { code: eventCode, language })
     setIsEnabled(true)
   }
 

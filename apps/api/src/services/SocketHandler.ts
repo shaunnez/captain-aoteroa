@@ -33,6 +33,14 @@ function isMaoriOnly(segments: Record<string, string>): boolean {
   return Object.keys(segments).length === 1 && 'mi' in segments
 }
 
+/** Resolve text from segments, handling BCP-47 ↔ short code mismatches (e.g. 'en' ↔ 'en-NZ'). */
+function resolveSegmentText(segments: Record<string, string>, lang: string): string | undefined {
+  return segments[lang]
+    ?? Object.entries(segments).find(
+      ([k]) => k.startsWith(lang + '-') || lang.startsWith(k + '-')
+    )?.[1]
+}
+
 async function broadcastViewerCount(io: AppServer, code: string): Promise<void> {
   const sockets = await io.in(code).fetchSockets()
   io.to(code).emit('viewer:count', { count: sockets.length })
@@ -182,6 +190,27 @@ export function setupSocketHandler(io: AppServer): void {
                   }
                   io.to(code).emit('caption:segment', enrichedPayload)
 
+                  // Trigger TTS for translated languages
+                  const translationSubscribers = audioSubs.getSubscribers(code)
+                  for (const [lang, sockets] of translationSubscribers) {
+                    if (sockets.size === 0) continue
+                    const text = resolveSegmentText(translations, lang)
+                    if (!text) continue
+                    tts.synthesize(text, lang).then((audio) => {
+                      if (!audio) {
+                        console.warn(`[SocketHandler] No TTS voice for translated language: ${lang}`)
+                        return
+                      }
+                      io.to([...sockets]).emit('audio:tts', {
+                        language: lang,
+                        sequence: payload.sequence,
+                        data: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength) as ArrayBuffer,
+                      })
+                    }).catch((err) => {
+                      console.error('[SocketHandler] TTS synthesis failed for te reo translation:', err)
+                    })
+                  }
+
                   // Persist translated segments to DB
                   const eventId = await resolveEventId(code)
                   if (eventId) {
@@ -204,7 +233,7 @@ export function setupSocketHandler(io: AppServer): void {
             const subscribers = audioSubs.getSubscribers(code)
             for (const [lang, sockets] of subscribers) {
               if (sockets.size === 0) continue
-              const text = payload.segments[lang]
+              const text = resolveSegmentText(payload.segments, lang)
               if (!text) continue
 
               if (lang === 'mi' && openAiTts) {
@@ -240,7 +269,10 @@ export function setupSocketHandler(io: AppServer): void {
                 })
               } else {
                 tts.synthesize(text, lang).then((audio) => {
-                  if (!audio) return
+                  if (!audio) {
+                    console.warn(`[SocketHandler] No TTS voice for language: ${lang}`)
+                    return
+                  }
                   io.to([...sockets]).emit('audio:tts', {
                     language: lang,
                     sequence: payload.sequence,

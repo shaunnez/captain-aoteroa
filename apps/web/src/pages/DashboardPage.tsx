@@ -14,7 +14,7 @@ export function DashboardPage() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['my-events'],
-    queryFn: () => api.get<Event[]>('/api/events').then((r) => r.data),
+    queryFn: () => api.get<Event[]>('/api/events/mine').then((r) => r.data),
     refetchInterval: 15_000,
   })
 
