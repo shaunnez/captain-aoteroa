@@ -24,7 +24,6 @@ import type { Event } from '@caption-aotearoa/shared'
 import { NZ_LANGUAGES } from '@caption-aotearoa/shared/nzLanguages'
 import type { NzLanguage } from '@caption-aotearoa/shared/nzLanguages'
 import { RECOGNITION_LOCALES } from '@caption-aotearoa/shared/recognitionLocales'
-import { QAPanel } from '../components/QAPanel'
 import { QAModal } from '../components/QAModal'
 
 /** Māori uses Papa Reo on the backend — add it separately to the UI map. */
@@ -57,6 +56,9 @@ export function PresentPage() {
   const [sessionEnded, setSessionEnded] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [qaModalOpen, setQaModalOpen] = useState(false)
+  const [qaSheetOpen, setQaSheetOpen] = useState(false)
+  const [hasNewQuestion, setHasNewQuestion] = useState(false)
+  const prevPendingRef = useRef(0)
 
   const { data: transcriptData, refetch: refetchTranscript } = useQuery({
     queryKey: ['transcript', code],
@@ -76,18 +78,19 @@ export function PresentPage() {
     if (event?.status === 'ended') setSessionEnded(true)
   }, [event?.status])
 
+  const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
+  const viewerCount = useViewerCount(code ?? '')
+  const { reactions } = useReactions(code ?? '')
+  const { pinnedQuestions, pendingQuestions } = useQA(code ?? '')
+  const pendingCount = pendingQuestions.length
+  const qaCount = pinnedQuestions.length + pendingQuestions.length
+
   useEffect(() => {
     if (pendingCount > prevPendingRef.current && !qaSheetOpen) {
       setHasNewQuestion(true)
     }
     prevPendingRef.current = pendingCount
   }, [pendingCount, qaSheetOpen])
-
-  const { isCapturing, start, stop, error: audioError } = useAudioCapture(code ?? '')
-  const viewerCount = useViewerCount(code ?? '')
-  const { reactions } = useReactions(code ?? '')
-  const { pinnedQuestions, pendingQuestions } = useQA(code ?? '')
-  const qaCount = pinnedQuestions.length + pendingQuestions.length
 
   useEffect(() => {
     if (isCapturing) {
