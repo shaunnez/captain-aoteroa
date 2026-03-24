@@ -64,17 +64,17 @@ describe('useAudioPlayer', () => {
     expect(result.current.isEnabled).toBe(false)
   })
 
-  it('registers audio:tts listener when enabled', () => {
+  it('registers audio:tts-stream listener when enabled for streaming language', () => {
     const { result } = renderHook(() => useAudioPlayer('EVT1', 'mi'))
     act(() => result.current.enable())
-    expect(mockOn).toHaveBeenCalledWith('audio:tts', expect.any(Function))
+    expect(mockOn).toHaveBeenCalledWith('audio:tts-stream', expect.any(Function))
   })
 
-  it('unregisters audio:tts listener and emits unsubscribe on unmount while enabled', () => {
+  it('unregisters audio:tts-stream listener and emits unsubscribe on unmount while enabled', () => {
     const { result, unmount } = renderHook(() => useAudioPlayer('EVT1', 'mi'))
     act(() => result.current.enable())
     unmount()
-    expect(mockOff).toHaveBeenCalledWith('audio:tts', expect.any(Function))
+    expect(mockOff).toHaveBeenCalledWith('audio:tts-stream', expect.any(Function))
     expect(mockEmit).toHaveBeenCalledWith('audio:unsubscribe', { code: 'EVT1', language: 'mi' })
   })
 
