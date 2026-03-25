@@ -175,13 +175,13 @@
   }
   .caption-area {
     scrollbar-width: thin;
-    scrollbar-color: #311b92 transparent;
+    scrollbar-color: var(--color-primary-container) transparent;
   }
   .caption-area::-webkit-scrollbar {
     width: 6px;
   }
   .caption-area::-webkit-scrollbar-thumb {
-    background-color: #311b92;
+    background-color: var(--color-primary-container);
     border-radius: 10px;
   }
 }

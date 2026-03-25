@@ -13,18 +13,18 @@ export function EventLobby({ event }: EventLobbyProps) {
   const { days, hours, minutes, seconds, isExpired } = useCountdown(event.event_date)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-sand p-6">
-      <div className="bg-white border-2 border-brand-purple border-opacity-20 rounded-2xl p-8 max-w-lg w-full text-center shadow-sm">
-        <h1 className="font-serif text-2xl font-semibold text-brand-purple-dark mb-2" style={{ color: event.theme_color || 'var(--color-primary)' }}>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-6">
+      <div className="bg-[var(--color-surface-container-lowest)] border-2 border-[var(--color-outline-variant)] rounded-2xl p-8 max-w-lg w-full text-center shadow-sm">
+        <h1 className="font-serif text-2xl font-semibold text-[var(--color-primary)] mb-2" style={{ color: event.theme_color || 'var(--color-primary)' }}>
           {event.title}
         </h1>
 
         {event.description && (
-          <p className="text-brand-black opacity-70 mb-4">{event.description}</p>
+          <p className="text-[var(--color-on-surface)] opacity-70 mb-4">{event.description}</p>
         )}
 
         {event.event_date && (
-          <p className="text-sm text-brand-purple opacity-60 mb-6">
+          <p className="text-sm text-[var(--color-primary)] opacity-60 mb-6">
             {new Date(event.event_date).toLocaleString(undefined, {
               weekday: 'long',
               year: 'numeric',
@@ -38,10 +38,10 @@ export function EventLobby({ event }: EventLobbyProps) {
 
         {!isExpired ? (
           <>
-            <p className="text-sm font-medium text-brand-purple uppercase tracking-wide mb-3">
+            <p className="text-sm font-medium text-[var(--color-primary)] uppercase tracking-wide mb-3">
               Starting in
             </p>
-            <div className="flex justify-center gap-4 font-mono text-3xl font-bold text-brand-purple-dark">
+            <div className="flex justify-center gap-4 font-mono text-3xl font-bold text-[var(--color-primary)]">
               {days > 0 && (
                 <div className="flex flex-col items-center">
                   <span>{pad(days)}</span>
@@ -63,7 +63,7 @@ export function EventLobby({ event }: EventLobbyProps) {
             </div>
           </>
         ) : (
-          <p className="text-brand-purple text-lg">
+          <p className="text-[var(--color-primary)] text-lg">
             Waiting for captions to begin…
           </p>
         )}

@@ -60,9 +60,9 @@ export function LoginPage() {
       <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-1.5 text-md text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
+          className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors"
         >
-          <Home size={30} />
+          <Home size={16} />
           Home
         </Link>
         <DarkModeToggle />
@@ -79,7 +79,7 @@ export function LoginPage() {
             <span className="font-serif text-2xl font-bold text-[var(--color-primary)]">
               HearMe NZ
             </span>
-            <p className="mt-1 text-sm text-[var(--color-on-surface-variant)]">
+            <p className="login-text mt-1 text-sm text-[var(--color-on-surface-variant)]">
               Organiser login
             </p>
           </div>

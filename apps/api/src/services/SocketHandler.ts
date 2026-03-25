@@ -323,6 +323,7 @@ export function setupSocketHandler(io: AppServer): void {
 
     // Organiser ends the captioning session
     socket.on('session:end', async (code) => {
+      if (!isAuthorised(socket)) return
       await EventManager.end(code)
     })
 

@@ -130,6 +130,12 @@ describe('SocketHandler', () => {
     expect(mockSocket.emit).toHaveBeenCalledWith('caption:error', expect.objectContaining({ fatal: true }))
   })
 
+  it('does not call EventManager.end without auth token', async () => {
+    mockIO._connect(mockSocket)
+    await mockSocket._handlers['session:end']('ABC123')
+    expect(EventManager.end).not.toHaveBeenCalled()
+  })
+
   it('registers audio:subscribe and audio:unsubscribe handlers on connection', () => {
     mockIO._connect(mockSocket)
     expect(mockSocket.on).toHaveBeenCalledWith('audio:subscribe', expect.any(Function))

@@ -15,7 +15,7 @@ export function AccessibilityPanel({
 }: AccessibilityPanelProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-on-surface-variant)]">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">
         Accessibility
       </h3>
 

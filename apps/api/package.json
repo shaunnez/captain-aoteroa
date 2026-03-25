@@ -6,7 +6,9 @@
     "prebuild": "pnpm --filter @caption-aotearoa/shared build",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate-audio": "tsx src/__tests__/fixtures/generate-audio.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@caption-aotearoa/shared": "workspace:*",

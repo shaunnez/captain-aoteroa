@@ -12,5 +12,5 @@ test('join form exists', async ({ page }) => {
 
 test('login page loads', async ({ page }) => {
   await page.goto('/login')
-  await expect(page.locator('h1')).toContainText('Organiser Login')
+  await expect(page.locator('p.login-text')).toContainText('Organiser login')
 })

@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    exclude: ['**/node_modules/**', '**/dist/**', '**/integration/**'],
     env: {
       CLIENT_URL: 'http://localhost:5173',
       SUPABASE_URL: 'http://localhost:54321',

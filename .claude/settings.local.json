@@ -24,7 +24,59 @@
       "Bash(pnpm add:*)",
       "Bash(pnpm exec:*)",
       "Bash(pnpm --filter shared build)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(find /Users/shaunnesbitt/Desktop/accessibility-work -maxdepth 3 -type d -not -path */node_modules* -not -path */.next* -not -path */dist* -not -path */build*)",
+      "Bash(wc:*)",
+      "Skill(update-config)",
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit -p apps/api/tsconfig.json)",
+      "Bash(find . -name tsc -path */node_modules/.bin/*)",
+      "Bash(apps/api/node_modules/.bin/tsc --noEmit -p apps/api/tsconfig.json)",
+      "Bash(apps/web/node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json)",
+      "Bash(pnpm:*)",
+      "Bash(node -e \"require\\(''playwright''\\)\")",
+      "Bash(node -e \"require\\(''puppeteer''\\)\")",
+      "Bash(playwright --version)",
+      "Bash(npx playwright:*)",
+      "Bash(pip show:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:quobix.com)",
+      "Bash(find /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/src -name router* -o -name App.tsx)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_fill_form",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "mcp__plugin_playwright_playwright__browser_type",
+      "mcp__plugin_playwright_playwright__browser_select_option",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_hover",
+      "mcp__plugin_playwright_playwright__browser_scroll",
+      "mcp__plugin_playwright_playwright__browser_tabs",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "mcp__plugin_playwright_playwright__browser_install",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "mcp__plugin_playwright_playwright__browser_navigate_back",
+      "mcp__plugin_playwright_playwright__browser_handle_dialog",
+      "mcp__plugin_playwright_playwright__browser_drag",
+      "mcp__plugin_playwright_playwright__browser_run_code"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"Did you run /verify before declaring done? (pnpm typecheck + test + build for both api and web)\"}'"
+          }
+        ]
+      }
     ]
   }
 }

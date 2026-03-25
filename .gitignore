@@ -5,3 +5,4 @@ dist
 .package-lock.json
 .claude/worktrees
 .superpowers
+.playwright-mcp

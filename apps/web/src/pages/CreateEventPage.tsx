@@ -55,8 +55,9 @@ export function CreateEventPage() {
         <button
           onClick={handleSignOut}
           title="Sign out"
-          className="flex items-center gap-2 text-sm text-[var(--color-on-surface-variant)]
-                     hover:text-[var(--color-on-surface)] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-on-surface-variant)]
+                     border border-[var(--color-outline-variant)] hover:text-[var(--color-on-surface)]
+                     transition-colors rounded-xl"
         >
           <LogOut size={16} />
           Sign out

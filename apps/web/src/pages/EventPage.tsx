@@ -129,8 +129,7 @@ export function EventPage() {
               <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)]">Ended</span>
             </div>
           ) : isConnected && event.status === 'live' ? (
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border"
-                 style={{ background: 'rgba(240,253,244,1)', borderColor: 'rgba(34,197,94,0.3)' }}>
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border bg-green-50 border-green-200">
               <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-widest text-green-700">Live</span>
               {viewerCount > 0 && (
@@ -179,7 +178,7 @@ export function EventPage() {
           <section className="space-y-1 pb-4 border-b border-[var(--color-outline-variant)]">
             <h2
               className="font-serif text-base font-bold leading-snug text-[var(--color-on-surface)]"
-              style={{ color: event.theme_color || undefined }}
+              style={{ color: event.theme_color || 'var(--color-primary)' }}
             >
               {event.title}
             </h2>

@@ -421,7 +421,15 @@ Based on Wave 1 findings, launch 1-2 deep investigations:
    - Skills are triggerable
    - Hooks fire correctly
 
-3. **Teach the maintenance cycle:**
+3. **Install the engineering-planning skill (if present):**
+
+Check if `team-planning.md` exists in the project root:
+- **If yes:** Copy it to `.claude/skills/engineering-planning/SKILL.md`, then add this rule to the Hard Rules section of `./CLAUDE.md`:
+  > `N. **Engineering planning skill** — Before implementing any feature or fixing bugs, invoke the \`engineering-planning\` skill. Scale rigor to complexity: trivial 1-2 file fixes can use a lighter touch, but anything touching shared services, the DB, or multiple files gets the full process.`
+  Then tell the user: "Engineering planning skill installed. I'll invoke it automatically before feature and bug work."
+- **If no:** Tell the user: "Drop `team-planning.md` into the project root alongside `claude-scaffold.md` to get structured engineering planning (investigate → plan → build → verify) wired up automatically. It will be installed as a skill on the next scaffold run, or you can drop it in now and I'll install it before we finish."
+
+4. **Teach the maintenance cycle:**
 
 | When | Action |
 |------|--------|
