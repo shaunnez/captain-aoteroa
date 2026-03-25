@@ -38,14 +38,14 @@ Do not use git worktrees on this project.
 Presenter browser
   → mic audio (PCM) via Socket.IO
   → API: SocketHandler routes to AzureSession (en) or PapaReoSession (mi)
-  → STT text → Azure Translator → NZ language variants
-  → caption_segments rows inserted (one per language)
-  → TTS: OpenAiTtsService (mi-NZ) or TtsService/Azure (all others)
+  → STT text → Azure Translator (only languages with active viewers) → NZ language variants
+  → caption_segments rows inserted (one per language, only demanded languages)
+  → TTS: OpenAiTtsService (mi-NZ) or TtsService/Azure (all others, only for audio subscribers)
   → broadcast via Socket.IO room keyed by event code
   → Audience browser: EventPage → language picker → live captions
 ```
 
-Key services: `SocketHandler` (400+ LOC, orchestrates everything), `EventManager`, `TranscriptProcessor`, `AzureSession`, `PapaReoSession`, `TtsService`, `OpenAiTtsService`.
+Key services: `SocketHandler` (400+ LOC, orchestrates everything), `EventManager`, `TranscriptProcessor`, `AzureSession`, `PapaReoSession`, `TtsService`, `OpenAiTtsService`, `CaptionSubscriptionManager`, `AudioSubscriptionManager`.
 
 Auth: JWT via `middleware/auth.ts`. MVP uses `PRESENTER_SECRET` env var. Supabase RLS separates public reads from service-role writes.
 
@@ -84,6 +84,8 @@ Covers the full STT→translate→TTS pipeline for all 6 source/target language 
 
 **Framer-motion mocked in tests** — `apps/web/src/__tests__/setup.ts` provides a global mock registered via `setupFiles` in `vite.config.ts`. Don't add per-file `vi.mock('framer-motion', ...)` — the global mock covers it.
 
+**Translation is demand-filtered** — `SocketHandler` only translates to languages with active viewers (via `CaptionSubscriptionManager` + `AudioSubscriptionManager`), plus English as a permanent fallback. Don't revert to translating all `NZ_LANGUAGES` — that was the pre-optimization path (~$12.70/hr). See `docs/2026-03-25-translation-optimization.md` for full details.
+
 ## Quick Reference
 
 | Thing | Location |
@@ -92,6 +94,8 @@ Covers the full STT→translate→TTS pipeline for all 6 source/target language 
 | NZ languages list | `packages/shared/src/nzLanguages.ts` |
 | Recognition locales | `packages/shared/src/recognitionLocales.ts` |
 | Socket orchestration | `apps/api/src/services/SocketHandler.ts` |
+| Caption language tracking | `apps/api/src/services/CaptionSubscriptionManager.ts` |
+| Audio language tracking | `apps/api/src/services/AudioSubscriptionManager.ts` |
 | Te reo TTS | `apps/api/src/services/OpenAiTtsService.ts` |
 | DB migrations | `supabase/migrations/` (7 files) |
 | Plans / specs | `docs/superpowers/plans/`, `docs/superpowers/specs/` |
