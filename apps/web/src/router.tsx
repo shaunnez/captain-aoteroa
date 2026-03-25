@@ -9,6 +9,7 @@ import { CreateEventPage } from './pages/CreateEventPage'
 import { PresentPage } from './pages/PresentPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
+import { PrivacyPage } from './pages/PrivacyPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function AnimatedRoutes() {
@@ -34,6 +35,7 @@ function AnimatedRoutes() {
           <Route path="/present/:code" element={<ProtectedRoute><PresentPage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/accessibility" element={<AccessibilityPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
         </Routes>
       </motion.div>
     </AnimatePresence>
