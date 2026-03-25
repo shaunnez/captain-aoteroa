@@ -65,7 +65,7 @@ describe('LoginPage', () => {
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong' } })
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
-    await waitFor(() => expect(screen.getByText('Invalid login credentials')).toBeDefined())
+    await waitFor(() => expect(screen.getByText('Incorrect email or password.')).toBeDefined())
   })
 
   it('navigates to /dashboard on successful sign in', async () => {
