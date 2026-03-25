@@ -21,6 +21,7 @@ import { LogoImg } from '../components/LogoImg'
 import { useReactions } from '../hooks/useReactions'
 import { ReactionBar } from '../components/ReactionBar'
 import { TTS_SUPPORTED_LANGUAGES } from '@caption-aotearoa/shared'
+import { socket } from '../lib/socket'
 
 export function EventPage() {
   const { code } = useParams<{ code: string }>()
@@ -46,6 +47,16 @@ export function EventPage() {
   useEffect(() => {
     if (audioEnabled && !audioSupported) disableAudio()
   }, [audioSupported, audioEnabled, disableAudio])
+
+  // Tell the server which caption language this viewer wants so translations
+  // are only generated for languages with active viewers
+  useEffect(() => {
+    if (!code) return
+    socket.emit('caption:subscribe', { code, language: selectedLocale })
+    return () => {
+      socket.emit('caption:unsubscribe', { code, language: selectedLocale })
+    }
+  }, [code, selectedLocale])
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', code],

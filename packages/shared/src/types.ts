@@ -80,6 +80,8 @@ export interface ClientToServerEvents {
   'session:set-mode': (payload: { code: string; mode: 'single' | 'dual' }) => void
   'audio:subscribe': (payload: { code: string; language: string }) => void
   'audio:unsubscribe': (payload: { code: string; language: string }) => void
+  'caption:subscribe': (payload: { code: string; language: string }) => void
+  'caption:unsubscribe': (payload: { code: string; language: string }) => void
   'qa:submit': (payload: { code: string; body: string; language: string }) => void
   'qa:moderate': (payload: { code: string; questionId: string; status: 'pending' | 'pinned' | 'dismissed' }) => void
   'reaction:send': (payload: { code: string; emoji: string }) => void

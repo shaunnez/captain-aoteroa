@@ -1,12 +1,13 @@
 import type { Server, Socket } from 'socket.io'
 import type { ServerToClientEvents, ClientToServerEvents } from '@caption-aotearoa/shared'
-import { NZ_LANGUAGES } from '@caption-aotearoa/shared'
+
 import { EventManager } from './EventManager'
 import { supabase } from './supabase'
 import { verifyJWT as verifyToken } from '../middleware/auth'
 import { TtsService } from './TtsService'
 import { OpenAiTtsService } from './OpenAiTtsService'
 import { AudioSubscriptionManager } from './AudioSubscriptionManager'
+import { CaptionSubscriptionManager } from './CaptionSubscriptionManager'
 import { config } from '../config'
 import { translateText } from './translateText'
 import { v4 as uuidv4 } from 'uuid'
@@ -48,6 +49,7 @@ export function setupSocketHandler(io: AppServer): void {
   const tts = new TtsService({ speechKey: config.azure.speechKey, speechRegion: config.azure.speechRegion })
   const openAiTts = config.openaiApiKey ? new OpenAiTtsService({ apiKey: config.openaiApiKey }) : null
   const audioSubs = new AudioSubscriptionManager()
+  const captionSubs = new CaptionSubscriptionManager()
 
   io.on('connection', (socket) => {
     console.log(`[socket] connected: ${socket.id}`)
@@ -61,8 +63,17 @@ export function setupSocketHandler(io: AppServer): void {
       audioSubs.unsubscribe(code, language, socket.id)
     })
 
+    socket.on('caption:subscribe', ({ code, language }) => {
+      captionSubs.subscribe(code, language, socket.id)
+    })
+
+    socket.on('caption:unsubscribe', ({ code, language }) => {
+      captionSubs.unsubscribe(code, language, socket.id)
+    })
+
     socket.on('disconnecting', async () => {
       audioSubs.disconnectAll(socket.id)
+      captionSubs.disconnectAll(socket.id)
       for (const room of socket.rooms) {
         if (room !== socket.id) {
           // Subtract 1 because this socket is still in the room during 'disconnecting'
@@ -173,14 +184,22 @@ export function setupSocketHandler(io: AppServer): void {
             io.to(code).emit('caption:segment', payload)
             if (!payload.isFinal) return
 
-            // Translate source-only segments to all other NZ languages (fire-and-forget)
+            // Translate source-only segments to languages with active viewers (fire-and-forget)
             const segmentKeys = Object.keys(payload.segments)
             if (segmentKeys.length === 1) {
               const sourceLang = segmentKeys[0]
               const sourceText = payload.segments[sourceLang]
               // Use short code for Azure Translator API (e.g. 'en-NZ' → 'en')
               const sourceShort = sourceLang.includes('-') ? sourceLang.split('-')[0] : sourceLang
-              const targetLangs = NZ_LANGUAGES.map((l) => l.code).filter((c) => c !== sourceShort && c !== sourceLang)
+
+              // Only translate to languages with active caption or audio subscribers
+              const captionLangs = captionSubs.getLanguages(code)
+              const audioLangs = new Set(audioSubs.getSubscribers(code).keys())
+              const demandedLangs = new Set([...captionLangs, ...audioLangs])
+              // Always include English as fallback for new joiners and history
+              demandedLangs.add('en')
+              const targetLangs = [...demandedLangs].filter((c) => c !== sourceShort && c !== sourceLang)
+              console.log(`[SocketHandler] translating seq=${payload.sequence} to ${targetLangs.length} languages: [${targetLangs.join(',')}]`)
               translateText(sourceText, sourceShort, targetLangs)
                 .then(async (translations) => {
                   if (Object.keys(translations).length === 0) return

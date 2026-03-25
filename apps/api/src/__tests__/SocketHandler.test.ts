@@ -23,6 +23,26 @@ vi.mock('../services/AudioSubscriptionManager', () => ({
   }),
 }))
 
+let mockCaptionSubsInstance: {
+  subscribe: ReturnType<typeof vi.fn>
+  unsubscribe: ReturnType<typeof vi.fn>
+  disconnectAll: ReturnType<typeof vi.fn>
+  getLanguages: ReturnType<typeof vi.fn>
+  getSubscribers: ReturnType<typeof vi.fn>
+}
+vi.mock('../services/CaptionSubscriptionManager', () => ({
+  CaptionSubscriptionManager: vi.fn(() => {
+    mockCaptionSubsInstance = {
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+      disconnectAll: vi.fn(),
+      getLanguages: vi.fn().mockReturnValue(new Set()),
+      getSubscribers: vi.fn().mockReturnValue(new Map()),
+    }
+    return mockCaptionSubsInstance
+  }),
+}))
+
 vi.mock('../services/TtsService', () => ({
   TtsService: vi.fn(() => ({ synthesize: vi.fn().mockResolvedValue(Buffer.from('audio')) })),
 }))
@@ -158,5 +178,29 @@ describe('SocketHandler', () => {
     mockIO._connect(mockSocket)
     await mockSocket._handlers['disconnecting']()
     expect(mockAudioSubsInstance.disconnectAll).toHaveBeenCalledWith('test-socket-id')
+  })
+
+  it('registers caption:subscribe and caption:unsubscribe handlers on connection', () => {
+    mockIO._connect(mockSocket)
+    expect(mockSocket.on).toHaveBeenCalledWith('caption:subscribe', expect.any(Function))
+    expect(mockSocket.on).toHaveBeenCalledWith('caption:unsubscribe', expect.any(Function))
+  })
+
+  it('calls captionSubs.subscribe with eventCode, language, and socketId', () => {
+    mockIO._connect(mockSocket)
+    mockSocket._handlers['caption:subscribe']({ code: 'EVT1', language: 'sm' })
+    expect(mockCaptionSubsInstance.subscribe).toHaveBeenCalledWith('EVT1', 'sm', 'test-socket-id')
+  })
+
+  it('calls captionSubs.unsubscribe with eventCode, language, and socketId', () => {
+    mockIO._connect(mockSocket)
+    mockSocket._handlers['caption:unsubscribe']({ code: 'EVT1', language: 'sm' })
+    expect(mockCaptionSubsInstance.unsubscribe).toHaveBeenCalledWith('EVT1', 'sm', 'test-socket-id')
+  })
+
+  it('calls captionSubs.disconnectAll with socketId on disconnecting', async () => {
+    mockIO._connect(mockSocket)
+    await mockSocket._handlers['disconnecting']()
+    expect(mockCaptionSubsInstance.disconnectAll).toHaveBeenCalledWith('test-socket-id')
   })
 })
