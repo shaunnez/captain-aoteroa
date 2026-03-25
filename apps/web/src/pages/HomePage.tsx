@@ -58,7 +58,7 @@ export function HomePage() {
   const filtered = [...events].sort((a, b) => statusOrder[a.status] - statusOrder[b.status])
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] overflow-x-hidden">
       {/* ── Nav ── */}
       <header className="sticky top-0 z-50 nav-glass">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
@@ -143,7 +143,7 @@ export function HomePage() {
               {filtered.map((event, index) => (
                 <motion.div
                   key={event.id}
-                  className="h-full"
+                  className="h-full min-w-0"
                   initial={prefersReduced ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' as const, delay: index * 0.05 }}
