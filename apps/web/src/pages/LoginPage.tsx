@@ -23,7 +23,14 @@ export function LoginPage() {
       await signIn(email, password)
       navigate('/dashboard')
     } catch (err: any) {
-      setError(err.message ?? 'Sign in failed. Please try again.')
+      const msg: string = err?.message ?? ''
+      if (!msg || msg.toLowerCase().includes('load failed') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
+        setError('Connection failed. Please check your internet connection and try again.')
+      } else if (msg.toLowerCase().includes('invalid login') || msg.toLowerCase().includes('invalid credentials') || msg.toLowerCase().includes('email not confirmed')) {
+        setError('Incorrect email or password.')
+      } else {
+        setError(msg || 'Sign in failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
