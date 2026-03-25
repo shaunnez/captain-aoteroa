@@ -225,7 +225,7 @@ export function HomePage() {
           <div className="flex gap-6">
             <a href="/privacy" className="hover:text-[var(--color-primary)] transition-colors">Privacy</a>
             <a href="/accessibility" className="hover:text-[var(--color-primary)] transition-colors">Accessibility</a>
-            <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Contact</a>
+            <a href="/contact" className="hover:text-[var(--color-primary)] transition-colors">Contact</a>
           </div>
         </div>
       </footer>
