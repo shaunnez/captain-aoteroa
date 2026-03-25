@@ -44,8 +44,8 @@ Add a `/contact` page with a validated contact form that uses EmailJS to send me
 | Key | Value |
 |-----|-------|
 | `SERVICE_ID` | `service_5cy3o0k` |
-| `TEMPLATE_ID` | _(pending — provide template ID from EmailJS dashboard)_ |
-| `PUBLIC_KEY` | _(pending — provide public key from EmailJS dashboard)_ |
+| `TEMPLATE_ID` | `template_gr0cbsa` |
+| `PUBLIC_KEY` | `tDxf7rfkIWs8Cl8oN` |
 
 The EmailJS template must be configured to send TO `uksn@me.com` using variables `{{from_name}}`, `{{from_email}}`, `{{message}}`.
 
@@ -145,8 +145,8 @@ import { LogoImg } from '../components/LogoImg'
 import { DarkModeToggle } from '../components/DarkModeToggle'
 
 const SERVICE_ID  = 'service_5cy3o0k'
-const TEMPLATE_ID = 'REPLACE_WITH_TEMPLATE_ID'
-const PUBLIC_KEY  = 'REPLACE_WITH_PUBLIC_KEY'
+const TEMPLATE_ID = 'template_gr0cbsa'
+const PUBLIC_KEY  = 'tDxf7rfkIWs8Cl8oN'
 
 interface FormErrors { name?: string; email?: string; message?: string }
 
@@ -303,7 +303,6 @@ export function ContactPage() {
 }
 ```
 
-Once TEMPLATE_ID and PUBLIC_KEY are provided, replace the placeholder strings.
 
 ---
 
