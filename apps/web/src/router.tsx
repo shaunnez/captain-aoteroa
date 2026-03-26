@@ -10,7 +10,10 @@ import { PresentPage } from './pages/PresentPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AudienceGuidePage } from './pages/AudienceGuidePage'
 import { PresenterGuidePage } from './pages/PresenterGuidePage'
+import { AccessibilityPage } from './pages/AccessibilityPage'
+import { PrivacyPage } from './pages/PrivacyPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { ContactPage } from './pages/ContactPage'
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -36,6 +39,9 @@ function AnimatedRoutes() {
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/docs/user-guide-audience" element={<AudienceGuidePage />} />
           <Route path="/docs/user-guide-presenter" element={<PresenterGuidePage />} />
+          <Route path="/accessibility" element={<AccessibilityPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Routes>
       </motion.div>
     </AnimatePresence>

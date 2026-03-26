@@ -223,9 +223,9 @@ export function HomePage() {
             <span className="font-serif font-semibold text-[var(--color-primary)]">HearMe NZ</span>
           </div>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Privacy</a>
-            <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Accessibility</a>
-            <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Contact</a>
+            <a href="/privacy" className="hover:text-[var(--color-primary)] transition-colors">Privacy</a>
+            <a href="/accessibility" className="hover:text-[var(--color-primary)] transition-colors">Accessibility</a>
+            <a href="/contact" className="hover:text-[var(--color-primary)] transition-colors">Contact</a>
           </div>
         </div>
       </footer>
