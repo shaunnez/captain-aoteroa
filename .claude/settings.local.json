@@ -64,7 +64,14 @@
       "mcp__plugin_playwright_playwright__browser_navigate_back",
       "mcp__plugin_playwright_playwright__browser_handle_dialog",
       "mcp__plugin_playwright_playwright__browser_drag",
-      "mcp__plugin_playwright_playwright__browser_run_code"
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "Bash(curl -s http://localhost:3002/health)",
+      "Bash(curl -s http://localhost:3002/api/events)",
+      "Bash(curl -s http://localhost:3002/api/events/4NU5Q9)",
+      "Bash(curl -s http://localhost:3002/api/events/4LCWW0)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(mkdir -p /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/public/docs/screenshots)",
+      "Bash(cp /Users/shaunnesbitt/Desktop/accessibility-work/docs/screenshots/*.png /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/public/docs/screenshots/)"
     ]
   },
   "hooks": {
