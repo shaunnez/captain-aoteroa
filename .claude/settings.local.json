@@ -71,7 +71,10 @@
       "Bash(curl -s http://localhost:3002/api/events/4LCWW0)",
       "Bash(echo \"EXIT:$?\")",
       "Bash(mkdir -p /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/public/docs/screenshots)",
-      "Bash(cp /Users/shaunnesbitt/Desktop/accessibility-work/docs/screenshots/*.png /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/public/docs/screenshots/)"
+      "Bash(cp /Users/shaunnesbitt/Desktop/accessibility-work/docs/screenshots/*.png /Users/shaunnesbitt/Desktop/accessibility-work/apps/web/public/docs/screenshots/)",
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   },
   "hooks": {
