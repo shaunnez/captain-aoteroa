@@ -282,25 +282,35 @@ export function EventPage() {
                 onClick={() => { if (isDark) toggle() }}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                   !isDark
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                    : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                    : 'border-[var(--color-outline-variant)] bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
                 }`}
                 aria-pressed={!isDark}
               >
-                <div className="w-6 h-6 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]" />
-                <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Light</span>
+                <div className="relative w-6 h-6 rounded-full bg-[#fdf9ee] border border-[var(--color-outline-variant)]">
+                  {!isDark && (
+                    <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-[#1c0070]"
+                          style={{ fontSize: '14px', lineHeight: '24px' }}>check</span>
+                  )}
+                </div>
+                <span className={`text-xs font-medium ${!isDark ? 'text-[var(--color-primary)] font-bold' : 'text-[var(--color-on-surface-variant)]'}`}>Light</span>
               </button>
               <button
                 onClick={() => { if (!isDark) toggle() }}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                   isDark
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                    : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                    : 'border-[var(--color-outline-variant)] bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)]'
                 }`}
                 aria-pressed={isDark}
               >
-                <div className="w-6 h-6 rounded-full bg-[#0a0a0c]" />
-                <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Dark</span>
+                <div className="relative w-6 h-6 rounded-full bg-[#0a0a0c] border border-[var(--color-outline-variant)]">
+                  {isDark && (
+                    <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-[#f4f1e6]"
+                          style={{ fontSize: '14px', lineHeight: '24px' }}>check</span>
+                  )}
+                </div>
+                <span className={`text-xs font-medium ${isDark ? 'text-[var(--color-primary)] font-bold' : 'text-[var(--color-on-surface-variant)]'}`}>Dark</span>
               </button>
             </div>
           </section>

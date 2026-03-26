@@ -21,7 +21,7 @@ export function CaptionDisplay({ segments, className = '', style, highContrast =
   if (variant === 'flat') {
     return (
       <div
-        className={`caption-area flex flex-col gap-10 ${className}`}
+        className={`caption-area overflow-y-auto flex flex-col gap-10 ${className}`}
         role="log"
         aria-live="polite"
         aria-label="Live captions"
