@@ -48,6 +48,19 @@ pnpm test:all    # Everything
 
 Use `AZURE_MOCK=true` for cost-free testing without real Azure credentials.
 
+## Claude Code Skills
+
+This project uses Claude Code skills and hooks for structured engineering workflows:
+
+| Skill | Trigger | Purpose |
+|-------|---------|---------|
+| Engineering Planning | `/engineering-planning` | Investigation-driven planning with sub-agent waves |
+| Harness | `/harness` | Generator-evaluator execution for multi-WP plans |
+| Evaluate UI | `/evaluate-ui` | Playwright-based UI verification against design criteria |
+| Verify | `/verify` | Six-command gate: typecheck + tests + build (both apps) |
+
+Hooks (`.claude/settings.json`) enforce session handoffs on stop, edit reminders, and output checking. Sprint contracts and handoff artifacts live in `docs/superpowers/contracts/`.
+
 ## Database
 
 Supabase migration files are in `supabase/migrations/`. Apply them in order to set up the database schema.

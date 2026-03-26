@@ -31,6 +31,8 @@ Do not use git worktrees on this project.
 5. **Strict TypeScript** — no `as any` without a comment. `noUnusedLocals` is on in web; unused imports are type errors.
 6. **BCP-47 locale codes everywhere** — `en-NZ`, `mi-NZ`, not `en` or `mi`. Short codes only in specific Azure/Papa Reo API params.
 7. **Engineering planning skill** — Before implementing any feature or fixing bugs, invoke the `engineering-planning` skill. Scale rigor to complexity: trivial 1-2 file fixes can use a lighter touch, but anything touching shared services, the DB, or multiple files gets the full process.
+8. **Harness for long-running work** — For plans with 3+ Work Packages or full-stack features, use the `/harness` skill. Separates generation from evaluation with per-WP context resets. Never let a generator self-evaluate.
+9. **UI evaluation via Playwright** — After frontend changes, use `/evaluate-ui` to interact with the running app via Playwright MCP. Grade against brand, accessibility, responsiveness, and functionality criteria. Mobile-first (375px) since audiences use phones.
 
 ## Architecture
 
@@ -99,6 +101,9 @@ Covers the full STT→translate→TTS pipeline for all 6 source/target language 
 | Te reo TTS | `apps/api/src/services/OpenAiTtsService.ts` |
 | DB migrations | `supabase/migrations/` (7 files) |
 | Plans / specs | `docs/superpowers/plans/`, `docs/superpowers/specs/` |
+| Harness contracts | `docs/superpowers/contracts/` |
+| Skills | `.claude/skills/` (engineering-planning, harness, evaluate-ui, verify) |
+| Hooks config | `.claude/settings.json` |
 | Brand colours | `--color-primary` CSS var, `#493276` purple, `#fdfdf0` sand |
 | Env validation | `apps/api/src/config.ts` — throws on missing vars |
 
@@ -111,3 +116,18 @@ Covers the full STT→translate→TTS pipeline for all 6 source/target language 
 **Naming:** Classes PascalCase, functions camelCase, DB columns snake_case, constants UPPER_SNAKE_CASE.
 
 **TanStack Query** for data fetching in web. Socket.IO for real-time. No Next.js.
+
+## Claude Code Harness
+
+Hooks in `.claude/settings.json` enforce workflow discipline:
+- **Stop hook** — prompts a handoff note (`docs/superpowers/HANDOFF.md`) when a session ends, enabling clean context resets
+- **PreToolUse (Edit|Write)** — reminds to run `/verify` after edits
+- **PostToolUse (Bash)** — reminds to check command output for errors
+
+Skills in `.claude/skills/`:
+- `/engineering-planning` — investigation-driven planning with sub-agent waves
+- `/harness` — generator-evaluator execution for multi-WP plans with per-WP context resets and sprint contracts
+- `/evaluate-ui` — Playwright-based UI grading against brand, accessibility, responsiveness, functionality
+- `/verify` — six-command verification gate (typecheck + tests + build, both apps)
+
+Workflow: `/engineering-planning` to plan, `/harness` to execute (3+ WPs), `/evaluate-ui` for frontend, `/verify` before declaring done.
