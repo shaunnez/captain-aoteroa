@@ -2,19 +2,34 @@
   "hooks": {
     "Stop": [
       {
-        "command": "echo '\n--- SESSION ENDING ---\nBefore stopping, write a handoff note if work is in progress:\n  File: docs/superpowers/HANDOFF.md\n  Include: goal, completed work, remaining work, modified files, blockers.\nThis enables clean context resets for the next session.\n---'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n--- SESSION ENDING ---\nBefore stopping, write a handoff note if work is in progress:\n  File: docs/superpowers/HANDOFF.md\n  Include: goal, completed work, remaining work, modified files, blockers.\nThis enables clean context resets for the next session.\n---'"
+          }
+        ]
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "echo 'Reminder: run /verify after edits. Both apps must pass typecheck + tests + build.'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Reminder: run /verify after edits. Both apps must pass typecheck + tests + build.'"
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Bash",
-        "command": "echo 'Check output for errors before proceeding.'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Check output for errors before proceeding.'"
+          }
+        ]
       }
     ]
   }
