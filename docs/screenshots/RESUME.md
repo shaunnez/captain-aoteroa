@@ -1,60 +1,79 @@
-# Screenshot Resume State — 2026-03-25
+# Screenshot Retake Plan — 2026-03-25
 
 ## Status
-- Presenter guide (`docs/user-guide-presenter.md`): **DONE** — all 10 placeholders replaced by agent
-- Audience guide (`docs/user-guide-audience.md`): **PENDING** — still has `[SCREENSHOT: ...]` placeholders
+- Both guides: all `[SCREENSHOT: ...]` placeholders replaced — no text changes needed.
+- Only image files need to be recaptured/replaced.
 
-## Audience guide: what to do next session
+## Event codes
+- `4NU5Q9` — use for all presenter screenshots (has transcript + audience questions)
+- `PVWYFL` — "Demo Lobby Event" (upcoming, countdown lobby) — a2 is already done
+- `4LCWW0` — "Test Event" (connected/ready state) — fallback for audience shots if needed
 
-Replace these placeholders in `docs/user-guide-audience.md`:
+## Audience screenshots to redo
 
-### Already captured — just replace these:
-```
-[SCREENSHOT: Home page — showing the join form with the event code input field and the event search bar below]
-→ ![Home page join form](./screenshots/a1-home-join.png)
+### a4-settings-sidebar.png
+- Navigate to any event page (e.g. `http://localhost:5173/event/4LCWW0`)
+- Screenshot just the settings sidebar panel (left side), not the full viewport
+- Must show: Text Size, Line Spacing, Display, Accessibility, Language sections
 
-[SCREENSHOT: Live caption screen — showing captions mid-sentence, Live badge in header, viewer count]
-→ ![Live caption screen](./screenshots/a3-live-captions.png)
+### a7-audio-toggle.png
+- Same event page
+- Screenshot just the "Play audio" button area (bottom of the settings sidebar)
+- Crop tight around the button — not the whole sidebar
 
-[SCREENSHOT: Settings sidebar open on desktop — showing all options: text size, line spacing, display, accessibility, language]
-→ ![Settings sidebar](./screenshots/a4-settings-sidebar.png)
+### a8-ask-drawer.png
+- Navigate to a non-ended event (use `4LCWW0` — status is "connected/ready")
+- Click the "Ask a question" button in the footer
+- Screenshot the open drawer/modal showing: textarea with "Type your question..." placeholder, "0 / 280" counter, Send button
+- Focus on the footer panel, not the full page
 
-[SCREENSHOT: Accessibility section — showing High contrast and Dyslexia-friendly font toggles]
-→ ![Accessibility settings](./screenshots/a5-accessibility.png)
+### a9-reactions.png
+- Same event page with reaction bar visible
+- Click one of the reaction emoji buttons (👍 👏 ❤️ 💯)
+- Wait ~1 second for the floating emoji animation
+- Screenshot capturing the floating emoji rising up the screen
 
-[SCREENSHOT: Language picker modal — showing the full list of NZ languages with flags]
-→ ![Language picker](./screenshots/a6-language-picker.png)
+## Presenter screenshots to redo
 
-[SCREENSHOT: Audio toggle button — showing "Play audio" and "Audio on" states]
-→ ![Audio toggle](./screenshots/a7-audio-toggle.png)
+All presenter shots use event `4NU5Q9`. Must be logged in as presenter.
+Login: http://localhost:5173/login — use existing session or log in with organiser credentials.
 
-[SCREENSHOT: Reaction bar — showing the four emoji buttons 👍 👏 ❤️ 💯]
-→ ![Reaction bar](./screenshots/a9-reactions.png)
+### p3-create-form.png
+- Navigate to `http://localhost:5173/create`
+- Screenshot the create event form page
+- Must show the full form (title, description, date/time, language fields etc.)
 
-[SCREENSHOT: Transcript download area — showing View Transcript button, then language picker and Download Image button after loading]
-→ ![Transcript download](./screenshots/a10-transcript.png)
-```
+### p4-sidebar.png
+- Navigate to the presenter view for event `4NU5Q9`
+- Screenshot just the presenter sidebar / event info panel
+- (Or rename file to `p4-presenter-event-page.png` and update the markdown reference — confirm with user first)
+- **Current instruction:** just show the sidebar
 
-### Still need to capture (2 shots):
+### p6-qr-code.png
+- Navigate to the presenter view for `4NU5Q9`
+- Find the QR code section/tab
+- Add a short delay (e.g. `browser_wait_for` or pause) before screenshotting so the QR code image has time to render
+- Screenshot must show the actual QR code image
 
-**a2-lobby.png** — event lobby countdown
-- Need a future-dated event. Either create one via /create with a date 1hr in the future, or check if one exists.
-- Navigate to http://localhost:5173/event/[future-code]
-- Should show: event title, description, countdown timer (days/hrs/min/sec)
-- Replace: `[SCREENSHOT: Lobby countdown screen — showing event title, description, and countdown timer (days/hrs/min/sec)]`
+### p7-session-controls.png
+- Presenter view for `4NU5Q9`
+- Screenshot just the session controls panel (start/stop session, mic controls etc.)
+- Crop to the controls area only, not the full page
 
-**a8-ask-drawer.png** — ask question drawer open
-- Navigate to http://localhost:5173/event/4LCWW0 (or any non-ended event)
-- Click the "Ask a question" button to open the bottom drawer
-- Screenshot must show: textarea with "Type your question..." placeholder, "0 / 280" character count, Send button
-- Replace: `[SCREENSHOT: Ask question drawer open — showing textarea, character count, and Send button]`
+### p8-live-transcript.png
+- Presenter view for `4NU5Q9`
+- Screenshot just the live transcript panel
+- Should show transcript content (event has real transcript data)
+
+### p9-qa-panel.png
+- Presenter view for `4NU5Q9`
+- Screenshot just the audience questions / Q&A panel
+- Should show submitted questions (event has real audience questions)
 
 ## Playwright MCP notes
 - `browser_take_screenshot` with `filename: "docs/screenshots/name.png"` saves relative to project root
-- `browser_resize` params must be JSON numbers (not strings) — but it errored anyway; skip it
-- Viewport tends to render consistently once you navigate explicitly with `browser_navigate`
-- After `browser_navigate`, always call `browser_snapshot` to confirm page state before screenshotting
-
-## Event codes available
-- `4LCWW0` — "Test Event" (ended, has post-session state)
-- `VD1S09` — "First Event" (ended, has real captions)
+- `browser_snapshot` after every navigate to confirm state before acting
+- For element-level crops: use `ref` + `element` params on `browser_take_screenshot`
+- For reactions floating emoji: click reaction button → `browser_wait_for` ~1000ms → screenshot
+- QR code: navigate → wait for network idle or use `browser_wait_for` → screenshot
+- API server must be running on `localhost:3002` (run `pnpm --filter api dev` if not)

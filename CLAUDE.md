@@ -26,7 +26,7 @@ Do not use git worktrees on this project.
 
 1. **Te reo TTS must use OpenAI, never Azure** — Azure quality is unacceptable for Māori. `OpenAiTtsService` only for `mi-NZ` segments.
 2. **caption_segments stored row-per-language** — JSONB consolidation was tried and reverted. Don't revisit without explicit instruction.
-3. **Typecheck + tests + build must all pass before declaring done** — run all six commands (see Verification below).
+3. **Typecheck + tests + build must all pass before declaring done** — run all six commands (see Verification below). After completing any feature, also run `pnpm test:integration` (requires `.env` with real API keys).
 4. **No unsolicited scope expansion** — especially when resuming after a token/context reset: state the remaining scope and confirm before acting.
 5. **Strict TypeScript** — no `as any` without a comment. `noUnusedLocals` is on in web; unused imports are type errors.
 6. **BCP-47 locale codes everywhere** — `en-NZ`, `mi-NZ`, not `en` or `mi`. Short codes only in specific Azure/Papa Reo API params.
@@ -62,13 +62,13 @@ pnpm --filter api build
 pnpm --filter web build
 ```
 
-Integration tests (optional, requires real API keys in `apps/api/.env`):
+Integration tests (requires real API keys in `apps/api/.env`):
 
 ```bash
-pnpm --filter api test:integration
+pnpm test:integration
 ```
 
-Covers the full STT→translate→TTS pipeline for all 6 source/target language combos. Not required for every PR but should pass before merging speech-processing changes.
+Covers the full STT→translate→TTS pipeline for all 6 source/target language combos. **Run after completing any feature** before declaring done. Must pass before merging speech-processing changes.
 
 ## Gotchas
 

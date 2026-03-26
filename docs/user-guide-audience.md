@@ -28,7 +28,7 @@ If the event is not found with a code: inline error `"Event not found. Check the
 
 If the event has a scheduled start time in the future, you will see the **event lobby**.
 
-[SCREENSHOT: Lobby countdown screen — showing event title, description, and countdown timer (days/hrs/min/sec)]
+![Event lobby countdown](./screenshots/a2-lobby.png)
 
 The lobby shows:
 - The event title and description
@@ -117,7 +117,7 @@ While the event is live, you can send a question to the presenter.
 
 Tap **Ask a question** at the bottom of the screen.
 
-[SCREENSHOT: Ask question drawer open — showing textarea, character count, and Send button]
+![Ask question drawer](./screenshots/a8-ask-drawer.png)
 
 Type your question (up to 280 characters). Then either:
 - Tap the **Send** button, or

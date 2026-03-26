@@ -52,9 +52,11 @@ export function EventPage() {
   // are only generated for languages with active viewers
   useEffect(() => {
     if (!code) return
-    socket.emit('caption:subscribe', { code, language: selectedLocale })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- socket.io-client 4.7.x: caption events missing from emit union despite being in ClientToServerEvents
+    ;(socket as any).emit('caption:subscribe', { code, language: selectedLocale })
     return () => {
-      socket.emit('caption:unsubscribe', { code, language: selectedLocale })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- socket.io-client 4.7.x: caption events missing from emit union despite being in ClientToServerEvents
+      ;(socket as any).emit('caption:unsubscribe', { code, language: selectedLocale })
     }
   }, [code, selectedLocale])
 
@@ -65,12 +67,9 @@ export function EventPage() {
     refetchInterval: 10_000,
   })
 
-  const isConfiguredLanguage = event?.languages.includes(selectedLocale) ?? true
-
   const { segments, isConnected, error: captionError } = useCaptions(
     code ?? '',
     selectedLocale,
-    isConfiguredLanguage,
   )
 
   useEffect(() => {

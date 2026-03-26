@@ -4,7 +4,7 @@
  * the full pipeline without incurring Azure costs.
  */
 
-import { MOCK_SOURCE_TEXT } from '../../__tests__/fixtures/translations'
+import { MOCK_SOURCE_TEXT, MOCK_TRANSLATIONS } from '../../__tests__/fixtures/translations'
 
 // ---------------------------------------------------------------------------
 // Enum-like constants matching the real SDK
@@ -13,6 +13,8 @@ import { MOCK_SOURCE_TEXT } from '../../__tests__/fixtures/translations'
 const ResultReason = {
   RecognizingSpeech: 1,
   RecognizedSpeech: 2,
+  TranslatingSpeech: 3,
+  TranslatedSpeech: 4,
 } as const
 
 const CancellationErrorCode = {
@@ -24,7 +26,7 @@ const CancellationErrorCode = {
 // ---------------------------------------------------------------------------
 class FakePushStream {
   private bytesReceived = 0
-  private recognizer: FakeSpeechRecognizer | null = null
+  private recognizer: { _fireRecognized(): void } | null = null
 
   /** Called by AzureSession.pushChunk → this.pushStream.write(chunk) */
   write(chunk: ArrayBuffer | Buffer): void {
@@ -42,7 +44,7 @@ class FakePushStream {
   }
 
   /** Internal: link the push stream to its recognizer so writes can trigger events. */
-  _setRecognizer(rec: FakeSpeechRecognizer): void {
+  _setRecognizer(rec: { _fireRecognized(): void }): void {
     this.recognizer = rec
   }
 }
@@ -94,6 +96,62 @@ class FakeSpeechRecognizer {
 }
 
 // ---------------------------------------------------------------------------
+// Fake TranslationRecognizer
+// ---------------------------------------------------------------------------
+class FakeTranslationRecognizer {
+  recognizing: ((sender: any, e: any) => void) | null = null
+  recognized: ((sender: any, e: any) => void) | null = null
+  canceled: ((sender: any, e: any) => void) | null = null
+
+  private running = false
+  private pushStream: FakePushStream | null = null
+  private targetLanguages: string[] = []
+
+  constructor(_config: any, audioConfig: any) {
+    // Extract target languages from the SpeechTranslationConfig mock
+    if (_config?._targetLanguages) {
+      this.targetLanguages = _config._targetLanguages
+    }
+    if (audioConfig?._stream instanceof FakePushStream) {
+      this.pushStream = audioConfig._stream
+      this.pushStream!._setRecognizer(this)
+    }
+  }
+
+  startContinuousRecognitionAsync(ok?: () => void, _err?: (e: any) => void): void {
+    this.running = true
+    ok?.()
+  }
+
+  stopContinuousRecognitionAsync(ok?: () => void, _err?: (e: any) => void): void {
+    this.running = false
+    ok?.()
+  }
+
+  close(): void {
+    this.running = false
+  }
+
+  /** Called by FakePushStream when enough audio bytes accumulate. */
+  _fireRecognized(): void {
+    if (!this.running || !this.recognized) return
+    const langs = this.targetLanguages
+    this.recognized(null, {
+      result: {
+        reason: ResultReason.TranslatedSpeech,
+        text: MOCK_SOURCE_TEXT,
+        translations: {
+          languages: langs,
+          get(lang: string): string {
+            return MOCK_TRANSLATIONS[lang] ?? 'mock translation'
+          },
+        },
+      },
+    })
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Public export matching `import * as sdk from 'microsoft-cognitiveservices-speech-sdk'`
 // ---------------------------------------------------------------------------
 export const fakeSdk = {
@@ -102,6 +160,18 @@ export const fakeSdk = {
       return {
         speechRecognitionLanguage: '' as string,
         setProperty(_name: string, _value: string) {},
+      }
+    },
+  },
+
+  SpeechTranslationConfig: {
+    fromSubscription(_key: string, _region: string) {
+      const targetLanguages: string[] = []
+      return {
+        speechRecognitionLanguage: '' as string,
+        setProperty(_name: string, _value: string) {},
+        addTargetLanguage(lang: string) { targetLanguages.push(lang) },
+        _targetLanguages: targetLanguages,
       }
     },
   },
@@ -125,6 +195,7 @@ export const fakeSdk = {
   },
 
   SpeechRecognizer: FakeSpeechRecognizer,
+  TranslationRecognizer: FakeTranslationRecognizer,
 
   PhraseListGrammar: {
     fromRecognizer(_rec: any) {

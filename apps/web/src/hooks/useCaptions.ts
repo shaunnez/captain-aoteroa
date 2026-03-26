@@ -20,7 +20,6 @@ interface UseCaptionsReturn {
 export function useCaptions(
   eventCode: string,
   locale: string,
-  isConfiguredLanguage = true,
 ): UseCaptionsReturn {
   const [segments, setSegments] = useState<DisplaySegment[]>([])
   const [isConnected, setIsConnected] = useState(false)
@@ -29,10 +28,7 @@ export function useCaptions(
   const allSegmentsRef = useRef<Map<number, CaptionSegmentPayload>>(new Map())
   const localeRef = useRef(locale)
   localeRef.current = locale
-  const isConfiguredRef = useRef(isConfiguredLanguage)
-  isConfiguredRef.current = isConfiguredLanguage
-
-  const extractSegments = useCallback((): DisplaySegment[] => {
+const extractSegments = useCallback((): DisplaySegment[] => {
     return Array.from(allSegmentsRef.current.values())
       .sort((a, b) => a.sequence - b.sequence)
       .map((s) => {
@@ -51,7 +47,7 @@ export function useCaptions(
           text,
           isFinal: s.isFinal,
           sequence: s.sequence,
-          isTranslating: s.isFinal && !isConfiguredRef.current && !hasTranslation,
+          isTranslating: s.isFinal && !hasTranslation,
         }
       })
   }, [])
@@ -116,7 +112,7 @@ export function useCaptions(
   const sinceSequenceRef = useRef(0)
 
   useEffect(() => {
-    if (isConfiguredLanguage || !eventCode || !locale) return
+    if (!eventCode || !locale) return
 
     // Reset tracking when locale changes
     sinceSequenceRef.current = 0
@@ -164,7 +160,7 @@ export function useCaptions(
       cancelled = true
       clearInterval(id)
     }
-  }, [eventCode, locale, isConfiguredLanguage, extractSegments])
+  }, [eventCode, locale, extractSegments])
 
   return { segments, isConnected, error }
 }

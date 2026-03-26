@@ -8,6 +8,7 @@
     "test:api": "pnpm --filter api test",
     "test:web": "pnpm --filter web test",
     "test:e2e": "cd e2e && npx playwright test",
-    "test:all": "pnpm test && pnpm test:e2e"
+    "test:integration": "pnpm --filter api test:integration",
+    "test:all": "pnpm test && pnpm test:e2e && pnpm --filter api test:integration"
   }
 }

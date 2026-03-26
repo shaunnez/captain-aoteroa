@@ -31,6 +31,7 @@ describe('STT layer', () => {
     const session = new AzureSession({
       eventCode: 'test-stt-en',
       speakerLocale: 'en-NZ',
+      languages: [],
       onSegment: (p) => segmentCallback?.(p),
       onError: (msg) => console.error('[AzureSession error]', msg),
     })

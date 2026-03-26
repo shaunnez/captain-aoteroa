@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { config } from '../config'
 import { supabase } from './supabase'
 import { RECOGNITION_LOCALES, type CaptionSegmentPayload } from '@caption-aotearoa/shared'
+import { bcp47ToTranslationCode, translationCodeToBcp47 } from './languageMap'
 
 const useMock = process.env.AZURE_MOCK === 'true'
 
@@ -15,6 +16,7 @@ interface AzureSessionOptions {
   eventCode: string
   phraseList?: string[]
   speakerLocale?: string | null // BCP-47 recognition locale; null or undefined = 'en-NZ'
+  languages: string[] // BCP-47 locales to translate into; may be empty on session start
   onSegment: (payload: CaptionSegmentPayload) => void
   onError?: (message: string, fatal: boolean) => void
   sharedSequence?: SequenceCounter // optional shared counter for dual mode
@@ -23,7 +25,7 @@ interface AzureSessionOptions {
 export class AzureSession {
   private options: AzureSessionOptions
   private pushStream!: sdk.PushAudioInputStream
-  private recognizer!: sdk.SpeechRecognizer
+  private recognizer!: sdk.TranslationRecognizer
   private ownSequence = 0
   private eventId: string | null = null
   private partialTimer: ReturnType<typeof setTimeout> | null = null
@@ -84,7 +86,7 @@ export class AzureSession {
       ? require('./__mocks__/azureSpeechStub').fakeSdk
       : sdk
 
-    const speechConfig = effectiveSdk.SpeechConfig.fromSubscription(
+    const speechConfig = effectiveSdk.SpeechTranslationConfig.fromSubscription(
       config.azure.speechKey,
       config.azure.speechRegion,
     )
@@ -93,11 +95,27 @@ export class AzureSession {
     // Shorter segmentation silence → faster final segments (default ~2s → 500ms)
     speechConfig.setProperty('Speech_SegmentationSilenceTimeoutMs', '500')
 
+    const sourceCode = bcp47ToTranslationCode(sourceLocale)
+    let targetCount = 0
+    for (const lang of this.options.languages) {
+      const code = bcp47ToTranslationCode(lang)
+      if (code !== sourceCode) {
+        speechConfig.addTargetLanguage(code)
+        targetCount++
+      }
+    }
+    // TranslationRecognizer requires ≥1 target language.
+    // When all demanded languages match the source (e.g. en speaker, en-only audience),
+    // add a harmless fallback so the recognizer can start.
+    if (targetCount === 0) {
+      speechConfig.addTargetLanguage(sourceCode === 'en' ? 'fr' : 'en')
+    }
+
     this.pushStream = effectiveSdk.AudioInputStream.createPushStream(
       effectiveSdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1),
     )
     const audioConfig = effectiveSdk.AudioConfig.fromStreamInput(this.pushStream)
-    this.recognizer = new effectiveSdk.SpeechRecognizer(speechConfig, audioConfig)
+    this.recognizer = new effectiveSdk.TranslationRecognizer(speechConfig, audioConfig)
 
     // Load custom phrase hints (te reo etc.)
     if (this.options.phraseList && this.options.phraseList.length > 0) {
@@ -107,7 +125,7 @@ export class AzureSession {
 
     // Throttle partials to ~7/sec (trailing-edge) to avoid render thrashing
     this.recognizer.recognizing = (_, e) => {
-      if (e.result.reason === effectiveSdk.ResultReason.RecognizingSpeech) {
+      if (e.result.reason === effectiveSdk.ResultReason.TranslatingSpeech) {
         this.pendingPartial = { segments: this.buildSegments(e.result) }
         if (!this.partialTimer) {
           this.partialTimer = setTimeout(() => {
@@ -122,7 +140,7 @@ export class AzureSession {
     }
 
     this.recognizer.recognized = (_, e) => {
-      if (e.result.reason === effectiveSdk.ResultReason.RecognizedSpeech && e.result.text) {
+      if (e.result.reason === effectiveSdk.ResultReason.TranslatedSpeech && e.result.text) {
         // Flush any pending partial before emitting final
         this.clearPartialTimer()
         const segments = this.buildSegments(e.result)
@@ -136,9 +154,20 @@ export class AzureSession {
     }
   }
 
-  private buildSegments(result: sdk.SpeechRecognitionResult): Record<string, string> {
+  private buildSegments(result: sdk.TranslationRecognitionResult): Record<string, string> {
     const sourceLocale = this.options.speakerLocale ?? 'en-NZ'
-    return { [sourceLocale]: result.text }
+    const segments: Record<string, string> = { [sourceLocale]: result.text }
+    const translations = result.translations
+    if (translations) {
+      translations.languages?.forEach((langCode: string) => {
+        const text = translations.get(langCode)
+        if (text) {
+          const bcp47 = translationCodeToBcp47(langCode, this.options.languages)
+          segments[bcp47] = text
+        }
+      })
+    }
+    return segments
   }
 
   private emitSegments(segments: Record<string, string>, isFinal: boolean): void {
@@ -153,20 +182,18 @@ export class AzureSession {
 
     this.options.onSegment(payload)
 
-    // Persist only final segments
+    // Persist only final segments, one row per language
     if (isFinal && this.eventId) {
-      const sourceLocale = this.options.speakerLocale ?? 'en-NZ'
-      const text = segments[sourceLocale] ?? Object.values(segments)[0]
-      const row = {
+      const rows = Object.entries(segments).map(([language, text]) => ({
         id: uuidv4(),
         event_id: this.eventId!,
         sequence: seq,
         text,
-        language: sourceLocale,
+        language,
         is_final: true,
-      }
-      supabase.from('caption_segments').insert([row]).then(({ error }) => {
-        if (error) console.error('Failed to persist segment:', error.message)
+      }))
+      supabase.from('caption_segments').insert(rows).then(({ error }) => {
+        if (error) console.error('Failed to persist segments:', error.message)
       })
     }
   }
@@ -192,6 +219,23 @@ export class AzureSession {
     }
     this.options.speakerLocale = locale
     await this.restart()
+  }
+
+  updateLanguages(languages: string[]): void {
+    const sourceLocale = this.options.speakerLocale ?? 'en-NZ'
+    const sourceCode = bcp47ToTranslationCode(sourceLocale)
+    const currentCodes = new Set(
+      this.options.languages.map(bcp47ToTranslationCode).filter(c => c !== sourceCode)
+    )
+    const newCodes = new Set(
+      languages.map(bcp47ToTranslationCode).filter(c => c !== sourceCode)
+    )
+    const hasNew = [...newCodes].some(c => !currentCodes.has(c))
+    if (!hasNew) return
+    this.options.languages = languages
+    this.restart().catch(err =>
+      this.options.onError?.(`Language update restart failed: ${String(err)}`, false)
+    )
   }
 
   pushChunk(chunk: Buffer): void {

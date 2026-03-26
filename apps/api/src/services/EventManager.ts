@@ -7,6 +7,7 @@ import type { CaptionSegmentPayload } from '@caption-aotearoa/shared'
 
 interface SessionOptions {
   speakerLocale?: string
+  languages?: string[]
 }
 
 type OnSegment = (payload: CaptionSegmentPayload) => void
@@ -59,6 +60,7 @@ class EventManagerClass {
       const azureSession = new AzureSession({
         eventCode: code,
         speakerLocale: options.speakerLocale ?? 'en-NZ',
+        languages: options.languages ?? [],
         onSegment,
         onError: async (message, fatal) => {
           onError(message, fatal)
@@ -114,6 +116,7 @@ class EventManagerClass {
       const azureSession = new AzureSession({
         eventCode: entry.eventCode,
         speakerLocale: locale,
+        languages: entry.options.languages ?? [],
         onSegment: entry.onSegment,
         onError: async (message, fatal) => {
           entry.onError(message, fatal)
@@ -156,6 +159,7 @@ class EventManagerClass {
     } else {
       const singleSession = new AzureSession({
         eventCode: entry.eventCode,
+        languages: entry.options.languages ?? [],
         onSegment: entry.onSegment,
         onError: async (message, fatal) => {
           entry.onError(message, fatal)
@@ -179,6 +183,12 @@ class EventManagerClass {
     if (!entry) return
     this.sessions.delete(code)
     try { await entry.session.stop() } catch { /* ignore */ }
+  }
+
+  updateLanguages(code: string, languages: string[]): void {
+    const entry = this.sessions.get(code)
+    if (!entry || !(entry.session instanceof AzureSession)) return
+    entry.session.updateLanguages(languages)
   }
 
   has(code: string): boolean {

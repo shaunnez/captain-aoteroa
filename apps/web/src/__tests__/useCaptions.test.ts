@@ -43,28 +43,28 @@ describe('useCaptions', () => {
   })
 
   it('connects socket and joins event room', () => {
-    renderHook(() => useCaptions('ABC123', 'en', true))
+    renderHook(() => useCaptions('ABC123', 'en'))
     expect(mockConnect).toHaveBeenCalled()
     expect(mockEmit).toHaveBeenCalledWith('event:join', 'ABC123')
   })
 
   it('registers caption:segment listener', () => {
-    renderHook(() => useCaptions('ABC123', 'en', true))
+    renderHook(() => useCaptions('ABC123', 'en'))
     expect(mockOn).toHaveBeenCalledWith('caption:segment', expect.any(Function))
   })
 
   it('registers caption:history listener', () => {
-    renderHook(() => useCaptions('ABC123', 'en', true))
+    renderHook(() => useCaptions('ABC123', 'en'))
     expect(mockOn).toHaveBeenCalledWith('caption:history', expect.any(Function))
   })
 
   it('returns empty segments initially', () => {
-    const { result } = renderHook(() => useCaptions('ABC123', 'en', true))
+    const { result } = renderHook(() => useCaptions('ABC123', 'en'))
     expect(result.current.segments).toEqual([])
   })
 
   it('cleans up on unmount', () => {
-    const { unmount } = renderHook(() => useCaptions('ABC123', 'en', true))
+    const { unmount } = renderHook(() => useCaptions('ABC123', 'en'))
     unmount()
     expect(mockEmit).toHaveBeenCalledWith('event:leave', 'ABC123')
     expect(mockOff).toHaveBeenCalled()

@@ -58,6 +58,7 @@ async function runPipeline(opts: {
     session = new AzureSession({
       eventCode: `test-pipeline-${opts.sourceLocale}-${opts.targetLang}`,
       speakerLocale: opts.sourceLocale,
+      languages: [],
       onSegment: (p) => segmentCallback?.(p),
       onError: (msg) => console.error('[STT error]', msg),
     })

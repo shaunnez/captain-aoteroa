@@ -10,6 +10,7 @@ import { AudioSubscriptionManager } from './AudioSubscriptionManager'
 import { CaptionSubscriptionManager } from './CaptionSubscriptionManager'
 import { config } from '../config'
 import { translateText } from './translateText'
+import { bcp47ToTranslationCode } from './languageMap'
 import { v4 as uuidv4 } from 'uuid'
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents>
@@ -57,17 +58,31 @@ export function setupSocketHandler(io: AppServer): void {
     // Track rooms for viewer count on disconnect
     socket.on('audio:subscribe', ({ code, language }) => {
       audioSubs.subscribe(code, language, socket.id)
+      if (EventManager.has(code)) {
+        const captionLangs = captionSubs.getLanguages(code)
+        const audioLangs = [...audioSubs.getSubscribers(code).keys()]
+        const allLangs = [...new Set([...captionLangs, ...audioLangs, 'en-NZ'])]
+        EventManager.updateLanguages(code, allLangs)
+      }
     })
 
     socket.on('audio:unsubscribe', ({ code, language }) => {
       audioSubs.unsubscribe(code, language, socket.id)
     })
 
-    socket.on('caption:subscribe', ({ code, language }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- socket.io 4.7.x: caption events not distributed in ReservedOrUserEventNames despite being in ClientToServerEvents
+    ;(socket as any).on('caption:subscribe', ({ code, language }: { code: string; language: string }) => {
       captionSubs.subscribe(code, language, socket.id)
+      if (EventManager.has(code)) {
+        const captionLangs = captionSubs.getLanguages(code)
+        const audioLangs = [...audioSubs.getSubscribers(code).keys()]
+        const allLangs = [...new Set([...captionLangs, ...audioLangs, 'en-NZ'])]
+        EventManager.updateLanguages(code, allLangs)
+      }
     })
 
-    socket.on('caption:unsubscribe', ({ code, language }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- socket.io 4.7.x: caption events not distributed in ReservedOrUserEventNames despite being in ClientToServerEvents
+    ;(socket as any).on('caption:unsubscribe', ({ code, language }: { code: string; language: string }) => {
       captionSubs.unsubscribe(code, language, socket.id)
     })
 
@@ -176,9 +191,12 @@ export function setupSocketHandler(io: AppServer): void {
       console.log(`[socket] session:start speakerLocale=${locale ?? 'default'}`)
 
       try {
+        const captionLangs = captionSubs.getLanguages(code)
+        const audioLangs = [...audioSubs.getSubscribers(code).keys()]
+        const initialLangs = [...new Set([...captionLangs, ...audioLangs, 'en-NZ'])]
         await EventManager.start(
           code,
-          { speakerLocale: locale ?? undefined },
+          { speakerLocale: locale ?? undefined, languages: initialLangs },
           (payload) => {
             console.log(`[socket] emitting caption:segment seq=${payload.sequence} final=${payload.isFinal}`)
             io.to(code).emit('caption:segment', payload)
@@ -186,19 +204,20 @@ export function setupSocketHandler(io: AppServer): void {
 
             // Translate source-only segments to languages with active viewers (fire-and-forget)
             const segmentKeys = Object.keys(payload.segments)
-            if (segmentKeys.length === 1) {
-              const sourceLang = segmentKeys[0]
+            const sourceLang = segmentKeys[0]
+            if (segmentKeys.length === 1 && (sourceLang === 'mi-NZ' || sourceLang === 'mi')) {
               const sourceText = payload.segments[sourceLang]
               // Use short code for Azure Translator API (e.g. 'en-NZ' → 'en')
               const sourceShort = sourceLang.includes('-') ? sourceLang.split('-')[0] : sourceLang
 
               // Only translate to languages with active caption or audio subscribers
+              // Convert BCP-47 to short codes (Azure Translator requires short codes, not en-NZ)
               const captionLangs = captionSubs.getLanguages(code)
               const audioLangs = new Set(audioSubs.getSubscribers(code).keys())
-              const demandedLangs = new Set([...captionLangs, ...audioLangs])
+              const shortCodes = new Set([...captionLangs, ...audioLangs].map(bcp47ToTranslationCode))
               // Always include English as fallback for new joiners and history
-              demandedLangs.add('en')
-              const targetLangs = [...demandedLangs].filter((c) => c !== sourceShort && c !== sourceLang)
+              shortCodes.add('en')
+              const targetLangs = [...shortCodes].filter((c) => c !== sourceShort)
               console.log(`[SocketHandler] translating seq=${payload.sequence} to ${targetLangs.length} languages: [${targetLangs.join(',')}]`)
               translateText(sourceText, sourceShort, targetLangs)
                 .then(async (translations) => {

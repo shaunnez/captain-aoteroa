@@ -28,6 +28,7 @@ export class DualAzureSession {
     const enSession = new AzureSession({
       eventCode,
       speakerLocale: 'en-NZ',
+      languages: [],
       onSegment,
       onError,
       sharedSequence: this.sharedSequence,
@@ -36,6 +37,7 @@ export class DualAzureSession {
     const miSession = new AzureSession({
       eventCode,
       speakerLocale: 'mi-NZ',
+      languages: [],
       onSegment,
       onError,
       sharedSequence: this.sharedSequence,
