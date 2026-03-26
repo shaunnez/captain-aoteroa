@@ -3,7 +3,7 @@ interface StatusBadgeProps {
 }
 
 const styles = {
-  upcoming: 'bg-[var(--color-primary)] text-white',
+  upcoming: 'bg-[var(--color-primary)] text-[var(--color-on-primary)]',
   live: 'bg-green-500 text-white animate-pulse',
   ended: 'bg-[var(--color-outline)] text-white',
 } as const
