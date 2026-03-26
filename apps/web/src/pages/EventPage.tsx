@@ -328,10 +328,11 @@ export function EventPage() {
                            hover:bg-[var(--color-surface-container-highest)] transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px] text-[var(--color-on-surface-variant)]">translate</span>
-                <span className="flex-1 text-left truncate">
+                <span className="flex-1 text-left truncate flex items-center gap-1.5">
                   {(() => {
                     const lang = NZ_LANGUAGES.find((l) => l.code === selectedLocale)
-                    return lang ? `${lang.flag ?? ''} ${lang.label}`.trim() : selectedLocale
+                    if (!lang) return selectedLocale
+                    return <>{lang.flag && <span className={`fi fi-${lang.flag}`} />}{lang.label}</>
                   })()}
                 </span>
                 <svg className="w-3 h-3 opacity-60 shrink-0" viewBox="0 0 12 12" fill="none">

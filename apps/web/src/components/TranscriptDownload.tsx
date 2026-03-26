@@ -150,9 +150,7 @@ export function TranscriptDownload({ eventCode, eventTitle, eventDate }: Transcr
                    border border-[var(--color-outline-variant)]
                    hover:bg-[var(--color-surface-container-highest)] transition-colors"
       >
-        {activeLang?.flag && (
-          <span className="text-base leading-none">{activeLang.flag}</span>
-        )}
+        {activeLang?.flag && <span className={`fi fi-${activeLang.flag} text-base`} />}
         <span>{activeLang?.label ?? selectedLang}</span>
         <svg className="w-3 h-3 opacity-60 shrink-0" viewBox="0 0 12 12" fill="none">
           <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

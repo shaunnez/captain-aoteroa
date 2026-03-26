@@ -118,7 +118,7 @@ export function LanguagePickerModal({ isOpen, onClose, selectedLocale, onSelect,
                           : 'border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] hover:border-[var(--color-primary-container)]'
                         }`}
                     >
-                      <span className="text-3xl leading-none">{lang.flag ?? '🌐'}</span>
+                      {lang.flag && <span className={`fi fi-${lang.flag} text-3xl`} />}
                       <span className="text-sm font-semibold text-[var(--color-on-surface)] leading-tight">
                         {lang.label}
                       </span>

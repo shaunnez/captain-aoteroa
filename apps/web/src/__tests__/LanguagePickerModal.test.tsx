@@ -63,8 +63,8 @@ describe('LanguagePickerModal', () => {
 
   it('shows only provided languages when languages prop is given', () => {
     const langs: NzLanguage[] = [
-      { code: 'en', label: 'English', flag: '🇬🇧' },
-      { code: 'mi', label: 'Te reo Māori', flag: '🇳🇿' },
+      { code: 'en', label: 'English', flag: 'gb' },
+      { code: 'mi', label: 'Te reo Māori', flag: 'nz' },
     ]
     render(<LanguagePickerModal {...defaultProps} languages={langs} />)
     expect(screen.getByText('English')).toBeDefined()
@@ -77,8 +77,8 @@ describe('LanguagePickerModal', () => {
 
   it('filters provided languages by search query', () => {
     const langs: NzLanguage[] = [
-      { code: 'en', label: 'English', flag: '🇬🇧' },
-      { code: 'mi', label: 'Te reo Māori', flag: '🇳🇿' },
+      { code: 'en', label: 'English', flag: 'gb' },
+      { code: 'mi', label: 'Te reo Māori', flag: 'nz' },
     ]
     render(<LanguagePickerModal {...defaultProps} languages={langs} />)
     fireEvent.change(screen.getByPlaceholderText('Search for a language…'), {

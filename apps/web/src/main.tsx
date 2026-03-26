@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import 'flag-icons/css/flag-icons.min.css'
 import './styles/index.css'
 import { AppRouter } from './router'
 
